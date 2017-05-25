@@ -1,0 +1,19 @@
+language: ruby
+sudo: false
+dist: trusty
+cache: bundler
+addons:
+  apt:
+    packages:
+    - bind9
+rvm:
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - ruby-head
+  - jruby-head
+matrix:
+  allow_failures:
+    - rvm: ruby-head
+    - rvm: jruby-head

@@ -18,29 +18,57 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'async/io/address'
+require 'async/io/stream'
 
-require_relative 'session'
+require_relative 'parser'
 
 module Async
 	module HTTP
-		class Server
-			def initialize(addresses, app)
-				@addresses = addresses
-				@app = app
+		Request = Struct.new(:method, :url, :version, :headers, :body) do
+			def env
+				self.headers
+			end
+		end
+		
+		class Session
+			CRLF = "\r\n".freeze
+			
+			def initialize(peer)
+				@stream = Async::IO::Stream.new(peer, eol: CRLF)
+				
+				@parser = Parser.new
 			end
 			
-			def run
-				Async::IO::Address.each(@addresses) do |address|
-					address.accept do |peer|
-						session = Session.new(peer)
-						
-						while request = session.read_request
-							response = @app.call(request.env)
-							session.write_response(*response)
-						end
-					end
+			attr :stream
+			
+			def read_request
+				Request.new(*@parser.read_request(@stream))
+			rescue EOFError
+				return nil
+			end
+			
+			def write_response(status, headers, body)
+				@stream.puts "HTTP/1.1 #{status}"
+				
+				headers.each do |name, value|
+					@stream.write("#{name}: #{value}\r\n")
 				end
+				
+				@stream.write("Transfer-Encoding: chunked\r\n\r\n")
+				
+				body.each do |chunk|
+					next if chunk.size == 0
+					
+					@stream.write("#{chunk.size.to_s(16).upcase}\r\n")
+					@stream.write(chunk)
+					@stream.write("\r\n")
+				end
+				
+				@stream.write("0\r\n\r\n")
+				
+				return true
+			rescue Errno::EPIPE
+				return false
 			end
 		end
 	end

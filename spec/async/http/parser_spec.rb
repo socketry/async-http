@@ -18,30 +18,36 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'async/io/address'
+require 'async/http/parser'
 
-require_relative 'session'
-
-module Async
-	module HTTP
-		class Server
-			def initialize(addresses, app)
-				@addresses = addresses
-				@app = app
-			end
+RSpec.describe Async::HTTP::Parser do
+	describe "simple request" do
+		let(:request) {"GET / HTTP/1.1\r\nHost: localhost\r\n\r\n"}
+		let(:io) {StringIO.new(request)}
+	
+		it "reads request" do
+			method, url, version, headers, body = subject.read_request(io)
 			
-			def run
-				Async::IO::Address.each(@addresses) do |address|
-					address.accept do |peer|
-						session = Session.new(peer)
-						
-						while request = session.read_request
-							response = @app.call(request.env)
-							session.write_response(*response)
-						end
-					end
-				end
-			end
+			expect(method).to be == 'GET'
+			expect(url).to be == '/'
+			expect(version).to be == 'HTTP/1.1'
+			expect(headers).to be == {'Host' => 'localhost'}
+			expect(body).to be nil
+		end
+	end
+	
+	describe "simple request with body" do
+		let(:request) {"GET / HTTP/1.1\r\nHost: localhost\r\nContent-Length: 11\r\n\r\nHello World"}
+		let(:io) {StringIO.new(request)}
+	
+		it "reads request" do
+			method, url, version, headers, body = subject.read_request(io)
+			
+			expect(method).to be == 'GET'
+			expect(url).to be == '/'
+			expect(version).to be == 'HTTP/1.1'
+			expect(headers).to be == {'Host' => 'localhost', 'Content-Length' => '11'}
+			expect(body).to be == "Hello World"
 		end
 	end
 end

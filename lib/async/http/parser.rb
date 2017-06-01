@@ -18,29 +18,30 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'async/io/address'
-
-require_relative 'session'
-
 module Async
 	module HTTP
-		class Server
-			def initialize(addresses, app)
-				@addresses = addresses
-				@app = app
-			end
+		class Parser
+			HTTP_CONTENT_LENGTH = 'HTTP_CONTENT_LENGTH'.freeze
 			
-			def run
-				Async::IO::Address.each(@addresses) do |address|
-					address.accept do |peer|
-						session = Session.new(peer)
-						
-						while request = session.read_request
-							response = @app.call(request.env)
-							session.write_response(*response)
-						end
+			def read_request(io)
+				method, url, version = io.readline.split(/\s+/)
+				
+				headers = {}
+				
+				# Parsing headers:
+				io.each do |line|
+					if line =~ /([a-zA-Z\-]+):\s*(.+?)\s+/
+						headers["HTTP_#{$1.tr('-', '_').upcase}"] = $2
+					else
+						break
 					end
 				end
+				
+				if content_length = headers[HTTP_CONTENT_LENGTH]
+					body = io.read(Integer(content_length))
+				end
+				
+				return method, url, version, headers, body
 			end
 		end
 	end

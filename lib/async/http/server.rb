@@ -32,13 +32,27 @@ module Async
 			
 			def run
 				Async::IO::Address.each(@addresses) do |address|
+					puts "Binding to #{address} on process #{Process.pid}"
+					
 					address.accept do |peer|
 						session = Session.new(peer)
+						puts "Opening session on child pid #{Process.pid}"
 						
 						while request = session.read_request
+							# puts "Got request: #{request.inspect}"
+							
 							response = @app.call(request.env)
-							session.write_response(*response)
+							
+							# puts "Sending response: #{response.inspect}"
+							
+							session.write_response(request, *response)
+							
+							# puts "Keep alive?: #{request.keep_alive?}"
+							
+							break unless request.keep_alive?
 						end
+						
+						# puts "Closing session"
 					end
 				end
 			end

@@ -20,13 +20,33 @@
 
 require 'async/io/stream'
 
-require_relative 'parser'
+require_relative 'protocol'
 
 module Async
 	module HTTP
-		Request = Struct.new(:method, :url, :version, :headers, :body) do
+		class Request < Struct.new(:method, :url, :version, :headers, :body)
+			HTTP_1_0 = 'HTTP/1.0'.freeze
+			HTTP_1_1 = 'HTTP/1.1'.freeze
+			
+			HTTP_CONNECTION = 'HTTP_CONNECTION'.freeze
+			KEEP_ALIVE = 'keep-alive'.freeze
+			CLOSE = 'close'.freeze
+			
 			def env
 				self.headers
+			end
+			
+			def keep_alive?
+				case self.headers[HTTP_CONNECTION]
+				when CLOSE
+					return false
+				when KEEP_ALIVE
+					return true
+				else
+					# HTTP/1.0 defaults to Connection: close unless otherwise specified.
+					# HTTP/1.1 defaults to Connection: keep-alive unless otherwise specified.
+					version != HTTP_1_0
+				end
 			end
 		end
 		
@@ -36,37 +56,19 @@ module Async
 			def initialize(peer)
 				@stream = Async::IO::Stream.new(peer, eol: CRLF)
 				
-				@parser = Parser.new
+				@protocol = Protocol.new(@stream)
 			end
 			
 			attr :stream
 			
 			def read_request
-				Request.new(*@parser.read_request(@stream))
+				Request.new(*@protocol.read_request)
 			rescue EOFError
 				return nil
 			end
 			
-			def write_response(status, headers, body)
-				@stream.puts "HTTP/1.1 #{status}"
-				
-				headers.each do |name, value|
-					@stream.write("#{name}: #{value}\r\n")
-				end
-				
-				@stream.write("Transfer-Encoding: chunked\r\n\r\n")
-				
-				body.each do |chunk|
-					next if chunk.size == 0
-					
-					@stream.write("#{chunk.size.to_s(16).upcase}\r\n")
-					@stream.write(chunk)
-					@stream.write("\r\n")
-				end
-				
-				@stream.write("0\r\n\r\n")
-				
-				return true
+			def write_response(request, status, headers, body)
+				@protocol.write_response(request.version, status, headers, body)
 			rescue Errno::EPIPE
 				return false
 			end

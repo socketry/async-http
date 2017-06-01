@@ -9,13 +9,27 @@ task :server do
 	require_relative 'lib/async/http/server'
 	require 'async/reactor'
 	
+	require 'etc'
+	
 	app = lambda do |env|
 		[200, {}, ["Hello World"]]
 	end
 	
-	server = Async::HTTP::Server.new([[:tcp, '0.0.0.0', 9293]], app)
+	server = Async::HTTP::Server.new([
+		Async::IO::Address.tcp('127.0.0.1', 9294, reuse_port: true)
+	], app)
 	
-	Async::Reactor.run do
-		server.run
+	process_count = Etc.nprocessors
+	
+	pids = process_count.times.collect do
+		fork do
+			Async::Reactor.run do
+				server.run
+			end
+		end
+	end
+	
+	pids.each do |pid|
+		Process.wait pid
 	end
 end

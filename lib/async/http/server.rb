@@ -36,7 +36,7 @@ module Async
 					
 					address.accept do |peer|
 						session = Session.new(peer)
-						puts "Opening session on child pid #{Process.pid}"
+						# puts "Opening session on child pid #{Process.pid}"
 						
 						while request = session.read_request
 							# puts "Got request: #{request.inspect}"

@@ -36,6 +36,10 @@ module Async
 				self.headers
 			end
 			
+			def transfer_encoding?
+				version != HTTP_1_0
+			end
+			
 			def keep_alive?
 				case self.headers[HTTP_CONNECTION]
 				when CLOSE
@@ -54,7 +58,7 @@ module Async
 			CRLF = "\r\n".freeze
 			
 			def initialize(peer)
-				@stream = Async::IO::Stream.new(peer, eol: CRLF)
+				@stream = Async::IO::Stream.new(peer, block_size: 1024*4, eol: CRLF)
 				
 				@protocol = Protocol.new(@stream)
 			end
@@ -68,7 +72,7 @@ module Async
 			end
 			
 			def write_response(request, status, headers, body)
-				@protocol.write_response(request.version, status, headers, body)
+				@protocol.write_response(request, status, headers, body)
 			rescue Errno::EPIPE
 				return false
 			end

@@ -49,31 +49,31 @@ module Async
 				return method, url, version, headers, body
 			end
 			
-			def write_response(version, status, headers, body)
-				@stream.puts "#{version} #{status}"
+			def write_response(request, status, headers, body)
+				@stream.puts "#{request.version} #{status}"
 				
 				headers.each do |name, value|
 					@stream.write("#{name}: #{value}\r\n")
 				end
 				
-				buffer = body.join
-				@stream.write("Content-Length: #{buffer.bytesize}\r\n\r\n")
-				@stream.write(buffer)
-				@stream.write("\r\n")
-				
-				# @stream.write("Transfer-Encoding: chunked\r\n\r\n")
-				# 
-				# body.each do |chunk|
-				# 	next if chunk.size == 0
-				# 	
-				# 	@stream.write("#{chunk.size.to_s(16).upcase}\r\n")
-				# 	@stream.write(chunk)
-				# 	@stream.write("\r\n")
-				# 	
-				# 	@stream.flush
-				# end
-				# 
-				# @stream.write("0\r\n\r\n")
+				if request.transfer_encoding?
+					@stream.write("Transfer-Encoding: chunked\r\n\r\n")
+					
+					body.each do |chunk|
+						next if chunk.size == 0
+						
+						@stream.write("#{chunk.size.to_s(16).upcase}\r\n")
+						@stream.write(chunk)
+						@stream.write("\r\n")
+					end
+					
+					@stream.write("0\r\n\r\n")
+				else
+					buffer = body.join
+					@stream.write("Content-Length: #{buffer.bytesize}\r\n\r\n")
+					@stream.write(buffer)
+					@stream.write("\r\n")
+				end
 				
 				@stream.flush
 				

@@ -67,13 +67,13 @@ module Async
 			
 			def read_request
 				Request.new(*@protocol.read_request)
-			rescue EOFError
+			rescue EOFError, Errno::ECONNRESET
 				return nil
 			end
 			
 			def write_response(request, status, headers, body)
 				@protocol.write_response(request, status, headers, body)
-			rescue Errno::EPIPE
+			rescue Errno::EPIPE, Errno::ECONNRESET
 				return false
 			end
 		end

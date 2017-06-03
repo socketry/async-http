@@ -29,7 +29,12 @@ task :server do
 		end
 	end
 	
+	url = "http://127.0.0.1:9294/"
+	system("ab", "-t", "2", "-c", process_count.to_s, url)
+	system("wrk", "-c", process_count.to_s, "-d", "2", "-t", process_count.to_s, url)
+	
 	pids.each do |pid|
+		Process.kill(:KILL, pid)
 		Process.wait pid
 	end
 end

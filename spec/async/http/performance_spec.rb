@@ -18,36 +18,40 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'async/http/parser'
+require 'async/http/server'
+require 'async/reactor'
 
-RSpec.describe Async::HTTP::Parser do
-	describe "simple request" do
-		let(:request) {"GET / HTTP/1.1\r\nHost: localhost\r\n\r\n"}
-		let(:io) {StringIO.new(request)}
-	
-		it "reads request" do
-			method, url, version, headers, body = subject.read_request(io)
-			
-			expect(method).to be == 'GET'
-			expect(url).to be == '/'
-			expect(version).to be == 'HTTP/1.1'
-			expect(headers).to be == {'Host' => 'localhost'}
-			expect(body).to be nil
-		end
-	end
-	
-	describe "simple request with body" do
-		let(:request) {"GET / HTTP/1.1\r\nHost: localhost\r\nContent-Length: 11\r\n\r\nHello World"}
-		let(:io) {StringIO.new(request)}
-	
-		it "reads request" do
-			method, url, version, headers, body = subject.read_request(io)
-			
-			expect(method).to be == 'GET'
-			expect(url).to be == '/'
-			expect(version).to be == 'HTTP/1.1'
-			expect(headers).to be == {'Host' => 'localhost', 'Content-Length' => '11'}
-			expect(body).to be == "Hello World"
+require 'etc'
+
+RSpec.describe Async::HTTP::Server do
+	describe "simple response" do
+		it "runs quickly" do
+			app = lambda do |env|
+				[200, {}, ["Hello World"]]
+			end
+
+			server = Async::HTTP::Server.new([
+				Async::IO::Address.tcp('127.0.0.1', 9294, reuse_port: true)
+			], app)
+
+			process_count = Etc.nprocessors
+
+			pids = process_count.times.collect do
+				fork do
+					Async::Reactor.run do
+						server.run
+					end
+				end
+			end
+
+			url = "http://127.0.0.1:9294/"
+			system("ab", "-t", "2", "-c", process_count.to_s, url)
+			system("wrk", "-c", process_count.to_s, "-d", "2", "-t", process_count.to_s, url)
+
+			pids.each do |pid|
+				Process.kill(:KILL, pid)
+				Process.wait pid
+			end
 		end
 	end
 end

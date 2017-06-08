@@ -46,8 +46,11 @@ module Async
 					puts "Connecting to #{address} on process #{Process.pid}"
 					
 					address.connect do |peer|
+						stream = Async::IO::Stream.new(peer)
+						
 						# We only yield for first successful connection.
-						return yield @protocol_class.new(peer)
+						
+						return yield @protocol_class.new(stream)
 					end
 				end
 			end

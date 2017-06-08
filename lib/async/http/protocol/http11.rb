@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'async/io/line_stream'
+require 'async/io/protocol/line'
 
 require_relative 'request'
 require_relative 'response'
@@ -27,12 +27,14 @@ module Async
 	module HTTP
 		module Protocol
 			# Implements basic HTTP/1.1 request/response.
-			class HTTP11 < IO::LineStream
+			class HTTP11 < Async::IO::Protocol::Line
 				HTTP_CONTENT_LENGTH = 'HTTP_CONTENT_LENGTH'.freeze
 				HTTP_TRANSFER_ENCODING = 'HTTP_TRANSFER_ENCODING'.freeze
 				
-				def initialize(io, block_size: 1024*4, **options)
-					super(io, eol: "\r\n", block_size: block_size, **options)
+				CRLF = "\r\n".freeze
+				
+				def initialize(stream)
+					super(stream, CRLF)
 				end
 				
 				HTTP_CONNECTION = 'HTTP_CONNECTION'.freeze
@@ -45,35 +47,75 @@ module Async
 				
 				# Server loop.
 				def receive_requests
-					while request = Request.new(*self.read_request)
+					while request = Request.new(*read_request)
 						status, headers, body = yield request
 						
 						write_response(request.version, status, headers, body)
 						
-						flush
-						
 						break unless keep_alive?(request.headers) && keep_alive?(headers)
 					end
+					
+				rescue EOFError, Errno::ECONNRESET
+					return nil
 				end
 				
 				# Client request.
 				def send_request(method, path, headers, body = [])
 					write_request(method, path, VERSION, headers, body)
 					
-					flush
-					
 					return Response.new(*read_response)
+				
+				rescue EOFError
+					return nil
 				end
+				
+				def write_request(method, path, version, headers, body)
+					@stream.write("#{method} #{path} #{version}\r\n")
+					write_headers(headers)
+					write_body(body)
+					
+					@stream.flush
+					
+					return true
+				end
+				
+				def read_response
+					version, status, reason = read_line.split(/\s+/, 3)
+					headers = read_headers
+					body = read_body(headers)
+					
+					return version, Integer(status), reason, headers, body
+				end
+				
+				def read_request
+					method, path, version = read_line.split(/\s+/, 3)
+					headers = read_headers
+					body = read_body(headers)
+					
+					return method, path, version, headers, body
+				end
+				
+				def write_response(version, status, headers, body)
+					@stream.write("#{version} #{status}\r\n")
+					write_headers(headers)
+					write_body(body)
+					
+					@stream.flush
+					
+					return true
+				end
+				
+				protected
 				
 				def write_headers(headers)
 					headers.each do |name, value|
-						self.write("#{name}: #{value}\r\n")
+						@stream.write("#{name}: #{value}\r\n")
 					end
 				end
 				
 				def read_headers(headers = {})
 					# Parsing headers:
-					self.each do |line|
+					each_line do |line|
 						if line =~ /^([a-zA-Z\-]+):\s*(.+?)\s*$/
 							headers["HTTP_#{$1.tr('-', '_').upcase}"] = $2
 						else
@@ -86,22 +128,21 @@ module Async
 				
 				def write_body(body, chunked = true)
 					if chunked
-						self.write("Transfer-Encoding: chunked\r\n\r\n")
+						@stream.write("Transfer-Encoding: chunked\r\n\r\n")
 						
 						body.each do |chunk|
 							next if chunk.size == 0
 							
-							self.write("#{chunk.size.to_s(16).upcase}\r\n")
-							self.write(chunk)
-							self.write("\r\n")
+							@stream.write("#{chunk.size.to_s(16).upcase}\r\n")
+							@stream.write(chunk)
+							@stream.write(CRLF)
 						end
 						
-						self.write("0\r\n\r\n")
+						@stream.write("0\r\n\r\n")
 					else
-						buffer = body.join
-						self.write("Content-Length: #{buffer.bytesize}\r\n\r\n")
-						self.write(buffer)
-						self.write("\r\n")
+						@stream.write("Content-Length: #{buffer.bytesize}\r\n\r\n")
+						@stream.write(buffer.join)
+						@stream.write(CRLF)
 					end
 				end
 				
@@ -110,61 +151,22 @@ module Async
 						buffer = Async::IO::BinaryString.new
 						
 						while true
-							size = self.read_line.to_i(16)
+							size = read_line.to_i(16)
 							
 							if size == 0
-								self.read_line
+								read_line
 								break
 							end
 							
-							buffer << self.read(size)
-							self.read_line
+							buffer << @stream.read(size)
+							
+							read_line # Consume the trailing CRLF
 						end
 						
 						return buffer
 					elsif content_length = headers[HTTP_CONTENT_LENGTH]
-						return self.read(Integer(content_length))
+						return @stream.read(Integer(content_length))
 					end
-				end
-				
-				def write_request(method, path, version, headers, body)
-					self.write("#{method} #{path} #{version}\r\n")
-					
-					write_headers(headers)
-					
-					write_body(body)
-					
-					return true
-				end
-				
-				def read_response
-					version, status, reason = self.read_line.split(/\s+/, 3)
-					
-					headers = read_headers
-					
-					body = read_body(headers)
-					
-					return version, Integer(status), reason, headers, body
-				end
-				
-				def read_request
-					method, path, version = self.read_line.split(/\s+/, 3)
-					
-					headers = read_headers
-					
-					body = read_body(headers)
-					
-					return method, path, version, headers, body
-				end
-				
-				def write_response(version, status, headers, body)
-					self.write "#{version} #{status}\r\n"
-					
-					write_headers(headers)
-					
-					write_body(body)
-					
-					return true
 				end
 			end
 		end

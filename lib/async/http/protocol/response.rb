@@ -18,40 +18,27 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'async/http/server'
-require 'async/reactor'
-
-require 'etc'
-
-RSpec.describe Async::HTTP::Server do
-	describe "simple response" do
-		it "runs quickly" do
-			app = lambda do |env|
-				[200, {}, ["Hello World"]]
-			end
-
-			server = Async::HTTP::Server.new([
-				Async::IO::Address.tcp('127.0.0.1', 9294, reuse_port: true)
-			], app)
-
-			process_count = Etc.nprocessors
-
-			pids = process_count.times.collect do
-				fork do
-					Async::Reactor.run do
-						server.run
-					end
+module Async
+	module HTTP
+		module Protocol
+			class Response < Struct.new(:version, :status, :reason, :headers, :body)
+				alias env headers
+				
+				def continue?
+					status == 100
 				end
-			end
-
-			url = "http://127.0.0.1:9294/"
-			
-			connections = process_count
-			system("wrk", "-c", connections.to_s, "-d", "2", "-t", connections.to_s, url)
-
-			pids.each do |pid|
-				Process.kill(:KILL, pid)
-				Process.wait pid
+				
+				def success?
+					status >= 200 && status < 300
+				end
+				
+				def redirection?
+					status >= 300 && status < 400
+				end
+				
+				def failure?
+					status >= 400 && status < 600
+				end
 			end
 		end
 	end

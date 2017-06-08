@@ -18,38 +18,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'async/http/protocol'
-
-RSpec.describe Async::HTTP::Protocol do
-	subject {described_class.new(io)}
-	
-	describe "simple request" do
-		let(:request) {"GET / HTTP/1.1\r\nHost: localhost\r\n\r\n"}
-		let(:io) {StringIO.new(request)}
-	
-		it "reads request" do
-			method, url, version, headers, body = subject.read_request
-			
-			expect(method).to be == 'GET'
-			expect(url).to be == '/'
-			expect(version).to be == 'HTTP/1.1'
-			expect(headers).to be == {'HTTP_HOST' => 'localhost'}
-			expect(body).to be nil
-		end
-	end
-	
-	describe "simple request with body" do
-		let(:request) {"GET / HTTP/1.1\r\nHost: localhost\r\nContent-Length: 11\r\n\r\nHello World"}
-		let(:io) {StringIO.new(request)}
-	
-		it "reads request" do
-			method, url, version, headers, body = subject.read_request
-			
-			expect(method).to be == 'GET'
-			expect(url).to be == '/'
-			expect(version).to be == 'HTTP/1.1'
-			expect(headers).to be == {'HTTP_HOST' => 'localhost', 'HTTP_CONTENT_LENGTH' => '11'}
-			expect(body).to be == "Hello World"
+module Async
+	module HTTP
+		module Protocol
+			class Request < Struct.new(:method, :path, :version, :headers, :body)
+				alias env headers
+			end
 		end
 	end
 end

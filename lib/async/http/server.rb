@@ -20,14 +20,16 @@
 
 require 'async/io/address'
 
-require_relative 'session'
+require_relative 'protocol'
 
 module Async
 	module HTTP
 		class Server
-			def initialize(addresses, app)
+			def initialize(addresses, app, protocol_class = Protocol::HTTP11)
 				@addresses = addresses
 				@app = app
+				
+				@protocol_class = protocol_class
 			end
 			
 			def run
@@ -35,21 +37,11 @@ module Async
 					puts "Binding to #{address} on process #{Process.pid}"
 					
 					address.accept do |peer|
-						session = Session.new(peer)
+						protocol = @protocol_class.new(peer)
 						# puts "Opening session on child pid #{Process.pid}"
 						
-						while request = session.read_request
-							# puts "Got request: #{request.inspect}"
-							
-							response = @app.call(request.env)
-							
-							# puts "Sending response: #{response.inspect}"
-							
-							session.write_response(request, *response)
-							
-							# puts "Keep alive?: #{request.keep_alive?}"
-							
-							break unless request.keep_alive?
+						protocol.receive_requests do |request|
+							@app.call(request.env)
 						end
 						
 						# puts "Closing session"

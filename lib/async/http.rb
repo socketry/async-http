@@ -19,9 +19,3 @@
 # THE SOFTWARE.
 
 require "async/http/version"
-
-module Async
-	module HTTP
-		# Your code goes here...
-	end
-end

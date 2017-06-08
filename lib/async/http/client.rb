@@ -18,63 +18,38 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'async/io/stream'
+require 'async/io/address'
 
 require_relative 'protocol'
 
 module Async
 	module HTTP
-		class Request < Struct.new(:method, :url, :version, :headers, :body)
-			HTTP_1_0 = 'HTTP/1.0'.freeze
-			HTTP_1_1 = 'HTTP/1.1'.freeze
-			
-			HTTP_CONNECTION = 'HTTP_CONNECTION'.freeze
-			KEEP_ALIVE = 'keep-alive'.freeze
-			CLOSE = 'close'.freeze
-			
-			def env
-				self.headers
+		class Client
+			def initialize(addresses, protocol_class = Protocol::HTTP11)
+				@addresses = addresses
+				
+				@protocol_class = protocol_class
 			end
 			
-			def transfer_encoding?
-				version != HTTP_1_0
-			end
+			GET = 'GET'.freeze
 			
-			def keep_alive?
-				case self.headers[HTTP_CONNECTION]
-				when CLOSE
-					return false
-				when KEEP_ALIVE
-					return true
-				else
-					# HTTP/1.0 defaults to Connection: close unless otherwise specified.
-					# HTTP/1.1 defaults to Connection: keep-alive unless otherwise specified.
-					version != HTTP_1_0
+			def get(path, headers = {})
+				connect do |protocol|
+					protocol.send_request(GET, path, headers)
 				end
 			end
-		end
-		
-		class Session
-			CRLF = "\r\n".freeze
 			
-			def initialize(peer)
-				@stream = Async::IO::Stream.new(peer, block_size: 1024*4, eol: CRLF)
-				
-				@protocol = Protocol.new(@stream)
-			end
+			private
 			
-			attr :stream
-			
-			def read_request
-				Request.new(*@protocol.read_request)
-			rescue EOFError, Errno::ECONNRESET
-				return nil
-			end
-			
-			def write_response(request, status, headers, body)
-				@protocol.write_response(request, status, headers, body)
-			rescue Errno::EPIPE, Errno::ECONNRESET
-				return false
+			def connect
+				Async::IO::Address.each(@addresses) do |address|
+					puts "Connecting to #{address} on process #{Process.pid}"
+					
+					address.connect do |peer|
+						# We only yield for first successful connection.
+						return yield @protocol_class.new(peer)
+					end
+				end
 			end
 		end
 	end

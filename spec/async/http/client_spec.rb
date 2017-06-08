@@ -19,40 +19,31 @@
 # THE SOFTWARE.
 
 require 'async/http/server'
+require 'async/http/client'
 require 'async/reactor'
 
-require 'etc'
+RSpec.describe Async::HTTP::Client do
+	let(:server_addresses) {[
+		Async::IO::Address.tcp('127.0.0.1', 9294, reuse_port: true)
+	]}
+	
+	it "client can get resource" do
+		app = lambda do |env|
+			[200, {}, ["Hello World"]]
+		end
 
-RSpec.describe Async::HTTP::Server do
-	describe "simple response" do
-		it "runs quickly" do
-			app = lambda do |env|
-				[200, {}, ["Hello World"]]
+		server = Async::HTTP::Server.new(server_addresses, app)
+		client = Async::HTTP::Client.new(server_addresses)
+		
+		Async::Reactor.run do |task|
+			server_task = task.async do
+				server.run
 			end
-
-			server = Async::HTTP::Server.new([
-				Async::IO::Address.tcp('127.0.0.1', 9294, reuse_port: true)
-			], app)
-
-			process_count = Etc.nprocessors
-
-			pids = process_count.times.collect do
-				fork do
-					Async::Reactor.run do
-						server.run
-					end
-				end
-			end
-
-			url = "http://127.0.0.1:9294/"
 			
-			connections = process_count
-			system("wrk", "-c", connections.to_s, "-d", "2", "-t", connections.to_s, url)
-
-			pids.each do |pid|
-				Process.kill(:KILL, pid)
-				Process.wait pid
-			end
+			response = client.get("/", {})
+			
+			expect(response).to be_success
+			server_task.stop
 		end
 	end
 end

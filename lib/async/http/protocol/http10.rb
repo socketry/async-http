@@ -18,39 +18,50 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'async/io/address'
+require_relative 'http11'
 
-require_relative 'protocol'
+require_relative 'request'
+require_relative 'response'
 
 module Async
 	module HTTP
-		class Client
-			def initialize(addresses, protocol_class = Protocol::HTTP11)
-				@addresses = addresses
+		module Protocol
+			# Implements basic HTTP/1.1 request/response.
+			class HTTP10 < HTTP11
+				VERSION = "HTTP/1.0".freeze
 				
-				@protocol_class = protocol_class
-			end
-			
-			GET = 'GET'.freeze
-			
-			def get(path, headers = {})
-				connect do |protocol|
-					protocol.send_request(GET, path, headers)
+				def version
+					VERSION
 				end
-			end
-			
-			private
-			
-			def connect
-				Async::IO::Address.each(@addresses) do |address|
-					# puts "Connecting to #{address} on process #{Process.pid}"
+				
+				def keep_alive?(headers)
+					headers[HTTP_CONNECTION] == KEEP_ALIVE
+				end
+				
+				# Server loop.
+				def receive_requests
+					while request = Request.new(*self.read_request)
+						status, headers, body = yield request
+						
+						write_response(request.version, status, headers, body)
+						
+						break unless keep_alive?(request.headers) && keep_alive?(headers)
+					end
+				end
+				
+				def write_body(body, chunked = true)
+					buffer = body.join
 					
-					address.connect do |peer|
-						stream = Async::IO::Stream.new(peer)
-						
-						# We only yield for first successful connection.
-						
-						return yield @protocol_class.new(stream)
+					@stream.write("Content-Length: #{buffer.bytesize}\r\n\r\n")
+					@stream.write(buffer)
+					@stream.write("\r\n")
+				end
+				
+				def read_body(headers)
+					if content_length = headers[HTTP_CONTENT_LENGTH]
+						return @stream.read(Integer(content_length))
+					# elsif !keep_alive?(headers)
+					# 	return @stream.read
 					end
 				end
 			end

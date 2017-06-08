@@ -41,6 +41,12 @@ module Async
 				KEEP_ALIVE = 'keep-alive'.freeze
 				CLOSE = 'close'.freeze
 				
+				VERSION = "HTTP/1.1".freeze
+				
+				def version
+					VERSION
+				end
+				
 				def keep_alive?(headers)
 					headers[HTTP_CONNECTION] != CLOSE
 				end
@@ -61,7 +67,7 @@ module Async
 				
 				# Client request.
 				def send_request(method, path, headers, body = [])
-					write_request(method, path, VERSION, headers, body)
+					write_request(method, path, version, headers, body)
 					
 					return Response.new(*read_response)
 				
@@ -140,8 +146,9 @@ module Async
 						
 						@stream.write("0\r\n\r\n")
 					else
-						@stream.write("Content-Length: #{buffer.bytesize}\r\n\r\n")
-						@stream.write(buffer.join)
+						chunk = body.join
+						@stream.write("Content-Length: #{chunk.bytesize}\r\n\r\n")
+						@stream.write(chunk)
 						@stream.write(CRLF)
 					end
 				end

@@ -25,7 +25,7 @@ require_relative 'protocol'
 module Async
 	module HTTP
 		class Server
-			def initialize(addresses, app, protocol_class = Protocol::HTTP11)
+			def initialize(addresses, app, protocol_class = Protocol::HTTP1x)
 				@addresses = addresses
 				@app = app
 				
@@ -37,7 +37,7 @@ module Async
 					puts "Binding to #{address} on process #{Process.pid}"
 					
 					address.accept do |peer|
-						stream = Async::IO::Stream.new(peer)
+						stream = Async::IO::Stream.new(peer, block_size: 1024*2)
 						
 						protocol = @protocol_class.new(stream)
 						

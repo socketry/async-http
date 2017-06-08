@@ -18,40 +18,46 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'async/io/address'
-
-require_relative 'protocol'
+require_relative 'http10'
+require_relative 'http11'
 
 module Async
 	module HTTP
-		class Client
-			def initialize(addresses, protocol_class = Protocol::HTTP11)
-				@addresses = addresses
+		module Protocol
+			# A server that supports both HTTP1.0 and HTTP1.1 semantics by detecting the version of the request.
+			class HTTP1x < Async::IO::Protocol::Line
+				HANDLERS = {
+					"HTTP/1.0" => HTTP10,
+					"HTTP/1.1" => HTTP11,
+				}
 				
-				@protocol_class = protocol_class
-			end
-			
-			GET = 'GET'.freeze
-			
-			def get(path, headers = {})
-				connect do |protocol|
-					protocol.send_request(GET, path, headers)
-				end
-			end
-			
-			private
-			
-			def connect
-				Async::IO::Address.each(@addresses) do |address|
-					# puts "Connecting to #{address} on process #{Process.pid}"
+				def initialize(stream, handlers: HANDLERS)
+					super(stream, HTTP11::CRLF)
 					
-					address.connect do |peer|
-						stream = Async::IO::Stream.new(peer)
-						
-						# We only yield for first successful connection.
-						
-						return yield @protocol_class.new(stream)
+					@handlers = handlers
+					
+					@handler = nil
+				end
+				
+				def create_handler(version)
+					if klass = @handlers[version]
+						klass.new(@stream)
+					else
+						raise RuntimeError, "Unsupported protocol version #{version}"
 					end
+				end
+				
+				def receive_requests(&block)
+					method, path, version = self.peek_line.split(/\s+/, 3)
+					
+					create_handler(version).receive_requests(&block)
+					
+				rescue EOFError, Errno::ECONNRESET
+					return nil
+				end
+				
+				def send_request(request, &block)
+					create_handler(request.version).send_request(request, &block)
 				end
 			end
 		end

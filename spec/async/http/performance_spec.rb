@@ -22,33 +22,61 @@ require 'async/http/server'
 require 'async/reactor'
 
 require 'etc'
+require 'benchmark'
 
 RSpec.describe Async::HTTP::Server do
+	let(:server_addresses) {[
+		Async::IO::Address.tcp('127.0.0.1', 9294, reuse_port: true)
+	]}
+	
+	let(:server_url) {"http://127.0.0.1:9294/"}
+	
+	let(:concurrency) {Etc.nprocessors}
+	
+	# TODO making this higher causes issues in connect - what's the issue?
+	let(:repeats) {100}
+	
+	let(:client) {Async::HTTP::Client.new(server_addresses)}
+	
 	describe "simple response" do
 		it "runs quickly" do
 			app = lambda do |env|
 				[200, {}, ["Hello World"]]
 			end
 
-			server = Async::HTTP::Server.new([
-				Async::IO::Address.tcp('127.0.0.1', 9294, reuse_port: true)
-			], app)
+			server = Async::HTTP::Server.new(server_addresses, app)
 
-			process_count = Etc.nprocessors
-
-			pids = process_count.times.collect do
+			pids = concurrency.times.collect do
 				fork do
 					Async::Reactor.run do
 						server.run
 					end
 				end
 			end
-
-			url = "http://127.0.0.1:9294/"
 			
-			connections = process_count
-			system("wrk", "-c", connections.to_s, "-d", "2", "-t", connections.to_s, url)
-
+			duration = Benchmark.realtime do
+				Async::Reactor.run do |task|
+					concurrency.times do
+						task.async do
+							repeats.times do
+								response = client.get("/")
+								expect(response).to be_success
+							end
+						end
+					end
+				end
+			end
+			
+			puts "#{concurrency*repeats} requests in #{duration}s: #{(concurrency*repeats)/duration}req/s"
+			
+			if ab = `which ab`.chomp!
+				system(ab, "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, "-t", "10", server_url)
+			end
+			
+			if wrk = `which wrk`.chomp!
+				system(wrk, "-c", concurrency.to_s, "-d", "10", "-t", concurrency.to_s, server_url)
+			end
+			
 			pids.each do |pid|
 				Process.kill(:KILL, pid)
 				Process.wait pid

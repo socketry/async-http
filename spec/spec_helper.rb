@@ -1,3 +1,21 @@
+
+if ENV['COVERAGE'] || ENV['TRAVIS']
+	begin
+		require 'simplecov'
+		
+		SimpleCov.start do
+			add_filter "/spec/"
+		end
+		
+		if ENV['TRAVIS']
+			require 'coveralls'
+			Coveralls.wear!
+		end
+	rescue LoadError
+		warn "Could not load simplecov: #{$!}"
+	end
+end
+
 require "bundler/setup"
 require "async/http"
 

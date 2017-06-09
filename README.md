@@ -8,6 +8,9 @@ A multi-process, multi-fiber HTTP client/server built on top of [async] and [asy
 [![Code Climate](https://codeclimate.com/github/socketry/async-http.svg)](https://codeclimate.com/github/socketry/async-http)
 [![Coverage Status](https://coveralls.io/repos/socketry/async-http/badge.svg)](https://coveralls.io/r/socketry/async-http)
 
+[async]: https://github.com/socketry/async
+[async-io]: https://github.com/socketry/async-io
+
 ## Installation
 
 Add this line to your application's Gemfile:

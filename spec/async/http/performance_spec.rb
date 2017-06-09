@@ -31,7 +31,7 @@ RSpec.describe Async::HTTP::Server do
 	
 	let(:server_url) {"http://127.0.0.1:9294/"}
 	
-	let(:concurrency) {Etc.nprocessors}
+	let(:concurrency) {Etc.nprocessors rescue 2}
 	
 	# TODO making this higher causes issues in connect - what's the issue?
 	let(:repeats) {100}

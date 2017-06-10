@@ -30,12 +30,20 @@ module Falcon
 		
 		def handle_request(request, peer, address)
 			request_path, query_string = request.path.split('?', 2)
+			server_name, server_port = request.headers['HTTP_HOST'].split(':', 2)
+			
+			input = StringIO.new(request.body || '')
+			input.set_encoding(Encoding::BINARY)
 			
 			env = {
-				'rack.version' => '2.0.0',
+				'rack.version' => [2, 0, 0],
 				
-				'rack.input' => request,
+				'rack.input' => input,
 				'rack.errors' => $stderr,
+				
+				'rack.multithread' => false,
+				'rack.multiprocess' => true,
+				'rack.run_once' => false,
 				
 				# The HTTP request method, such as “GET” or “POST”. This cannot ever be an empty string, and so is always required.
 				'REQUEST_METHOD' => request.method,
@@ -47,19 +55,19 @@ module Falcon
 				'PATH_INFO' => request_path,
 				
 				# The portion of the request URL that follows the ?, if any. May be empty, but is always required!
-				'QUERY_STRING' => query_string,
+				'QUERY_STRING' => query_string || '',
 				
 				# The server protocol, e.g. HTTP/1.1
 				'SERVER_PROTOCOL' => request.version,
+				'rack.url_scheme' => 'http',
 				
-				# 'SERVER_NAME' => address.name,
-				# 
-				# 'SERVER_PORT' => address.
+				'SERVER_NAME' => server_name,
+				'SERVER_PORT' => server_port,
 			}.merge(request.headers)
 			
 			@app.call(env)
 		rescue
-			[500, {}, [$!.inspect]]
+			[500, {'Content-Type' => 'text/plain'}, [$!.inspect, "\n", $!.backtrace.join("\n\t")]]
 		end
 	end
 end

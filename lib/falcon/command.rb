@@ -62,9 +62,12 @@ module Falcon
 					end
 				end
 				
+				sleep
+			ensure
 				pids.each do |pid|
-					Process.wait pid
-				end
+					Process.kill(:TERM, pid) rescue nil
+					Process.wait(pid)
+				end if pids
 			end
 		end
 		

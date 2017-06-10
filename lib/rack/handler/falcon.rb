@@ -7,10 +7,22 @@ module Rack
 	module Handler
 		module Falcon
 			def self.run(app, **options)
-				Async::Reactor.run
-					server = Falcon::Server.new(app, **options)
-					
-					server.run
+				command = ::Falcon::Command::Serve.new([])
+				
+				process_count = command.options[:process]
+				
+				pids = process_count.times.collect do
+					fork do
+						puts "Serving from pid #{Process.pid}"
+						command.run(app, options)
+					end
+				end
+				
+				sleep
+			ensure
+				pids.each do |pid|
+					Process.kill(:TERM, pid) rescue nil
+					Process.wait(pid)
 				end
 			end
 			

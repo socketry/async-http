@@ -22,8 +22,6 @@ module Async
 	module HTTP
 		module Protocol
 			class Response < Struct.new(:version, :status, :reason, :headers, :body)
-				alias env headers
-				
 				def continue?
 					status == 100
 				end

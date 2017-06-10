@@ -22,7 +22,9 @@ module Async
 	module HTTP
 		module Protocol
 			class Request < Struct.new(:method, :path, :version, :headers, :body)
-				alias env headers
+				def read
+					@body
+				end
 			end
 		end
 	end

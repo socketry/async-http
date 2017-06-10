@@ -139,7 +139,7 @@ module Async
 						body.each do |chunk|
 							next if chunk.size == 0
 							
-							@stream.write("#{chunk.size.to_s(16).upcase}\r\n")
+							@stream.write("#{chunk.bytesize.to_s(16).upcase}\r\n")
 							@stream.write(chunk)
 							@stream.write(CRLF)
 						end

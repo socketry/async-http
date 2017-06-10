@@ -32,8 +32,6 @@ module Async
 			
 			def handle_request(request, peer, address)
 				[200, {}, []]
-			rescue
-				[500, {}, [$!.inspect]]
 			end
 			
 			def run
@@ -47,15 +45,15 @@ module Async
 						
 						# puts "Opening session on child pid #{Process.pid}"
 						
-						# hijack = catch(:hijack) do
-						protocol.receive_requests do |request|
-							handle_request(request, peer, address)
+						hijack = catch(:hijack) do
+							protocol.receive_requests do |request|
+								handle_request(request, peer, address)
+							end
 						end
-						# end
-						# 
-						# if hijack
-						# 	hijack.call
-						# end
+						
+						if hijack
+							hijack.call
+						end
 						
 						# puts "Closing session"
 					end

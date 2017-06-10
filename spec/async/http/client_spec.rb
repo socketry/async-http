@@ -32,7 +32,7 @@ RSpec.describe Async::HTTP::Client do
 			[200, {}, ["Hello World"]]
 		end
 
-		server = Async::HTTP::Server.new(server_addresses, app)
+		server = Async::HTTP::Server.new(server_addresses)
 		client = Async::HTTP::Client.new(server_addresses)
 		
 		Async::Reactor.run do |task|

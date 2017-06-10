@@ -21,9 +21,9 @@
 require 'async/http/server'
 
 module Falcon
-	class Server
+	class Server < Async::HTTP::Server
 		def initialize(app, *args)
-			super(args)
+			super(*args)
 			
 			@app = app
 		end
@@ -55,7 +55,7 @@ module Falcon
 				# 'SERVER_NAME' => address.name,
 				# 
 				# 'SERVER_PORT' => address.
-			}.merge(headers)
+			}.merge(request.headers)
 			
 			@app.call(env)
 		rescue

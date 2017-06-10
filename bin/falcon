@@ -20,6 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'falcon'
+require_relative '../lib/falcon'
 
-Falcon::Command.parse(ARGV).invoke
+begin
+	Falcon::Command.parse(ARGV).invoke
+rescue Interrupt
+end

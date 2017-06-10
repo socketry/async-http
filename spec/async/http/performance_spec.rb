@@ -34,7 +34,7 @@ RSpec.describe Async::HTTP::Server do
 	let(:concurrency) {Etc.nprocessors rescue 2}
 	
 	# TODO making this higher causes issues in connect - what's the issue?
-	let(:repeats) {100}
+	let(:repeats) {1000}
 	
 	let(:client) {Async::HTTP::Client.new(server_addresses)}
 	
@@ -44,7 +44,7 @@ RSpec.describe Async::HTTP::Server do
 				[200, {}, ["Hello World"]]
 			end
 
-			server = Async::HTTP::Server.new(server_addresses, app)
+			server = Async::HTTP::Server.new(server_addresses)
 
 			pids = concurrency.times.collect do
 				fork do
@@ -70,7 +70,7 @@ RSpec.describe Async::HTTP::Server do
 			puts "#{concurrency*repeats} requests in #{duration}s: #{(concurrency*repeats)/duration}req/s"
 			
 			if ab = `which ab`.chomp!
-				system(ab, "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, "-t", "10", server_url)
+				system(ab, "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, server_url)
 			end
 			
 			if wrk = `which wrk`.chomp!

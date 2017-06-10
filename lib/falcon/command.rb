@@ -18,7 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'async/http/server'
+require_relative 'server'
+
 require 'async/reactor'
 
 require 'samovar'
@@ -36,25 +37,33 @@ module Falcon
 		class Serve < Samovar::Command
 			options do
 				option '-c/--config <path>', "Rackup configuration file to load", default: 'config.ru'
-				option '-p <count>', "Number of processes to start", default: Etc.nprocessors
+				option '-p/--process <count>', "Number of processes to start", default: Etc.nprocessors, type: Integer
 				
 				option '-h/--host <address>', "Bind to the given hostname/address", default: "localhost"
 				option '-p/--port <number>', "Listen on the given port", default: 9292, type: Integer
 			end
 			
+			def run(app, options)
+				server = Falcon::Server.new(app, [
+					Async::IO::Address.tcp(@options[:host], @options[:port], reuse_port: true)
+				])
+				
+				Async::Reactor.run do
+					server.run
+				end
+			end
+			
 			def invoke
 				app, options = Rack::Builder.parse_file(@options[:config])
 				
-				server = Async::HTTP::Server.new([
-					Async::IO::Address.tcp(@options[:host], @options[:port])
-				], app)
-				
-				trap(:INT) do
-					reactor.stop
+				pids = @options[:process].times.collect do
+					fork do
+						self.run(app, options)
+					end
 				end
 				
-				reactor = Async::Reactor.run do
-					server.run
+				pids.each do |pid|
+					Process.wait pid
 				end
 			end
 		end

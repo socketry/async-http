@@ -19,6 +19,7 @@
 # THE SOFTWARE.
 
 require 'async/http/server'
+require 'async/http/client'
 require 'async/reactor'
 
 require 'etc'

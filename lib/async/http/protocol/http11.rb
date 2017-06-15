@@ -133,7 +133,7 @@ module Async
 				end
 				
 				def write_body(body, chunked = true)
-					if chunked
+					if chunked && body.any?
 						@stream.write("Transfer-Encoding: chunked\r\n\r\n")
 						
 						body.each do |chunk|
@@ -149,7 +149,6 @@ module Async
 						chunk = body.join
 						@stream.write("Content-Length: #{chunk.bytesize}\r\n\r\n")
 						@stream.write(chunk)
-						@stream.write(CRLF)
 					end
 				end
 				

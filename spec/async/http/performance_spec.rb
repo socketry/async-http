@@ -35,16 +35,12 @@ RSpec.describe Async::HTTP::Server do
 	let(:concurrency) {Etc.nprocessors rescue 2}
 	
 	# TODO making this higher causes issues in connect - what's the issue?
-	let(:repeats) {1000}
+	let(:repeats) {10000}
 	
 	let(:client) {Async::HTTP::Client.new(server_addresses)}
 	
 	describe "simple response" do
 		it "runs quickly" do
-			app = lambda do |env|
-				[200, {}, ["Hello World"]]
-			end
-
 			server = Async::HTTP::Server.new(server_addresses)
 
 			pids = concurrency.times.collect do
@@ -55,20 +51,20 @@ RSpec.describe Async::HTTP::Server do
 				end
 			end
 			
-			duration = Benchmark.realtime do
-				Async::Reactor.run do |task|
-					concurrency.times do
-						task.async do
-							repeats.times do
-								response = client.get("/")
-								expect(response).to be_success
-							end
-						end
-					end
-				end
-			end
-			
-			puts "#{concurrency*repeats} requests in #{duration}s: #{(concurrency*repeats)/duration}req/s"
+			# duration = Benchmark.realtime do
+			# 	Async::Reactor.run do |task|
+			# 		concurrency.times do
+			# 			task.async do
+			# 				repeats.times do
+			# 					response = client.get("/")
+			# 					expect(response).to be_success
+			# 				end
+			# 			end
+			# 		end
+			# 	end
+			# end
+			# 	
+			# puts "#{concurrency*repeats} requests in #{duration}s: #{(concurrency*repeats)/duration}req/s"
 			
 			if ab = `which ab`.chomp!
 				system(ab, "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, server_url)

@@ -39,7 +39,7 @@ module Async
 					# puts "Binding to #{address} on process #{Process.pid}"
 					
 					address.accept do |peer|
-						stream = Async::IO::Stream.new(peer, block_size: 1024*4)
+						stream = Async::IO::Stream.new(peer)
 						
 						protocol = @protocol_class.new(stream)
 						
@@ -50,11 +50,11 @@ module Async
 								handle_request(request, peer, address)
 							end
 						end
-						
+
 						if hijack
 							hijack.call
 						end
-						
+
 						# puts "Closing session"
 					end
 				end

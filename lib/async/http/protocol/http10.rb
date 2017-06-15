@@ -51,10 +51,9 @@ module Async
 				
 				def write_body(body, chunked = true)
 					buffer = body.join
-					
+						
 					@stream.write("Content-Length: #{buffer.bytesize}\r\n\r\n")
 					@stream.write(buffer)
-					@stream.write("\r\n")
 				end
 				
 				def read_body(headers)

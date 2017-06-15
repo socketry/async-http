@@ -50,7 +50,8 @@ module Async
 				end
 				
 				def write_body(body, chunked = true)
-					buffer = body.join
+					buffer = String.new
+					body.each{|chunk| buffer << chunk}
 						
 					@stream.write("Content-Length: #{buffer.bytesize}\r\n\r\n")
 					@stream.write(buffer)

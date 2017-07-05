@@ -34,29 +34,35 @@ module Async
 				[200, {}, []]
 			end
 			
+			def accept(peer, address)
+				stream = Async::IO::Stream.new(peer)
+				
+				protocol = @protocol_class.new(stream)
+				
+				# puts "Opening session on child pid #{Process.pid}"
+				
+				hijack = catch(:hijack) do
+					protocol.receive_requests do |request|
+						handle_request(request, peer, address)
+					end
+				end
+
+				if hijack
+					hijack.call
+				end
+
+				# puts "Closing session"
+				
+			rescue EOFError, Errno::ECONNRESET, Errno::EPIPE
+				# Sometimes client will disconnect without completing a result or reading the entire buffer.
+				return nil
+			end
+			
 			def run
 				Async::IO::Address.each(@addresses) do |address|
 					# puts "Binding to #{address} on process #{Process.pid}"
 					
-					address.accept do |peer|
-						stream = Async::IO::Stream.new(peer)
-						
-						protocol = @protocol_class.new(stream)
-						
-						# puts "Opening session on child pid #{Process.pid}"
-						
-						hijack = catch(:hijack) do
-							protocol.receive_requests do |request|
-								handle_request(request, peer, address)
-							end
-						end
-
-						if hijack
-							hijack.call
-						end
-
-						# puts "Closing session"
-					end
+					address.accept(&self.method(:accept))
 				end
 			end
 		end

@@ -51,9 +51,6 @@ module Async
 					method, path, version = self.peek_line.split(/\s+/, 3)
 					
 					create_handler(version).receive_requests(&block)
-					
-				rescue EOFError, Errno::ECONNRESET
-					return nil
 				end
 				
 				def send_request(request, &block)

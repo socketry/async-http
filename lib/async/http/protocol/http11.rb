@@ -60,9 +60,6 @@ module Async
 						
 						break unless keep_alive?(request.headers) && keep_alive?(headers)
 					end
-					
-				rescue EOFError, Errno::ECONNRESET
-					return nil
 				end
 				
 				# Client request.

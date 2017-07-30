@@ -18,15 +18,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'async/io/address'
+require 'async/io/endpoint'
 
 require_relative 'protocol'
 
 module Async
 	module HTTP
 		class Client
-			def initialize(addresses, protocol_class = Protocol::HTTP11)
-				@addresses = addresses
+			def initialize(endpoints, protocol_class = Protocol::HTTP11)
+				@endpoints = endpoints
 				
 				@protocol_class = protocol_class
 			end
@@ -42,10 +42,10 @@ module Async
 			private
 			
 			def connect
-				Async::IO::Address.each(@addresses) do |address|
+				Async::IO::Endpoint.each(@endpoints) do |endpoint|
 					# puts "Connecting to #{address} on process #{Process.pid}"
 					
-					address.connect do |peer|
+					endpoint.connect do |peer|
 						stream = Async::IO::Stream.new(peer)
 						
 						# We only yield for first successful connection.

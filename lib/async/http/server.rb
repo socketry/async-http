@@ -18,15 +18,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'async/io/address'
+require 'async/io/endpoint'
 
 require_relative 'protocol'
 
 module Async
 	module HTTP
 		class Server
-			def initialize(addresses, protocol_class = Protocol::HTTP1x)
-				@addresses = addresses
+			def initialize(endpoints, protocol_class = Protocol::HTTP1x)
+				@endpoints = endpoints
 				@protocol_class = protocol_class
 			end
 			
@@ -59,10 +59,10 @@ module Async
 			end
 			
 			def run
-				Async::IO::Address.each(@addresses) do |address|
-					# puts "Binding to #{address} on process #{Process.pid}"
+				Async::IO::Endpoint.each(@endpoints) do |endpoint|
+					# puts "Binding to #{endpoint} on process #{Process.pid}"
 					
-					address.accept(&self.method(:accept))
+					endpoint.accept(&self.method(:accept))
 				end
 			end
 		end

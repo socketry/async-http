@@ -24,7 +24,7 @@ require 'async/reactor'
 
 RSpec.describe Async::HTTP::Client do
 	let(:server_addresses) {[
-		Async::IO::Address.tcp('127.0.0.1', 9294, reuse_port: true)
+		Async::IO::Endpoint.tcp('127.0.0.1', 9294, reuse_port: true)
 	]}
 	
 	it "client can get resource" do

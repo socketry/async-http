@@ -52,13 +52,18 @@ module Async
 				end
 				
 				# Server loop.
-				def receive_requests
-					while request = Request.new(*read_request)
+				def receive_requests(task: Task.current)
+					while true
+						request = Request.new(*read_request)
+						
 						status, headers, body = yield request
 						
 						write_response(request.version, status, headers, body)
 						
 						break unless keep_alive?(request.headers) && keep_alive?(headers)
+						
+						# This ensures we yield at least once every iteration of the loop and allow other fibers to execute.
+						task.yield
 					end
 				end
 				

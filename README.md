@@ -40,11 +40,13 @@ server_addresses = [
 	Async::IO::Endpoint.tcp('127.0.0.1', 9294, reuse_port: true)
 ]
 
-app = lambda do |env|
-	[200, {}, ["Hello World"]]
+class Server < Async::HTTP::Server
+	def handle_request(request, peer, address)
+		[200, {}, ["Hello World"]]
+	end
 end
 
-server = Async::HTTP::Server.new(server_addresses, app)
+server = Server.new(server_addresses)
 client = Async::HTTP::Client.new(server_addresses)
 	
 Async::Reactor.run do |task|

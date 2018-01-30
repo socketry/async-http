@@ -32,10 +32,24 @@ module Async
 			end
 			
 			GET = 'GET'.freeze
+			HEAD = 'HEAD'.freeze
+			POST = 'POST'.freeze
 			
-			def get(path, headers = {})
+			def get(path, *args)
 				connect do |protocol|
-					protocol.send_request(GET, path, headers)
+					protocol.send_request(GET, path, *args)
+				end
+			end
+			
+			def head(path, *args)
+				connect do |protocol|
+					protocol.send_request(HEAD, path, *args)
+				end
+			end
+			
+			def post(path, *args)
+				connect do |protocol|
+					protocol.send_request(POST, path, *args)
 				end
 			end
 			

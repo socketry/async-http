@@ -68,7 +68,7 @@ module Async
 				end
 				
 				# Client request.
-				def send_request(method, path, headers, body = [])
+				def send_request(method, path, headers = {}, body = [])
 					write_request(method, path, version, headers, body)
 					
 					return Response.new(*read_response)

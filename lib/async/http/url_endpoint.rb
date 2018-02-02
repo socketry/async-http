@@ -18,15 +18,30 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+require 'async/io/endpoint'
+require 'async/io/ssl_socket'
+
 module Async
 	module HTTP
-		class URLEndpoint < Endpoint
+		class URLEndpoint < Async::IO::Endpoint
 			def self.parse(string, **options)
 				self.new(URI.parse(string), **options)
 			end
 			
+			def address
+				endpoint.address
+			end
+			
+			def secure?
+				['https', 'wss'].include?(specification.scheme)
+			end
+			
+			def default_port
+				secure? ? 443 : 80
+			end
+			
 			def port
-				specification.port || (specficiation.scheme == 'https' ? 443 : 80)
+				specification.port || default_port
 			end
 			
 			def hostname
@@ -34,34 +49,33 @@ module Async
 			end
 			
 			def ssl_context
-				if context = options[:ssl_context]
-					if params = self.params
-						context = context.dup
-						context.set_params(params)
-					end
-				else
-					context = ::OpenSSL::SSL::SSLContext.new
-					
-					if params = self.params
-						context.set_params(params)
-					end
+				options[:ssl_context] || ::OpenSSL::SSL::SSLContext.new.tap do |context|
+					context.set_params
 				end
-				
-				return context
 			end
 			
 			def endpoint
-				endpoint = Async::IO::Endpoint.tcp(hostname, port)
-				
-				if specification.scheme == 'https'
-					# Wrap it in SSL:
-					endpoint = Async::IO::SecureEndpoint.new(endpoint,
-						ssl_context: ssl_context,
-						hostname: self.hostname
-					)
+				unless defined? @endpoint
+					@endpoint = Async::IO::Endpoint.tcp(hostname, port)
+					
+					if secure?
+						# Wrap it in SSL:
+						@endpoint = Async::IO::SecureEndpoint.new(@endpoint,
+							ssl_context: ssl_context,
+							hostname: self.hostname
+						)
+					end
 				end
 				
-				return endpoint
+				return @endpoint
+			end
+			
+			def bind(*args, &block)
+				endpoint.bind(*args, &block)
+			end
+			
+			def connect(*args, &block)
+				endpoint.connect(*args, &block)
 			end
 		end
 	end

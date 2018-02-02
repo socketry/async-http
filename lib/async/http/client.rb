@@ -53,6 +53,12 @@ module Async
 				end
 			end
 			
+			def send_request(*args)
+				connect do |protocol|
+					protocol.send_request(*args)
+				end
+			end
+			
 			private
 			
 			def connect

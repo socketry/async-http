@@ -19,3 +19,4 @@
 # THE SOFTWARE.
 
 require_relative 'protocol/http1x'
+require_relative 'protocol/http2'

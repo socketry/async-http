@@ -28,10 +28,6 @@ RSpec.describe Async::HTTP::Client do
 	]}
 	
 	it "client can get resource" do
-		app = lambda do |env|
-			[200, {}, ["Hello World"]]
-		end
-
 		server = Async::HTTP::Server.new(server_addresses)
 		client = Async::HTTP::Client.new(server_addresses)
 		
@@ -40,7 +36,7 @@ RSpec.describe Async::HTTP::Client do
 				server.run
 			end
 			
-			response = client.get("/", {})
+			response = client.get("/")
 			
 			expect(response).to be_success
 			server_task.stop

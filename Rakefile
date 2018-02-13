@@ -5,17 +5,16 @@ RSpec::Core::RakeTask.new(:test)
 
 task :default => :test
 
+require 'async/http/protocol'
+PROTOCOL = Async::HTTP::Protocol::HTTP2
+
 task :server do
 	require 'async/reactor'
 	require 'async/http/server'
-	
-	app = lambda do |env|
-		[200, {}, ["Hello World"]]
-	end
 
 	server = Async::HTTP::Server.new([
-		Async::IO::Endpoint.tcp('127.0.0.1', 9294, reuse_port: true)
-	], app)
+		Async::IO::Endpoint.tcp('0.0.0.0', 9294, reuse_port: true)
+	], PROTOCOL)
 
 	Async::Reactor.run do
 		server.run
@@ -28,7 +27,7 @@ task :client do
 	
 	client = Async::HTTP::Client.new([
 		Async::IO::Endpoint.tcp('127.0.0.1', 9294, reuse_port: true)
-	])
+	], PROTOCOL)
 	
 	Async::Reactor.run do
 		response = client.get("/")

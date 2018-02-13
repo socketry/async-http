@@ -36,7 +36,6 @@ module Async
 			
 			def accept(peer, address)
 				stream = Async::IO::Stream.new(peer)
-				
 				protocol = @protocol_class.new(stream)
 				
 				# puts "Opening session on child pid #{Process.pid}"
@@ -50,9 +49,6 @@ module Async
 				if hijack
 					hijack.call
 				end
-
-				# puts "Closing session"
-				
 			rescue EOFError, Errno::ECONNRESET, Errno::EPIPE
 				# Sometimes client will disconnect without completing a result or reading the entire buffer.
 				return nil

@@ -33,7 +33,7 @@ module Async
 				
 				CRLF = "\r\n".freeze
 				
-				def initialize(stream)
+				def initialize(stream, mode)
 					super(stream, CRLF)
 				end
 				

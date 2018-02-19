@@ -28,13 +28,20 @@ module Async
 		module Protocol
 			# A server that supports both HTTP1.0 and HTTP1.1 semantics by detecting the version of the request.
 			class HTTP2
-				def initialize(stream)
-					@peer = stream.io
+				def initialize(stream, mode)
+					@stream = stream
 					
-					@controller = ::HTTP2::Server.new
+					case mode
+					when :server
+						@controller = ::HTTP2::Server.new
+					when :client
+						@controller = ::HTTP2::Client.new
+					else
+						raise ArgumentError.new("Unsupported mode #{mode}")
+					end
 					
 					@controller.on(:frame) do |data|
-						@peer.write data
+						@stream.io.write data
 					end
 				end
 				
@@ -47,7 +54,7 @@ module Async
 						
 						# stream.on(:active) { } # fires when stream transitions to open state
 						# stream.on(:close) { } # stream is closed by client and server
-
+						
 						stream.on(:headers) do |headers|
 							headers.each do |key, value|
 								if key == ':method'
@@ -63,14 +70,12 @@ module Async
 						stream.on(:data) do |body|
 							request.body = body
 						end
-
+						
 						stream.on(:half_close) do
 							response = yield request
 							
 							# send response
-							stream.headers(
-								':status' => response[0].to_s,
-							)
+							stream.headers(':status' => response[0].to_s)
 							
 							stream.headers(response[1]) unless response[1].empty?
 							
@@ -78,17 +83,53 @@ module Async
 								stream.data(chunk, end_stream: false)
 							end
 							
-							stream.data("")
+							stream.data("", end_stream: true)
 						end
 					end
 					
-					while data = @peer.read(1024)
+					while data = @stream.io.read(1024)
 						@controller << data
 					end
 				end
 				
-				def send_request(request, &block)
-					raise RuntimeError.new("Not implemented")
+				def send_request(method, path, headers = {}, body = [])
+					stream = @controller.new_stream
+					stream.headers({':method' => method, ':path' => path}.merge(headers), end_stream: false)
+					
+					body.each do |chunk|
+						stream.data(chunk, end_stream: false)
+					end
+					
+					stream.data("", end_stream: true)
+					
+					response = Response.new
+					response.version = "HTTP/2.0"
+					response.headers = {}
+					response.body = Async::IO::BinaryString.new
+					
+					stream.on(:headers) do |headers|
+						headers.each do |key, value|
+							if key == ':status'
+								response.status = value.to_i
+							elsif key == ':reason'
+								response.reason = value
+							else
+								response.headers[key] = value
+							end
+						end
+					end
+					
+					stream.on(:data) do |body|
+						response.body << body
+					end
+					
+					stream.on(:close) do
+						return response
+					end
+					
+					while data = @stream.io.read(1024)
+						@controller << data
+					end
 				end
 			end
 		end

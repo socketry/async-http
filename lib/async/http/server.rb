@@ -31,12 +31,12 @@ module Async
 			end
 			
 			def handle_request(request, peer, address)
-				[200, {}, []]
+				[200, {"Content-Type" => "text/plain"}, ["Hello World"]]
 			end
 			
 			def accept(peer, address)
 				stream = Async::IO::Stream.new(peer)
-				protocol = @protocol_class.new(stream)
+				protocol = @protocol_class.new(stream, :server)
 				
 				# puts "Opening session on child pid #{Process.pid}"
 				

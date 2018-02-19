@@ -18,60 +18,34 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'async/io/endpoint'
-
-require_relative 'protocol'
+require_relative 'http10'
+require_relative 'http11'
+require_relative 'http2'
 
 module Async
 	module HTTP
-		class Client
-			def initialize(endpoints, protocol_class = Protocol::HTTP11)
-				@endpoints = endpoints
+		module Protocol
+			# A server that supports both HTTP1.0 and HTTP1.1 semantics by detecting the version of the request.
+			class HTTPS
+				HANDLERS = {
+					"http/1.0" => HTTP10,
+					"http/1.1" => HTTP11,
+					"h2" => HTTP2,
+				}
 				
-				@protocol_class = protocol_class
-			end
-			
-			GET = 'GET'.freeze
-			HEAD = 'HEAD'.freeze
-			POST = 'POST'.freeze
-			
-			def get(path, *args)
-				connect do |protocol|
-					protocol.send_request(GET, path, *args)
-				end
-			end
-			
-			def head(path, *args)
-				connect do |protocol|
-					protocol.send_request(HEAD, path, *args)
-				end
-			end
-			
-			def post(path, *args)
-				connect do |protocol|
-					protocol.send_request(POST, path, *args)
-				end
-			end
-			
-			def send_request(*args)
-				connect do |protocol|
-					protocol.send_request(*args)
-				end
-			end
-			
-			private
-			
-			def connect
-				Async::IO::Endpoint.each(@endpoints) do |endpoint|
-					# puts "Connecting to #{address} on process #{Process.pid}"
+				def initialize(stream, mode, handlers: HANDLERS)
+					@handlers = handlers
 					
-					endpoint.connect do |peer|
-						stream = Async::IO::Stream.new(peer)
-						
-						# We only yield for first successful connection.
-						
-						return yield @protocol_class.new(stream, :client)
-					end
+					# alpn is my new best friend
+					@handler = @handlers[stream.io.alpn_protocol].new(stream, mode)
+				end
+				
+				def receive_requests(&block)
+					@handler.receive_requests(&block)
+				end
+				
+				def send_request(*args, &block)
+					@handler.send_request(*args, &block)
 				end
 			end
 		end

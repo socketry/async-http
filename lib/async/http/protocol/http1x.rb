@@ -31,17 +31,16 @@ module Async
 					"HTTP/1.1" => HTTP11,
 				}
 				
-				def initialize(stream, handlers: HANDLERS)
+				def initialize(stream, mode, handlers: HANDLERS)
 					super(stream, HTTP11::CRLF)
 					
+					@mode = mode
 					@handlers = handlers
-					
-					@handler = nil
 				end
 				
 				def create_handler(version)
 					if klass = @handlers[version]
-						klass.new(@stream)
+						klass.new(@stream, @mode)
 					else
 						raise RuntimeError, "Unsupported protocol version #{version}"
 					end

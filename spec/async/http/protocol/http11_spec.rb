@@ -22,8 +22,7 @@ require 'async/http/protocol/http11'
 
 RSpec.describe Async::HTTP::Protocol::HTTP11 do
 	let(:stream) {Async::IO::Stream.new(io)}
-	subject {described_class.new(stream)}
-	
+	subject {described_class.new(stream, :server)}
 	
 	describe "simple request" do
 		let(:request) {"GET / HTTP/1.1\r\nHost: localhost\r\n\r\n"}

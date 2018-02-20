@@ -26,26 +26,22 @@ module Async
 	module HTTP
 		module Protocol
 			# A server that supports both HTTP1.0 and HTTP1.1 semantics by detecting the version of the request.
-			class HTTPS
+			module HTTPS
 				HANDLERS = {
 					"http/1.0" => HTTP10,
 					"http/1.1" => HTTP11,
 					"h2" => HTTP2,
 				}
 				
-				def initialize(stream, mode, handlers: HANDLERS)
-					@handlers = handlers
+				def self.new(stream, mode)
+					# alpn_protocol is only available if openssl v1.0.2+
+					name = stream.io.alpn_protocol
 					
-					# alpn is my new best friend
-					@handler = @handlers[stream.io.alpn_protocol].new(stream, mode)
-				end
-				
-				def receive_requests(&block)
-					@handler.receive_requests(&block)
-				end
-				
-				def send_request(*args, &block)
-					@handler.send_request(*args, &block)
+					if name and protocol = HANDLERS[name]
+						return protocol.new(stream, mode)
+					else
+						return HTTP2.new(stream, mode)
+					end
 				end
 			end
 		end

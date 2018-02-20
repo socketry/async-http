@@ -15,9 +15,11 @@ RSpec.describe Async::HTTP::Server do
 		let(:server_context) do
 			OpenSSL::SSL::SSLContext.new.tap do |context|
 				context.cert = certificate
+				
 				context.alpn_select_cb = lambda do |protocols|
 					protocols.last
 				end
+				
 				context.key = key
 			end
 		end
@@ -25,7 +27,9 @@ RSpec.describe Async::HTTP::Server do
 		let(:client_context) do
 			OpenSSL::SSL::SSLContext.new.tap do |context|
 				context.cert_store = certificate_store
+				
 				context.alpn_protocols = ["http/1.0", "http/1.1", "h2"]
+				
 				context.verify_mode = OpenSSL::SSL::VERIFY_PEER
 			end
 		end

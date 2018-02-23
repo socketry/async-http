@@ -24,14 +24,14 @@ end
 task :client do
 	require 'async/reactor'
 	require 'async/http/client'
-	
+
 	client = Async::HTTP::Client.new([
 		Async::IO::Endpoint.tcp('127.0.0.1', 9294, reuse_port: true)
 	], PROTOCOL)
-	
+
 	Async::Reactor.run do
 		response = client.get("/")
-		
+
 		puts response.inspect
 	end
 end
@@ -39,7 +39,7 @@ end
 task :wrk do
 	require 'async/reactor'
 	require 'async/http/server'
-	
+
 	app = lambda do |env|
 		[200, {}, ["Hello World"]]
 	end
@@ -59,7 +59,7 @@ task :wrk do
 	end
 
 	url = "http://127.0.0.1:9294/"
-	
+
 	connections = process_count
 	system("wrk", "-c", connections.to_s, "-d", "2", "-t", connections.to_s, url)
 

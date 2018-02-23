@@ -1,15 +1,15 @@
 # Copyright, 2017, by Samuel G. D. Williams. <http://www.codeotaku.com>
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,16 +29,16 @@ RSpec.describe Async::HTTP::Server do
 	let(:server_addresses) {[
 		Async::IO::Endpoint.tcp('127.0.0.1', 9294, reuse_port: true)
 	]}
-	
+
 	let(:server_url) {"http://127.0.0.1:9294/"}
-	
+
 	let(:concurrency) {Etc.nprocessors rescue 2}
-	
+
 	# TODO making this higher causes issues in connect - what's the issue?
 	let(:repeats) {10000}
-	
+
 	let(:client) {Async::HTTP::Client.new(server_addresses)}
-	
+
 	describe "simple response" do
 		it "runs quickly" do
 			server = Async::HTTP::Server.new(server_addresses)
@@ -50,7 +50,7 @@ RSpec.describe Async::HTTP::Server do
 					end
 				end
 			end
-			
+
 			# duration = Benchmark.realtime do
 			# 	Async::Reactor.run do |task|
 			# 		concurrency.times do
@@ -63,17 +63,17 @@ RSpec.describe Async::HTTP::Server do
 			# 		end
 			# 	end
 			# end
-			# 	
+			#
 			# puts "#{concurrency*repeats} requests in #{duration}s: #{(concurrency*repeats)/duration}req/s"
-			
+
 			if ab = `which ab`.chomp!
 				system(ab, "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, server_url)
 			end
-			
+
 			if wrk = `which wrk`.chomp!
 				system(wrk, "-c", concurrency.to_s, "-d", "10", "-t", concurrency.to_s, server_url)
 			end
-			
+
 			pids.each do |pid|
 				Process.kill(:KILL, pid)
 				Process.wait pid

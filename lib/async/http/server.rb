@@ -1,15 +1,15 @@
 # Copyright, 2017, by Samuel G. D. Williams. <http://www.codeotaku.com>
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,44 +23,44 @@ require 'async/io/endpoint'
 require_relative 'protocol'
 
 module Async
-	module HTTP
-		class Server
-			def initialize(endpoints, protocol_class = Protocol::HTTP1x)
-				@endpoints = endpoints
-				@protocol_class = protocol_class
-			end
-			
-			def handle_request(request, peer, address)
-				[200, {"Content-Type" => "text/plain"}, ["Hello World"]]
-			end
-			
-			def accept(peer, address)
-				stream = Async::IO::Stream.new(peer)
-				protocol = @protocol_class.new(stream, :server)
-				
-				# puts "Opening session on child pid #{Process.pid}"
-				
-				hijack = catch(:hijack) do
-					protocol.receive_requests do |request|
-						handle_request(request, peer, address)
-					end
-				end
+  module HTTP
+    class Server
+      def initialize(endpoints, protocol_class = Protocol::HTTP1x)
+        @endpoints = endpoints
+        @protocol_class = protocol_class
+      end
 
-				if hijack
-					hijack.call
-				end
-			rescue EOFError, Errno::ECONNRESET, Errno::EPIPE
-				# Sometimes client will disconnect without completing a result or reading the entire buffer.
-				return nil
-			end
-			
-			def run
-				Async::IO::Endpoint.each(@endpoints) do |endpoint|
-					# puts "Binding to #{endpoint} on process #{Process.pid}"
-					
-					endpoint.accept(&self.method(:accept))
-				end
-			end
-		end
-	end
+      def handle_request(request, peer, address)
+        [200, {"Content-Type" => "text/plain"}, ["Hello World"]]
+      end
+
+      def accept(peer, address)
+        stream = Async::IO::Stream.new(peer)
+        protocol = @protocol_class.new(stream, :server)
+
+        # puts "Opening session on child pid #{Process.pid}"
+
+        hijack = catch(:hijack) do
+          protocol.receive_requests do |request|
+            handle_request(request, peer, address)
+          end
+        end
+
+        if hijack
+          hijack.call
+        end
+      rescue EOFError, Errno::ECONNRESET, Errno::EPIPE
+        # Sometimes client will disconnect without completing a result or reading the entire buffer.
+        return nil
+      end
+
+      def run
+        Async::IO::Endpoint.each(@endpoints) do |endpoint|
+          # puts "Binding to #{endpoint} on process #{Process.pid}"
+
+          endpoint.accept(&self.method(:accept))
+        end
+      end
+    end
+  end
 end

@@ -25,7 +25,7 @@ module Async
 	module HTTP
 		module Protocol
 			# A server that supports both HTTP1.0 and HTTP1.1 semantics by detecting the version of the request.
-			class HTTP1x < Async::IO::Protocol::Line
+			class HTTP1 < Async::IO::Protocol::Line
 				HANDLERS = {
 					"HTTP/1.0" => HTTP10,
 					"HTTP/1.1" => HTTP11,
@@ -50,10 +50,6 @@ module Async
 					method, path, version = self.peek_line.split(/\s+/, 3)
 					
 					create_handler(version).receive_requests(&block)
-				end
-				
-				def send_request(request, &block)
-					create_handler(request.version).send_request(request, &block)
 				end
 			end
 		end

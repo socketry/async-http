@@ -63,9 +63,11 @@ module Async
 			
 			def connect
 				Async::IO::Endpoint.each(@endpoints) do |endpoint|
-					# puts "Connecting to #{address} on process #{Process.pid}"
+					Async.logger.debug(self) {"Connecting to #{endpoint}..."}
 					
 					endpoint.connect do |peer|
+						Async.logger.debug(self) {"Connected to #{peer}..."}
+						
 						stream = Async::IO::Stream.new(peer)
 						
 						# We only yield for first successful connection.

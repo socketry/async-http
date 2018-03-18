@@ -18,9 +18,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'http10'
-require_relative 'http11'
+require_relative 'http1'
 require_relative 'http2'
+
+require 'openssl'
+
+unless OpenSSL::SSL::SSLContext.instance_methods.include? :alpn_protocols=
+	abort "OpenSSL implementation doesn't support ALPN."
+end
 
 module Async
 	module HTTP
@@ -31,16 +36,19 @@ module Async
 					"http/1.0" => HTTP10,
 					"http/1.1" => HTTP11,
 					"h2" => HTTP2,
+					nil => HTTP11,
 				}
 				
 				def self.new(stream, mode)
 					# alpn_protocol is only available if openssl v1.0.2+
 					name = stream.io.alpn_protocol
 					
-					if name and protocol = HANDLERS[name]
+					Async.logger.debug(self) {"Negotiating protocol #{name.inspect}..."}
+					
+					if protocol = HANDLERS[name]
 						return protocol.new(stream, mode)
 					else
-						return HTTP2.new(stream, mode)
+						throw ArgumentError.new("Could not determine protocol for connection (#{name.inspect}).")
 					end
 				end
 			end

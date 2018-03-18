@@ -72,7 +72,6 @@ module Async
 					write_request(method, path, version, headers, body)
 					
 					return Response.new(*read_response)
-				
 				rescue EOFError
 					return nil
 				end

@@ -25,7 +25,7 @@ require_relative 'protocol'
 module Async
 	module HTTP
 		class Server
-			def initialize(endpoints, protocol_class = Protocol::HTTP1x)
+			def initialize(endpoints, protocol_class = Protocol::HTTP1)
 				@endpoints = endpoints
 				@protocol_class = protocol_class
 			end

@@ -43,6 +43,10 @@ module Async
 					@controller.on(:frame) do |data|
 						@stream.io.write data
 					end
+					
+					@controller.on(:error) do |error|
+						Async.logger.error(self) {error.inspect}
+					end
 				end
 				
 				def receive_requests(&block)
@@ -92,22 +96,30 @@ module Async
 					end
 				end
 				
-				def send_request(method, path, headers = {}, body = [])
+				def send_request(method, path, headers = {}, body = nil)
 					stream = @controller.new_stream
-					stream.headers({':method' => method, ':path' => path}.merge(headers), end_stream: false)
 					
-					body.each do |chunk|
-						stream.data(chunk, end_stream: false)
+					internal_headers = {':method' => method, ':path' => path, ':scheme' => 'https'}.merge(headers)
+					stream.headers(internal_headers, end_stream: body.nil?)
+					
+					Async.logger.debug(self) {"New stream: #{method} #{path}: #{internal_headers.inspect}"}
+					
+					if body
+						body.each do |chunk|
+							stream.data(chunk, end_stream: false)
+						end
+						
+						stream.data("", end_stream: true)
 					end
 					
-					stream.data("", end_stream: true)
-					
 					response = Response.new
-					response.version = "HTTP/2.0"
+					response.version = "HTTP/2"
 					response.headers = {}
 					response.body = Async::IO::BinaryString.new
 					
 					stream.on(:headers) do |headers|
+						Async.logger.debug(self) {"Stream headers: #{headers.inspect}"}
+						
 						headers.each do |key, value|
 							if key == ':status'
 								response.status = value.to_i
@@ -123,13 +135,19 @@ module Async
 						response.body << body
 					end
 					
+					@finished = false
+					
 					stream.on(:close) do
-						return response
+						Async.logger.debug(self) {"Stream closed."}
+						@finished = true
 					end
 					
-					while data = @stream.io.read(1024)
+					while !@finished and data = @stream.io.read(1024)
 						@controller << data
 					end
+					
+					Async.logger.debug(self) {"Stream finished: #{response.inspect}"}
+					return response
 				end
 			end
 		end

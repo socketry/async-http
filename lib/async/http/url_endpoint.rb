@@ -50,6 +50,7 @@ module Async
 			
 			def ssl_context
 				options[:ssl_context] || ::OpenSSL::SSL::SSLContext.new.tap do |context|
+					context.alpn_protocols = ['h2', 'http/1.1']
 					context.set_params
 				end
 			end
@@ -59,6 +60,8 @@ module Async
 					@endpoint = Async::IO::Endpoint.tcp(hostname, port)
 					
 					if secure?
+						Async.logger.debug(self) {"Setting hostname: #{self.hostname}"}
+						
 						# Wrap it in SSL:
 						@endpoint = Async::IO::SecureEndpoint.new(@endpoint,
 							ssl_context: ssl_context,

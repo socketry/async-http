@@ -62,7 +62,6 @@ RSpec.describe Async::HTTP::Client do
 			response = client.get("/index", headers)
 			expect(response).to be_success
 			
-			puts "Making 2nd request..."
 			response = client.get("/index", headers)
 			expect(response).to be_success
 			

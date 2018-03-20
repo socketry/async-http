@@ -47,13 +47,15 @@ module Async
 						@stream.flush
 					end
 					
-					@controller.on(:frame_sent) do |frame|
-						Async.logger.debug(self) {"Sent frame: #{frame.inspect}"}
-					end
+					# @controller.on(:frame_sent) do |frame|
+					# 	Async.logger.debug(self) {"Sent frame: #{frame.inspect}"}
+					# end
+					# 
+					# @controller.on(:frame_received) do |frame|
+					# 	Async.logger.debug(self) {"Received frame: #{frame.inspect}"}
+					# end
 					
-					@controller.on(:frame_received) do |frame|
-						Async.logger.debug(self) {"Received frame: #{frame.inspect}"}
-					end
+					@controller.send_connection_preface
 					
 					@reader = read_in_background
 				end
@@ -159,7 +161,7 @@ module Async
 					response.body = Async::IO::BinaryString.new
 					
 					stream.on(:headers) do |headers|
-						Async.logger.debug(self) {"Stream headers: #{headers.inspect}"}
+						# Async.logger.debug(self) {"Stream headers: #{headers.inspect}"}
 						
 						headers.each do |key, value|
 							if key == ':status'
@@ -173,28 +175,28 @@ module Async
 					end
 					
 					stream.on(:data) do |body|
-						Async.logger.debug(self) {"Stream data: #{body.size} bytes"}
+						# Async.logger.debug(self) {"Stream data: #{body.size} bytes"}
 						response.body << body
 					end
 					
 					finished = Async::IO::Notification.new
 					
 					stream.on(:half_close) do
-						Async.logger.debug(self) {"Stream half-closed."}
+						# Async.logger.debug(self) {"Stream half-closed."}
 					end
 					
 					stream.on(:close) do
-						Async.logger.debug(self) {"Stream closed, sending signal."}
+						# Async.logger.debug(self) {"Stream closed, sending signal."}
 						finished.signal
 					end
 					
 					@stream.flush
 					
-					Async.logger.debug(self) {"Stream flushed, waiting for signal."}
+					# Async.logger.debug(self) {"Stream flushed, waiting for signal."}
 					finished.wait
 					finished.close
 					
-					Async.logger.debug(self) {"Stream finished: #{response.inspect}"}
+					# Async.logger.debug(self) {"Stream finished: #{response.inspect}"}
 					return response
 				end
 			end

@@ -62,8 +62,8 @@ module Async
 				end
 				
 				# Multiple requests can be processed at the same time.
-				def exclusive?
-					false
+				def multiplex
+					@controller.remote_settings[:settings_max_concurrent_streams]
 				end
 				
 				def reusable?

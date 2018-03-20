@@ -47,6 +47,7 @@ module Async
 						
 						unless keep_alive?(request.headers) && keep_alive?(headers)
 							@keep_alive = false
+							
 							break
 						end
 					end
@@ -65,8 +66,8 @@ module Async
 				def read_body(headers)
 					if content_length = headers[HTTP_CONTENT_LENGTH]
 						return @stream.read(Integer(content_length))
-					elsif !keep_alive?(headers)
-						return @stream.read
+					# elsif !keep_alive?(headers)
+					# 	return @stream.read
 					end
 				end
 			end

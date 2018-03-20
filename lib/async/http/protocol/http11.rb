@@ -39,9 +39,9 @@ module Async
 					@keep_alive = true
 				end
 				
-				# Only one request can be processed at a time.
-				def exclusive?
-					true
+				# Only one simultaneous connection at a time.
+				def multiplex
+					1
 				end
 				
 				def reusable?

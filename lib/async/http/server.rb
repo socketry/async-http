@@ -38,15 +38,15 @@ module Async
 				stream = Async::IO::Stream.new(peer)
 				protocol = @protocol_class.server(stream)
 				
-				Async.logger.debug(self) {"Incoming connnection from #{address.inspect}"}
+				# Async.logger.debug(self) {"Incoming connnection from #{address.inspect}"}
 				
 				hijack = catch(:hijack) do
 					protocol.receive_requests do |request|
-						Async.logger.debug(self) {"Incoming request from #{address.inspect}: #{request.method} #{request.path}"}
+						# Async.logger.debug(self) {"Incoming request from #{address.inspect}: #{request.method} #{request.path}"}
 						handle_request(request, peer, address)
 					end
 				end
-
+				
 				if hijack
 					hijack.call
 				end

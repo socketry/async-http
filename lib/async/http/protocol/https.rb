@@ -41,8 +41,6 @@ module Async
 					nil => HTTP11,
 				}
 				
-
-				
 				def self.protocol_for(stream)
 					# alpn_protocol is only available if openssl v1.0.2+
 					name = stream.io.alpn_protocol

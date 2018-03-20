@@ -30,11 +30,13 @@ module Async
 		#
 		# This pool doesn't impose a maximum number of open resources, but it WILL block if there are no available resources and trying to allocate another one fails.
 		#
-		# Resources must respond to #exclusive? and #reusable?
+		# Resources must respond to
+		# 	#multiplex -> 1 or more.
+		# 	#reusable? -> can be used again.
 		#
 		class Pool
 			def initialize(limit = nil, &block)
-				@available = []
+				@available = {} # resource => count
 				@waiting = []
 				
 				@limit = limit
@@ -58,13 +60,11 @@ module Async
 			def release(resource)
 				if resource.reusable?
 					Async.logger.debug(self) {"Reusing resource #{resource}"}
-					if resource.exclusive?
-						Async.logger.debug(self) {"Making resource available #{resource}"}
-						@available << resource
-						
-						if task = @waiting.pop
-							task.resume
-						end
+					
+					@available[resource] -= 1
+					
+					if task = @waiting.pop
+						task.resume
 					end
 				else
 					Async.logger.debug(self) {"Closing resource: #{resource}"}
@@ -73,7 +73,7 @@ module Async
 			end
 			
 			def close
-				@available.each(&:close)
+				@available.each_key(&:close)
 				@available.clear
 			end
 			
@@ -88,35 +88,32 @@ module Async
 				return resource
 			end
 			
-			# TODO this does not take into account resources that start off good but
-			# can fail.
-			def next_available
-				if @available.empty?
-					Async.logger.debug(self) {"No available resources, allocating new one..."}
-					
-					begin
-						# This might fail, which is okay :)
-						resource = @constructor.call
-					rescue StandardError
-						Async.logger.error "#{$!}: #{$!.backtrace}"
-						return nil
-					end
-					
-					unless resource.exclusive?
-						@available << resource 
-					end
-					
-					return resource
-				else
-					resource = @available.last
-					
-					if resource.exclusive?
-						Async.logger.debug(self) {"Resource is exclusive, so popping..."}
-						@available.pop
-					end
-					
-					return resource
+			def create_resource
+				begin
+					# This might fail, which is okay :)
+					resource = @constructor.call
+				rescue StandardError
+					Async.logger.error "#{$!}: #{$!.backtrace}"
+					return nil
 				end
+				
+				@available[resource] = 1
+				
+				return resource
+			end
+			
+			# TODO this does not take into account resources that start off good but can fail.
+			def next_available
+				@available.each do |resource, count|
+					if count < resource.multiplex
+						@available[resource] += 1
+						
+						return resource
+					end
+				end
+				
+				Async.logger.debug(self) {"No available resources, allocating new one..."}
+				return create_resource
 			end
 		end
 	end

@@ -25,12 +25,12 @@ require_relative 'protocol'
 module Async
 	module HTTP
 		class Client
-			def initialize(endpoint, protocol_class = Protocol::HTTPS, **options)
+			def initialize(endpoint, protocol = Protocol::HTTPS, **options)
 				@endpoint = endpoint
 				
-				@protocol_class = protocol_class
+				@protocol = protocol
 				
-				@connections = protocol_class.connect(endpoint, **options)
+				@connections = connect(protocol, endpoint, **options)
 			end
 			
 			def close
@@ -48,6 +48,20 @@ module Async
 			def request(*args)
 				@connections.acquire do |connection|
 					connection.send_request(*args)
+				end
+			end
+			
+			protected
+			
+			def connect(protocol, endpoint, connection_limit: nil)
+				Pool.new(connection_limit) do
+					Async.logger.debug(self) {"Making connection to #{endpoint}"}
+					
+					endpoint.connect do |peer|
+						stream = IO::Stream.new(peer)
+						
+						break protocol.client(stream)
+					end
 				end
 			end
 		end

@@ -45,18 +45,6 @@ module Async
 					alias server new
 				end
 				
-				def self.connect(endpoint, connection_limit: nil)
-					Pool.new(connection_limit) do
-						Async.logger.debug(self) {"Making connection to #{endpoint}"}
-						
-						endpoint.connect do |peer|
-							stream = IO::Stream.new(peer)
-							
-							break self.client(stream)
-						end
-					end
-				end
-				
 				def create_handler(version)
 					if klass = HANDLERS[version]
 						klass.server(@stream)

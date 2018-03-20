@@ -41,17 +41,7 @@ module Async
 					nil => HTTP11,
 				}
 				
-				def self.connect(endpoint, connection_limit: nil)
-					Pool.new(connection_limit) do
-						Async.logger.debug(self) {"Making connection to #{endpoint}"}
-						
-						endpoint.connect do |peer|
-							stream = IO::Stream.new(peer)
-							
-							break self.client(stream)
-						end
-					end
-				end
+
 				
 				def self.protocol_for(stream)
 					# alpn_protocol is only available if openssl v1.0.2+

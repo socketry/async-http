@@ -8,12 +8,18 @@ task :default => :test
 require 'async/http/protocol'
 PROTOCOL = Async::HTTP::Protocol::HTTP2
 
+task :debug do
+	require 'async/logger'
+	
+	Async.logger.level = Logger::DEBUG
+end
+
 task :server do
 	require 'async/reactor'
 	require 'async/http/server'
-
+	
 	server = Async::HTTP::Server.new(Async::IO::Endpoint.tcp('0.0.0.0', 9294, reuse_port: true), PROTOCOL)
-
+	
 	Async::Reactor.run do
 		server.run
 	end
@@ -39,11 +45,11 @@ task :wrk do
 	app = lambda do |env|
 		[200, {}, ["Hello World"]]
 	end
-
+	
 	server = Async::HTTP::Server.new(Async::IO::Endpoint.tcp('127.0.0.1', 9294, reuse_port: true), app)
-
+	
 	process_count = Etc.nprocessors
-
+	
 	pids = process_count.times.collect do
 		fork do
 			Async::Reactor.run do

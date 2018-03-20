@@ -55,9 +55,10 @@ module Async
 					# 	Async.logger.debug(self) {"Received frame: #{frame.inspect}"}
 					# end
 					
-					@controller.send_connection_preface
-					
-					@reader = read_in_background
+					if @controller.is_a? ::HTTP2::Client
+						@controller.send_connection_preface
+						@reader = read_in_background
+					end
 				end
 				
 				# Multiple requests can be processed at the same time.

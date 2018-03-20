@@ -38,10 +38,11 @@ module Async
 				stream = Async::IO::Stream.new(peer)
 				protocol = @protocol_class.server(stream)
 				
-				# puts "Opening session on child pid #{Process.pid}"
+				Async.logger.debug(self) {"Incoming connnection from #{address.inspect}"}
 				
 				hijack = catch(:hijack) do
 					protocol.receive_requests do |request|
+						Async.logger.debug(self) {"Incoming request from #{address.inspect}: #{request.method} #{request.path}"}
 						handle_request(request, peer, address)
 					end
 				end

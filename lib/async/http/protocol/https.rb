@@ -21,6 +21,8 @@
 require_relative 'http1'
 require_relative 'http2'
 
+require_relative '../pool'
+
 require 'openssl'
 
 unless OpenSSL::SSL::SSLContext.instance_methods.include? :alpn_protocols=
@@ -39,17 +41,37 @@ module Async
 					nil => HTTP11,
 				}
 				
-				def self.new(stream, mode)
+				def self.connect(endpoint, connection_limit: nil)
+					Pool.new(connection_limit) do
+						Async.logger.debug(self) {"Making connection to #{endpoint}"}
+						
+						endpoint.connect do |peer|
+							stream = IO::Stream.new(peer)
+							
+							break self.client(stream)
+						end
+					end
+				end
+				
+				def self.protocol_for(stream)
 					# alpn_protocol is only available if openssl v1.0.2+
 					name = stream.io.alpn_protocol
 					
 					Async.logger.debug(self) {"Negotiating protocol #{name.inspect}..."}
 					
 					if protocol = HANDLERS[name]
-						return protocol.new(stream, mode)
+						return protocol
 					else
 						throw ArgumentError.new("Could not determine protocol for connection (#{name.inspect}).")
 					end
+				end
+				
+				def self.client(stream)
+					protocol_for(stream).client(stream)
+				end
+				
+				def self.server(stream)
+					protocol_for(stream).server(stream)
 				end
 			end
 		end

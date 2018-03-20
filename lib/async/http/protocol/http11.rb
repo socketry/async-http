@@ -33,8 +33,24 @@ module Async
 				
 				CRLF = "\r\n".freeze
 				
-				def initialize(stream, mode)
+				def initialize(stream)
 					super(stream, CRLF)
+					
+					@keep_alive = true
+				end
+				
+				# Only one request can be processed at a time.
+				def exclusive?
+					true
+				end
+				
+				def reusable?
+					@keep_alive
+				end
+				
+				class << self
+					alias server new
+					alias client new
 				end
 				
 				HTTP_CONNECTION = 'HTTP_CONNECTION'.freeze
@@ -60,7 +76,11 @@ module Async
 						
 						write_response(request.version, status, headers, body)
 						
-						break unless keep_alive?(request.headers) && keep_alive?(headers)
+						unless keep_alive?(request.headers) and keep_alive?(headers)
+							@keep_alive = false
+							
+							break
+						end
 						
 						# This ensures we yield at least once every iteration of the loop and allow other fibers to execute.
 						task.yield
@@ -90,6 +110,8 @@ module Async
 					version, status, reason = read_line.split(/\s+/, 3)
 					headers = read_headers
 					body = read_body(headers)
+					
+					@keep_alive = keep_alive?(headers)
 					
 					return version, Integer(status), reason, headers, body
 				end

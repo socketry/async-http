@@ -25,55 +25,29 @@ require_relative 'protocol'
 module Async
 	module HTTP
 		class Client
-			def initialize(endpoints, protocol_class = Protocol::HTTP11)
-				@endpoints = endpoints
+			def initialize(endpoint, protocol_class = Protocol::HTTPS, **options)
+				@endpoint = endpoint
 				
 				@protocol_class = protocol_class
+				
+				@connections = protocol_class.connect(endpoint, **options)
 			end
 			
-			GET = 'GET'.freeze
-			HEAD = 'HEAD'.freeze
-			POST = 'POST'.freeze
+			def close
+				@connections.close
+			end
 			
-			def get(path, *args)
-				connect do |protocol|
-					protocol.send_request(GET, path, *args)
+			VERBS = ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE']
+			
+			VERBS.each do |verb|
+				define_method(verb.downcase) do |*args|
+					self.request(verb, *args)
 				end
 			end
 			
-			def head(path, *args)
-				connect do |protocol|
-					protocol.send_request(HEAD, path, *args)
-				end
-			end
-			
-			def post(path, *args)
-				connect do |protocol|
-					protocol.send_request(POST, path, *args)
-				end
-			end
-			
-			def send_request(*args)
-				connect do |protocol|
-					protocol.send_request(*args)
-				end
-			end
-			
-			private
-			
-			def connect
-				Async::IO::Endpoint.each(@endpoints) do |endpoint|
-					Async.logger.debug(self) {"Connecting to #{endpoint}..."}
-					
-					endpoint.connect do |peer|
-						Async.logger.debug(self) {"Connected to #{peer}..."}
-						
-						stream = Async::IO::Stream.new(peer)
-						
-						# We only yield for first successful connection.
-						
-						return yield @protocol_class.new(stream, :client)
-					end
+			def request(*args)
+				@connections.acquire do |connection|
+					connection.send_request(*args)
 				end
 			end
 		end

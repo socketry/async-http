@@ -28,7 +28,7 @@ RSpec.describe Async::HTTP::Server do
 			OpenSSL::SSL::SSLContext.new.tap do |context|
 				context.cert_store = certificate_store
 				
-				context.alpn_protocols = ["http/1.0", "http/1.1", "h2"]
+				context.alpn_protocols = ["h2", "http/1.1"]
 				
 				context.verify_mode = OpenSSL::SSL::VERIFY_PEER
 			end
@@ -40,8 +40,8 @@ RSpec.describe Async::HTTP::Server do
 		let(:client_endpoint) {Async::IO::SecureEndpoint.new(endpoint, ssl_context: client_context)}
 		
 		it "client can get a resource via https" do
-			server = Async::HTTP::Server.new([server_endpoint], Async::HTTP::Protocol::HTTPS)
-			client = Async::HTTP::Client.new([client_endpoint], Async::HTTP::Protocol::HTTPS)
+			server = Async::HTTP::Server.new(server_endpoint, Async::HTTP::Protocol::HTTPS)
+			client = Async::HTTP::Client.new(client_endpoint, Async::HTTP::Protocol::HTTPS)
 			
 			Async::Reactor.run do |task|
 				server_task = task.async do
@@ -49,9 +49,11 @@ RSpec.describe Async::HTTP::Server do
 				end
 				
 				response = client.get("/")
+				client.close
 				
 				expect(response).to be_success
 				expect(response.body).to be == "Hello World"
+				
 				server_task.stop
 			end
 		end

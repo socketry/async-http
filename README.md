@@ -36,9 +36,7 @@ require 'async/http/server'
 require 'async/http/client'
 require 'async/reactor'
 
-endpoints = [
-	Async::IO::Endpoint.tcp('127.0.0.1', 9294, reuse_port: true)
-]
+endpoint = Async::IO::Endpoint.tcp('127.0.0.1', 9294, reuse_port: true)
 
 class Server < Async::HTTP::Server
 	def handle_request(request, peer, address)
@@ -46,8 +44,8 @@ class Server < Async::HTTP::Server
 	end
 end
 
-server = Server.new(endpoints)
-client = Async::HTTP::Client.new(endpoints)
+server = Server.new(endpoint)
+client = Async::HTTP::Client.new(endpoint)
 	
 Async::Reactor.run do |task|
 	server_task = task.async do

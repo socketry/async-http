@@ -21,6 +21,8 @@
 require_relative 'request'
 require_relative 'response'
 
+require 'async/io/notification'
+
 require 'http/2'
 
 module Async
@@ -28,25 +30,61 @@ module Async
 		module Protocol
 			# A server that supports both HTTP1.0 and HTTP1.1 semantics by detecting the version of the request.
 			class HTTP2
-				def initialize(stream, mode)
+				def self.client(stream)
+					self.new(::HTTP2::Client.new, stream)
+				end
+				
+				def self.server(stream)
+					self.new(::HTTP2::Server.new, stream)
+				end
+				
+				def initialize(controller, stream)
+					@controller = controller
 					@stream = stream
 					
-					case mode
-					when :server
-						@controller = ::HTTP2::Server.new
-					when :client
-						@controller = ::HTTP2::Client.new
-					else
-						raise ArgumentError.new("Unsupported mode #{mode}")
-					end
-					
 					@controller.on(:frame) do |data|
-						@stream.io.write data
+						@stream.write(data)
+						@stream.flush
 					end
 					
-					@controller.on(:error) do |error|
-						Async.logger.error(self) {error.inspect}
+					@controller.on(:frame_sent) do |frame|
+						Async.logger.debug(self) {"Sent frame: #{frame.inspect}"}
 					end
+					
+					@controller.on(:frame_received) do |frame|
+						Async.logger.debug(self) {"Received frame: #{frame.inspect}"}
+					end
+					
+					@reader = read_in_background
+				end
+				
+				# Multiple requests can be processed at the same time.
+				def exclusive?
+					false
+				end
+				
+				def reusable?
+					@reader.alive?
+				end
+				
+				def read_in_background(task: Task.current)
+					task.async do |nested_task|
+						while true
+							if data = @stream.io.read(10)
+								# Async.logger.debug(self) {"Reading data: #{data.size} bytes"}
+								@controller << data
+							else
+								Async.logger.debug(self) {"Connection reset by peer!"}
+								break
+							end
+						end
+					end
+				end
+				
+				def close
+					Async.logger.debug(self) {"Closing connection"}
+					@reader.stop
+					@stream.close
 				end
 				
 				def receive_requests(&block)
@@ -99,18 +137,21 @@ module Async
 				def send_request(method, path, headers = {}, body = nil)
 					stream = @controller.new_stream
 					
-					internal_headers = {':method' => method, ':path' => path, ':scheme' => 'https'}.merge(headers)
-					stream.headers(internal_headers, end_stream: body.nil?)
+					internal_headers = {
+						':scheme' => 'https',
+						':method' => method,
+						':path' => path,
+					}.merge(headers)
 					
-					Async.logger.debug(self) {"New stream: #{method} #{path}: #{internal_headers.inspect}"}
+					stream.headers(internal_headers, end_stream: true)
 					
-					if body
-						body.each do |chunk|
-							stream.data(chunk, end_stream: false)
-						end
-						
-						stream.data("", end_stream: true)
-					end
+					# if body
+					# 	body.each do |chunk|
+					# 		stream.data(chunk, end_stream: false)
+					# 	end
+					# 
+					# 	stream.data("", end_stream: true)
+					# end
 					
 					response = Response.new
 					response.version = "HTTP/2"
@@ -132,19 +173,26 @@ module Async
 					end
 					
 					stream.on(:data) do |body|
+						Async.logger.debug(self) {"Stream data: #{body.size} bytes"}
 						response.body << body
 					end
 					
-					@finished = false
+					finished = Async::IO::Notification.new
+					
+					stream.on(:half_close) do
+						Async.logger.debug(self) {"Stream half-closed."}
+					end
 					
 					stream.on(:close) do
-						Async.logger.debug(self) {"Stream closed."}
-						@finished = true
+						Async.logger.debug(self) {"Stream closed, sending signal."}
+						finished.signal
 					end
 					
-					while !@finished and data = @stream.io.read(1024)
-						@controller << data
-					end
+					@stream.flush
+					
+					Async.logger.debug(self) {"Stream flushed, waiting for signal."}
+					finished.wait
+					finished.close
 					
 					Async.logger.debug(self) {"Stream finished: #{response.inspect}"}
 					return response

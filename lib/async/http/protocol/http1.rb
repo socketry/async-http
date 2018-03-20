@@ -21,6 +21,8 @@
 require_relative 'http10'
 require_relative 'http11'
 
+require_relative '../pool'
+
 module Async
 	module HTTP
 		module Protocol
@@ -31,16 +33,33 @@ module Async
 					"HTTP/1.1" => HTTP11,
 				}
 				
-				def initialize(stream, mode, handlers: HANDLERS)
+				def initialize(stream)
 					super(stream, HTTP11::CRLF)
+				end
+				
+				class << self
+					def client(*args)
+						HTTP11.new(*args)
+					end
 					
-					@mode = mode
-					@handlers = handlers
+					alias server new
+				end
+				
+				def self.connect(endpoint, connection_limit: nil)
+					Pool.new(connection_limit) do
+						Async.logger.debug(self) {"Making connection to #{endpoint}"}
+						
+						endpoint.connect do |peer|
+							stream = IO::Stream.new(peer)
+							
+							break self.client(stream)
+						end
+					end
 				end
 				
 				def create_handler(version)
-					if klass = @handlers[version]
-						klass.new(@stream, @mode)
+					if klass = HANDLERS[version]
+						klass.server(@stream)
 					else
 						raise RuntimeError, "Unsupported protocol version #{version}"
 					end

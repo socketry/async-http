@@ -25,8 +25,8 @@ require_relative 'protocol'
 module Async
 	module HTTP
 		class Server
-			def initialize(endpoints, protocol_class = Protocol::HTTP1)
-				@endpoints = endpoints
+			def initialize(endpoint, protocol_class = Protocol::HTTP1)
+				@endpoint = endpoint
 				@protocol_class = protocol_class
 			end
 			
@@ -36,7 +36,7 @@ module Async
 			
 			def accept(peer, address)
 				stream = Async::IO::Stream.new(peer)
-				protocol = @protocol_class.new(stream, :server)
+				protocol = @protocol_class.server(stream)
 				
 				# puts "Opening session on child pid #{Process.pid}"
 				
@@ -52,14 +52,12 @@ module Async
 			rescue EOFError, Errno::ECONNRESET, Errno::EPIPE
 				# Sometimes client will disconnect without completing a result or reading the entire buffer.
 				return nil
+			ensure
+				peer.close
 			end
 			
 			def run
-				Async::IO::Endpoint.each(@endpoints) do |endpoint|
-					# puts "Binding to #{endpoint} on process #{Process.pid}"
-					
-					endpoint.accept(&self.method(:accept))
-				end
+				@endpoint.accept(&self.method(:accept))
 			end
 		end
 	end

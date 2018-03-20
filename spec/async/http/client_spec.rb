@@ -22,24 +22,51 @@ require 'async/http/server'
 require 'async/http/client'
 require 'async/reactor'
 
+require 'async/io/ssl_socket'
+require 'async/http/url_endpoint'
+
 RSpec.describe Async::HTTP::Client do
-	let(:server_addresses) {[
-		Async::IO::Endpoint.tcp('127.0.0.1', 9294, reuse_port: true)
-	]}
+	include_context Async::RSpec::Reactor
 	
-	it "client can get resource" do
-		server = Async::HTTP::Server.new(server_addresses)
-		client = Async::HTTP::Client.new(server_addresses)
+	describe Async::HTTP::Protocol::HTTP1 do
+		let(:endpoint) {Async::IO::Endpoint.tcp('127.0.0.1', 9294, reuse_port: true)}
 		
-		Async::Reactor.run do |task|
-			server_task = task.async do
-				server.run
+		it "client can get resource" do
+			server = Async::HTTP::Server.new(endpoint, described_class)
+			client = Async::HTTP::Client.new(endpoint, described_class)
+			
+			reactor.async do |task|
+				server_task = task.async do
+					server.run
+				end
+				
+				response = client.get("/")
+				
+				expect(response).to be_success
+				server_task.stop
+				client.close
 			end
+		end
+	end
+	
+	describe Async::HTTP::Protocol::HTTPS do
+		let(:endpoint) {Async::HTTP::URLEndpoint.parse('https://www.codeotaku.com')}
+		
+		let(:headers) do
+			{':authority' => 'www.codeotaku.com'}
+		end
+		
+		it "can request remote resource" do
+			client = Async::HTTP::Client.new(endpoint, described_class)
 			
-			response = client.get("/")
-			
+			response = client.get("/index", headers)
 			expect(response).to be_success
-			server_task.stop
+			
+			puts "Making 2nd request..."
+			response = client.get("/index", headers)
+			expect(response).to be_success
+			
+			client.close
 		end
 	end
 end

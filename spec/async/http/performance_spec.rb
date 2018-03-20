@@ -26,9 +26,11 @@ require 'etc'
 require 'benchmark'
 
 RSpec.describe Async::HTTP::Server do
-	let(:server_addresses) {[
+	let(:endpoint) {
 		Async::IO::Endpoint.tcp('127.0.0.1', 9294, reuse_port: true)
-	]}
+	}
+	
+	let(:protocol) {Async::HTTP::Protocol::HTTP1}
 	
 	let(:server_url) {"http://127.0.0.1:9294/"}
 	
@@ -37,11 +39,11 @@ RSpec.describe Async::HTTP::Server do
 	# TODO making this higher causes issues in connect - what's the issue?
 	let(:repeats) {10000}
 	
-	let(:client) {Async::HTTP::Client.new(server_addresses)}
+	let(:client) {Async::HTTP::Client.new(endpoint, protocol)}
 	
 	describe "simple response" do
 		it "runs quickly" do
-			server = Async::HTTP::Server.new(server_addresses)
+			server = Async::HTTP::Server.new(endpoint, protocol)
 
 			pids = concurrency.times.collect do
 				fork do
@@ -67,6 +69,7 @@ RSpec.describe Async::HTTP::Server do
 			# puts "#{concurrency*repeats} requests in #{duration}s: #{(concurrency*repeats)/duration}req/s"
 			
 			if ab = `which ab`.chomp!
+				puts [ab, "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, server_url].join(' ')
 				system(ab, "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, server_url)
 			end
 			

@@ -3,10 +3,16 @@ sudo: required
 dist: trusty
 cache: bundler
 
+addons:
+  apt:
+    packages:
+#    - wrk installed below from xenial
+    - apache2-utils
+
 before_install:
-  - echo "deb http://us.archive.ubuntu.com/ubuntu/ xenial main restricted" | sudo tee -a /etc/apt/sources.list
+  - echo "deb http://us.archive.ubuntu.com/ubuntu/ xenial main restricted universe" | sudo tee -a /etc/apt/sources.list
   - sudo apt-get update -qq
-  - sudo apt-get install openssl libssl-dev
+  - sudo apt-get install openssl libssl-dev wrk
 # Rebuild Ruby using the updated OpenSSL libraries which allows 2.5 to pass.
 #  - rvm reinstall --disable-binary `rvm current`
 # Fix a bug with Ruby 2.5: LoadError: cannot load such file -- bundler/dep_proxy

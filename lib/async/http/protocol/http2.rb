@@ -21,7 +21,7 @@
 require_relative 'request'
 require_relative 'response'
 
-require 'async/io/notification'
+require 'async/notification'
 
 require 'http/2'
 
@@ -180,7 +180,7 @@ module Async
 						response.body << body
 					end
 					
-					finished = Async::IO::Notification.new
+					finished = Async::Notification.new
 					
 					stream.on(:half_close) do
 						# Async.logger.debug(self) {"Stream half-closed."}
@@ -195,7 +195,6 @@ module Async
 					
 					# Async.logger.debug(self) {"Stream flushed, waiting for signal."}
 					finished.wait
-					finished.close
 					
 					# Async.logger.debug(self) {"Stream finished: #{response.inspect}"}
 					return response

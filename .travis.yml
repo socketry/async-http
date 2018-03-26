@@ -9,6 +9,9 @@ addons:
     - wrk
     - apache2-utils
 
+before_script:
+  - gem update --system
+
 matrix:
   include:
     - rvm: 2.2

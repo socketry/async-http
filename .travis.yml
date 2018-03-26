@@ -1,27 +1,17 @@
 language: ruby
 sudo: required
-dist: trusty
+dist: xenial
 cache: bundler
 
 addons:
   apt:
     packages:
-#    - wrk installed below from xenial
+    - wrk
     - apache2-utils
-
-before_install:
-  - echo "deb http://us.archive.ubuntu.com/ubuntu/ xenial main restricted universe" | sudo tee -a /etc/apt/sources.list
-  - sudo apt-get update -qq
-  - sudo apt-get install openssl libssl-dev wrk
-# Rebuild Ruby using the updated OpenSSL libraries which allows 2.5 to pass.
-#  - rvm reinstall --disable-binary `rvm current`
-# Fix a bug with Ruby 2.5: LoadError: cannot load such file -- bundler/dep_proxy
-  - gem update --system
-# This works for Ruby 2.3 and 2.4 but not 2.5 which doesn't seem to use the local gem.
-  - gem install openssl
 
 matrix:
   include:
+    - rvm: 2.2
     - rvm: 2.3
     - rvm: 2.4
     - rvm: 2.5
@@ -30,7 +20,6 @@ matrix:
     - rvm: ruby-head
     - rvm: rbx-3
   allow_failures:
-    - rvm: 2.5
     - rvm: ruby-head
     - rvm: jruby-head
     - rvm: rbx-3

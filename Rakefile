@@ -6,6 +6,7 @@ RSpec::Core::RakeTask.new(:test)
 task :default => :test
 
 require 'async/http/protocol'
+
 PROTOCOL = Async::HTTP::Protocol::HTTP2
 
 task :debug do

@@ -24,8 +24,16 @@ require 'async/io/ssl_socket'
 module Async
 	module HTTP
 		class URLEndpoint < Async::IO::Endpoint
+			DEFAULT_ALPH_PROTOCOLS = ['h2', 'http/1.1'].freeze
+			
 			def self.parse(string, **options)
 				self.new(URI.parse(string), **options)
+			end
+			
+			def initialize(url, endpoint = nil, **options)
+				@url = url
+				@endpoint = endpoint
+				@options = options
 			end
 			
 			def address
@@ -33,7 +41,15 @@ module Async
 			end
 			
 			def secure?
-				['https', 'wss'].include?(specification.scheme)
+				['https', 'wss'].include?(@url.scheme)
+			end
+			
+			def protocol
+				if secure?
+					Protocol::HTTPS
+				else
+					Protocol::HTTP1
+				end
 			end
 			
 			def default_port
@@ -41,22 +57,22 @@ module Async
 			end
 			
 			def port
-				specification.port || default_port
+				@url.port || default_port
 			end
 			
 			def hostname
-				specification.hostname
+				@url.hostname
 			end
 			
 			def ssl_context
-				options[:ssl_context] || ::OpenSSL::SSL::SSLContext.new.tap do |context|
-					context.alpn_protocols = ['h2', 'http/1.1']
+				@options[:ssl_context] || ::OpenSSL::SSL::SSLContext.new.tap do |context|
+					context.alpn_protocols = @options.fetch(:alpn_protocols, DEFAULT_ALPH_PROTOCOLS)
 					context.set_params
 				end
 			end
 			
 			def endpoint
-				unless defined? @endpoint
+				unless @endpoint
 					@endpoint = Async::IO::Endpoint.tcp(hostname, port)
 					
 					if secure?
@@ -79,6 +95,14 @@ module Async
 			
 			def connect(*args, &block)
 				endpoint.connect(*args, &block)
+			end
+			
+			def each
+				return to_enum unless block_given?
+				
+				self.endpoint.each do |endpoint|
+					yield self.class.new(@url, endpoint, @options)
+				end
 			end
 		end
 	end

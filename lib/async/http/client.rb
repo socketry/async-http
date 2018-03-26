@@ -30,7 +30,19 @@ module Async
 				
 				@protocol = protocol
 				
-				@connections = connect(protocol, endpoint, **options)
+				@connections = connect(**options)
+			end
+			
+			def self.open(*args, &block)
+				client = self.new(*args)
+				
+				return client unless block_given?
+				
+				begin
+					yield client
+				ensure
+					client.close
+				end
 			end
 			
 			def close
@@ -53,14 +65,16 @@ module Async
 			
 			protected
 			
-			def connect(protocol, endpoint, connection_limit: nil)
+			def connect(connection_limit: nil)
 				Pool.new(connection_limit) do
-					Async.logger.debug(self) {"Making connection to #{endpoint}"}
+					Async.logger.debug(self) {"Making connection to #{@endpoint.inspect}"}
 					
-					endpoint.connect do |peer|
+					@endpoint.each do |endpoint|
+						peer = endpoint.connect
+						
 						stream = IO::Stream.new(peer)
 						
-						break protocol.client(stream)
+						break @protocol.client(stream)
 					end
 				end
 			end

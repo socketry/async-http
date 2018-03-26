@@ -48,7 +48,7 @@ module Async
 				end
 				
 				if hijack
-					hijack.call
+					hijack.call(peer)
 				end
 			rescue EOFError, Errno::ECONNRESET, Errno::EPIPE
 				# Sometimes client will disconnect without completing a result or reading the entire buffer.

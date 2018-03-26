@@ -7,8 +7,6 @@ group :development do
 	gem 'trenni-sanitize'
 	
 	gem 'async-await'
-	
-	gem 'async-io', git: 'https://github.com/socketry/async-io'
 end
 
 group :test do

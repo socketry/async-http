@@ -36,6 +36,10 @@ module Async
 				@options = options
 			end
 			
+			def to_s
+				"\#<#{self.class} #{@url} #{@options.inspect}>"
+			end
+			
 			attr :url
 			attr :options
 			

@@ -36,6 +36,9 @@ module Async
 				@options = options
 			end
 			
+			attr :url
+			attr :options
+			
 			def address
 				endpoint.address
 			end

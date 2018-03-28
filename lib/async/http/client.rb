@@ -34,6 +34,10 @@ module Async
 				@connections = connect(**options)
 			end
 			
+			attr :endpoint
+			attr :protocol
+			attr :authority
+			
 			def self.open(*args, &block)
 				client = self.new(*args)
 				

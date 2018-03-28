@@ -32,8 +32,8 @@ RSpec.describe Async::HTTP::Client, timeout: 5 do
 		let(:endpoint) {Async::HTTP::URLEndpoint.parse('http://127.0.0.1:9294', reuse_port: true)}
 		
 		it "client can get resource" do
-			server = Async::HTTP::Server.new(endpoint, described_class)
-			client = Async::HTTP::Client.new(endpoint, described_class)
+			server = Async::HTTP::Server.new(endpoint)
+			client = Async::HTTP::Client.new(endpoint)
 			
 			server_task = reactor.async do
 				server.run
@@ -49,10 +49,14 @@ RSpec.describe Async::HTTP::Client, timeout: 5 do
 	
 	describe Async::HTTP::Protocol::HTTPS do
 		let(:endpoint) {Async::HTTP::URLEndpoint.parse('https://www.codeotaku.com')}
+		let(:client) {Async::HTTP::Client.new(endpoint)}
+		
+		it "should specify hostname" do
+			expect(endpoint.hostname).to be == "www.codeotaku.com"
+			expect(client.authority).to be == "www.codeotaku.com"
+		end
 		
 		it "can request remote resource" do
-			client = Async::HTTP::Client.new(endpoint, described_class)
-			
 			response = client.get("/index")
 			expect(response).to be_success
 			

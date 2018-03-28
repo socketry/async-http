@@ -20,15 +20,43 @@
 
 module Async
 	module HTTP
-		class Headers < Hash
+		class Headers
+			def initialize
+				@hash = {}
+			end
+			
+			def freeze
+				return unless frozen?
+				
+				@hash.freeze
+				
+				super
+			end
+			
+			def inspect
+				@hash.inspect
+			end
+			
 			def []= key, value
-				super symbolize(key), value
+				@hash[symbolize(key)] = value
+			end
+			
+			def [] key
+				@hash[key]
+			end
+			
+			def == other
+				@hash == other.to_hash
+			end
+			
+			def delete(key)
+				@hash.delete(key)
 			end
 			
 			def each
 				return to_enum unless block_given?
 				
-				super do |key, value|
+				@hash.each do |key, value|
 					yield stringify(key), value
 				end
 			end
@@ -39,6 +67,14 @@ module Async
 			
 			def stringify(key)
 				key.to_s.tr('_', '-')
+			end
+			
+			def to_hash
+				@hash
+			end
+			
+			def to_http_hash
+				Hash[@hash.map{|key, value| ["HTTP_#{key.to_s.upcase}", value]}]
 			end
 			
 			def self.[] value

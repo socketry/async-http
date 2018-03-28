@@ -37,4 +37,10 @@ RSpec.describe Async::HTTP::Headers do
 		
 		expect(subject[:host]).to be == "localhost"
 	end
+	
+	it "can generate rack compatible headers" do
+		subject["Content-Type"] = "text/http"
+		
+		expect(subject.to_http_hash).to be == {"HTTP_CONTENT_TYPE" => "text/http"}
+	end
 end

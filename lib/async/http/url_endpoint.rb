@@ -84,8 +84,6 @@ module Async
 					@endpoint = Async::IO::Endpoint.tcp(hostname, port)
 					
 					if secure?
-						Async.logger.debug(self) {"Setting hostname: #{self.hostname}"}
-						
 						# Wrap it in SSL:
 						@endpoint = Async::IO::SecureEndpoint.new(@endpoint,
 							ssl_context: ssl_context,

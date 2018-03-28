@@ -20,7 +20,7 @@ require 'bundler/setup'
 require 'async/http'
 require 'async/rspec/reactor'
 
-Async.logger.level = Logger::DEBUG
+# Async.logger.level = Logger::DEBUG
 
 RSpec.configure do |config|
 	# Enable flags like --only-failures and --next-failure

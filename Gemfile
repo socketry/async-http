@@ -4,9 +4,7 @@ source 'https://rubygems.org'
 gemspec
 
 group :development do
-	gem 'trenni-sanitize'
-	
-	gem 'async-await'
+	gem 'pry'
 end
 
 group :test do

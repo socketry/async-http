@@ -7,7 +7,7 @@ require 'async/io/ssl_socket'
 require 'async/rspec/reactor'
 require 'async/rspec/ssl'
 
-RSpec.describe Async::HTTP::Server do
+RSpec.describe Async::HTTP::Server, timeout: 5 do
 	include_context Async::RSpec::Reactor
 	include_context Async::RSpec::SSL::ValidCertificate
 	

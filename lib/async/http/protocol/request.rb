@@ -21,7 +21,7 @@
 module Async
 	module HTTP
 		module Protocol
-			class Request < Struct.new(:method, :path, :version, :headers, :body)
+			class Request < Struct.new(:authority, :method, :path, :version, :headers, :body)
 				def read
 					@body
 				end

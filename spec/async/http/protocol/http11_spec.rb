@@ -25,16 +25,17 @@ RSpec.describe Async::HTTP::Protocol::HTTP11 do
 	subject {described_class.new(stream)}
 	
 	describe "simple request" do
-		let(:request) {"GET / HTTP/1.1\r\nHost: localhost\r\n\r\n"}
+		let(:request) {"GET / HTTP/1.1\r\nHost: localhost\r\nAccept: */*\r\n\r\n"}
 		let(:io) {StringIO.new(request)}
 	
 		it "reads request" do
-			method, url, version, headers, body = subject.read_request
+			authority, method, url, version, headers, body = subject.read_request
 			
+			expect(authority).to be == 'localhost'
 			expect(method).to be == 'GET'
 			expect(url).to be == '/'
 			expect(version).to be == 'HTTP/1.1'
-			expect(headers).to be == {'HTTP_HOST' => 'localhost'}
+			expect(headers).to be == {:accept => '*/*'}
 			expect(body).to be nil
 		end
 	end
@@ -44,12 +45,13 @@ RSpec.describe Async::HTTP::Protocol::HTTP11 do
 		let(:io) {StringIO.new(request)}
 	
 		it "reads request" do
-			method, url, version, headers, body = subject.read_request
+			authority, method, url, version, headers, body = subject.read_request
 			
+			expect(authority).to be == 'localhost'
 			expect(method).to be == 'GET'
 			expect(url).to be == '/'
 			expect(version).to be == 'HTTP/1.1'
-			expect(headers).to be == {'HTTP_HOST' => 'localhost', 'HTTP_CONTENT_LENGTH' => '11'}
+			expect(headers).to be == {:content_length => '11'}
 			expect(body).to be == "Hello World"
 		end
 	end

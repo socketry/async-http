@@ -18,48 +18,23 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'async/io/endpoint'
+require 'async/http/server'
+require 'async/http/client'
+require 'async/reactor'
 
-require_relative 'protocol'
+require 'async/io/ssl_socket'
+require 'async/http/url_endpoint'
 
-module Async
-	module HTTP
-		class Server
-			def initialize(endpoint, protocol_class = Protocol::HTTP1)
-				@endpoint = endpoint
-				@protocol_class = protocol_class
-			end
-			
-			def handle_request(request, peer, address)
-				[200, {"Content-Type" => "text/plain"}, ["Hello World"]]
-			end
-			
-			def accept(peer, address, task: Task.current)
-				stream = Async::IO::Stream.new(peer)
-				protocol = @protocol_class.server(stream)
-				
-				# Async.logger.debug(self) {"Incoming connnection from #{address.inspect}"}
-				
-				hijack = catch(:hijack) do
-					protocol.receive_requests do |request|
-						# Async.logger.debug(self) {"Incoming request from #{address.inspect}: #{request.method} #{request.path}"}
-						handle_request(request, peer, address)
-					end
-				end
-				
-				if hijack
-					hijack.call(peer)
-				end
-			rescue EOFError, Errno::ECONNRESET, Errno::EPIPE
-				# Sometimes client will disconnect without completing a result or reading the entire buffer.
-				return nil
-			ensure
-				peer.close
-			end
-			
-			def run
-				@endpoint.accept(&self.method(:accept))
-			end
-		end
+RSpec.describe Async::HTTP::Headers do
+	it "can get header with exact case" do
+		subject["host"] = "localhost"
+		
+		expect(subject[:host]).to be == "localhost"
+	end
+	
+	it "can get header with different case" do
+		subject["Host"] = "localhost"
+		
+		expect(subject[:host]).to be == "localhost"
 	end
 end

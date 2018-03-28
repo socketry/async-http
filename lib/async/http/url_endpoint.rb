@@ -31,9 +31,10 @@ module Async
 			end
 			
 			def initialize(url, endpoint = nil, **options)
+				super(**options)
+				
 				@url = url
 				@endpoint = endpoint
-				@options = options
 			end
 			
 			def to_s
@@ -68,7 +69,7 @@ module Async
 			end
 			
 			def hostname
-				@url.hostname
+				@options.fetch(:hostname, @url.hostname)
 			end
 			
 			def ssl_context

@@ -37,7 +37,7 @@ RSpec.describe Async::HTTP::Server do
 	let(:concurrency) {Etc.nprocessors rescue 2}
 	
 	# TODO making this higher causes issues in connect - what's the issue?
-	let(:repeats) {10000}
+	let(:repeats) {100}
 	
 	let(:client) {Async::HTTP::Client.new(endpoint, protocol)}
 	

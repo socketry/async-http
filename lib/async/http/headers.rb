@@ -18,47 +18,31 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'async/io/endpoint'
-
-require_relative 'protocol'
-
 module Async
 	module HTTP
-		class Server
-			def initialize(endpoint, protocol_class = Protocol::HTTP1)
-				@endpoint = endpoint
-				@protocol_class = protocol_class
+		class Headers < Hash
+			def []= key, value
+				super symbolize(key), value
 			end
 			
-			def handle_request(request, peer, address)
-				[200, {"Content-Type" => "text/plain"}, ["Hello World"]]
-			end
-			
-			def accept(peer, address, task: Task.current)
-				stream = Async::IO::Stream.new(peer)
-				protocol = @protocol_class.server(stream)
+			def each
+				return to_enum unless block_given?
 				
-				# Async.logger.debug(self) {"Incoming connnection from #{address.inspect}"}
-				
-				hijack = catch(:hijack) do
-					protocol.receive_requests do |request|
-						# Async.logger.debug(self) {"Incoming request from #{address.inspect}: #{request.method} #{request.path}"}
-						handle_request(request, peer, address)
-					end
+				super do |key, value|
+					yield stringify(key), value
 				end
-				
-				if hijack
-					hijack.call(peer)
-				end
-			rescue EOFError, Errno::ECONNRESET, Errno::EPIPE
-				# Sometimes client will disconnect without completing a result or reading the entire buffer.
-				return nil
-			ensure
-				peer.close
 			end
 			
-			def run
-				@endpoint.accept(&self.method(:accept))
+			def symbolize(value)
+				Headers[value]
+			end
+			
+			def stringify(key)
+				key.to_s.tr('_', '-')
+			end
+			
+			def self.[] value
+				value.downcase.tr('-', '_').to_sym
 			end
 		end
 	end

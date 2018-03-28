@@ -25,44 +25,38 @@ require 'async/reactor'
 require 'async/io/ssl_socket'
 require 'async/http/url_endpoint'
 
-RSpec.describe Async::HTTP::Client do
+RSpec.describe Async::HTTP::Client, timeout: 5 do
 	include_context Async::RSpec::Reactor
 	
 	describe Async::HTTP::Protocol::HTTP1 do
-		let(:endpoint) {Async::IO::Endpoint.tcp('127.0.0.1', 9294, reuse_port: true)}
+		let(:endpoint) {Async::HTTP::URLEndpoint.parse('http://127.0.0.1:9294', reuse_port: true)}
 		
 		it "client can get resource" do
 			server = Async::HTTP::Server.new(endpoint, described_class)
 			client = Async::HTTP::Client.new(endpoint, described_class)
 			
-			reactor.async do |task|
-				server_task = task.async do
-					server.run
-				end
-				
-				response = client.get("/")
-				
-				expect(response).to be_success
-				server_task.stop
-				client.close
+			server_task = reactor.async do
+				server.run
 			end
+			
+			response = client.get("/")
+			
+			expect(response).to be_success
+			server_task.stop
+			client.close
 		end
 	end
 	
 	describe Async::HTTP::Protocol::HTTPS do
 		let(:endpoint) {Async::HTTP::URLEndpoint.parse('https://www.codeotaku.com')}
 		
-		let(:headers) do
-			{':authority' => 'www.codeotaku.com'}
-		end
-		
 		it "can request remote resource" do
 			client = Async::HTTP::Client.new(endpoint, described_class)
 			
-			response = client.get("/index", headers)
+			response = client.get("/index")
 			expect(response).to be_success
 			
-			response = client.get("/index", headers)
+			response = client.get("/index")
 			expect(response).to be_success
 			
 			client.close

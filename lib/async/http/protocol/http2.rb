@@ -20,6 +20,7 @@
 
 require_relative 'request'
 require_relative 'response'
+require_relative '../headers'
 
 require 'async/notification'
 
@@ -37,6 +38,14 @@ module Async
 				def self.server(stream)
 					self.new(::HTTP2::Server.new, stream)
 				end
+				
+				HTTPS = 'https'.freeze
+				SCHEME = ':scheme'.freeze
+				METHOD = ':method'.freeze
+				PATH = ':path'.freeze
+				AUTHORITY = ':authority'.freeze
+				REASON = ':reason'.freeze
+				STATUS = ':status'.freeze
 				
 				def initialize(controller, stream)
 					@controller = controller
@@ -72,15 +81,11 @@ module Async
 				
 				def read_in_background(task: Task.current)
 					task.async do |nested_task|
-						while true
-							if data = @stream.io.read(10)
-								# Async.logger.debug(self) {"Reading data: #{data.size} bytes"}
-								@controller << data
-							else
-								Async.logger.debug(self) {"Connection reset by peer!"}
-								break
-							end
+						while data = @stream.io.read(10)
+							@controller << data
 						end
+						
+						Async.logger.debug(self) {"Connection reset by peer!"}
 					end
 				end
 				
@@ -95,17 +100,19 @@ module Async
 					@controller.on(:stream) do |stream|
 						request = Request.new
 						request.version = "HTTP/2.0"
-						request.headers = {}
+						request.headers = Headers.new
 						
 						# stream.on(:active) { } # fires when stream transitions to open state
 						# stream.on(:close) { } # stream is closed by client and server
 						
 						stream.on(:headers) do |headers|
 							headers.each do |key, value|
-								if key == ':method'
+								if key == METHOD
 									request.method = value
-								elsif key == ':path'
+								elsif key == PATH
 									request.path = value
+								elsif key == AUTHORITY
+									request.authority = value
 								else
 									request.headers[key] = value
 								end
@@ -120,7 +127,7 @@ module Async
 							response = yield request
 							
 							# send response
-							stream.headers(':status' => response[0].to_s)
+							stream.headers(STATUS => response[0].to_s)
 							
 							stream.headers(response[1]) unless response[1].empty?
 							
@@ -137,13 +144,16 @@ module Async
 					end
 				end
 				
-				def send_request(method, path, headers = {}, body = nil)
+				RESPONSE_VERSION = 'HTTP/2'.freeze
+				
+				def send_request(authority, method, path, headers = {}, body = nil)
 					stream = @controller.new_stream
 					
 					internal_headers = {
-						':scheme' => 'https',
-						':method' => method,
-						':path' => path,
+						SCHEME => HTTPS,
+						METHOD => method,
+						PATH => path,
+						AUTHORITY => authority,
 					}.merge(headers)
 					
 					stream.headers(internal_headers, end_stream: true)
@@ -157,17 +167,17 @@ module Async
 					# end
 					
 					response = Response.new
-					response.version = "HTTP/2"
-					response.headers = {}
+					response.version = RESPONSE_VERSION
+					response.headers = Headers.new
 					response.body = Async::IO::BinaryString.new
 					
 					stream.on(:headers) do |headers|
 						# Async.logger.debug(self) {"Stream headers: #{headers.inspect}"}
 						
 						headers.each do |key, value|
-							if key == ':status'
+							if key == STATUS
 								response.status = value.to_i
-							elsif key == ':reason'
+							elsif key == REASON
 								response.reason = value
 							else
 								response.headers[key] = value

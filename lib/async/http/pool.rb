@@ -112,8 +112,10 @@ module Async
 					end
 				end
 				
-				Async.logger.debug(self) {"No available resources, allocating new one..."}
-				return create_resource
+				if !@limit or @available.count < @limit
+					Async.logger.debug(self) {"No available resources, allocating new one..."}
+					return create_resource
+				end
 			end
 		end
 	end

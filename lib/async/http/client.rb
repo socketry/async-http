@@ -25,10 +25,11 @@ require_relative 'protocol'
 module Async
 	module HTTP
 		class Client
-			def initialize(endpoint, protocol = Protocol::HTTPS, **options)
+			def initialize(endpoint, protocol = nil, authority = nil, **options)
 				@endpoint = endpoint
 				
-				@protocol = protocol
+				@protocol = protocol || endpoint.protocol
+				@authority = authority || endpoint.hostname
 				
 				@connections = connect(**options)
 			end
@@ -59,7 +60,7 @@ module Async
 			
 			def request(*args)
 				@connections.acquire do |connection|
-					connection.send_request(*args)
+					connection.send_request(@authority, *args)
 				end
 			end
 			

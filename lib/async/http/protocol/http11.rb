@@ -22,14 +22,15 @@ require 'async/io/protocol/line'
 
 require_relative 'request'
 require_relative 'response'
+require_relative '../headers'
 
 module Async
 	module HTTP
 		module Protocol
 			# Implements basic HTTP/1.1 request/response.
 			class HTTP11 < Async::IO::Protocol::Line
-				HTTP_CONTENT_LENGTH = 'HTTP_CONTENT_LENGTH'.freeze
-				HTTP_TRANSFER_ENCODING = 'HTTP_TRANSFER_ENCODING'.freeze
+				CONTENT_LENGTH = Headers['Content-Length']
+				TRANSFER_ENCODING = Headers['Transfer-Encoding']
 				
 				CRLF = "\r\n".freeze
 				
@@ -53,7 +54,6 @@ module Async
 					alias client new
 				end
 				
-				HTTP_CONNECTION = 'HTTP_CONNECTION'.freeze
 				KEEP_ALIVE = 'keep-alive'.freeze
 				CLOSE = 'close'.freeze
 				
@@ -64,7 +64,7 @@ module Async
 				end
 				
 				def keep_alive?(headers)
-					headers[HTTP_CONNECTION] != CLOSE
+					headers[:connection] != CLOSE
 				end
 				
 				# Server loop.
@@ -88,16 +88,20 @@ module Async
 				end
 				
 				# Client request.
-				def send_request(method, path, headers = {}, body = [])
-					write_request(method, path, version, headers, body)
+				def send_request(authority, method, path, headers = {}, body = [])
+					Async.logger.debug(self) {"#{method} #{path} #{headers.inspect}"}
+					
+					write_request(authority, method, path, version, headers, body)
 					
 					return Response.new(*read_response)
 				rescue EOFError
 					return nil
 				end
 				
-				def write_request(method, path, version, headers, body)
+				def write_request(authority, method, path, version, headers, body)
 					@stream.write("#{method} #{path} #{version}\r\n")
+					@stream.write("Host: #{authority}\r\n")
+					
 					write_headers(headers)
 					write_body(body)
 					
@@ -121,7 +125,7 @@ module Async
 					headers = read_headers
 					body = read_body(headers)
 					
-					return method, path, version, headers, body
+					return headers.delete(:host), method, path, version, headers, body
 				end
 				
 				def write_response(version, status, headers, body)
@@ -142,11 +146,11 @@ module Async
 					end
 				end
 				
-				def read_headers(headers = {})
+				def read_headers(headers = Headers.new)
 					# Parsing headers:
 					each_line do |line|
 						if line =~ /^([a-zA-Z\-]+):\s*(.+?)\s*$/
-							headers["HTTP_#{$1.tr('-', '_').upcase}"] = $2
+							headers[$1] = $2
 						else
 							break
 						end
@@ -178,7 +182,7 @@ module Async
 				end
 				
 				def read_body(headers)
-					if headers[HTTP_TRANSFER_ENCODING] == 'chunked'
+					if headers[:transfer_encoding] == 'chunked'
 						buffer = Async::IO::BinaryString.new
 						
 						while true
@@ -195,7 +199,7 @@ module Async
 						end
 						
 						return buffer
-					elsif content_length = headers[HTTP_CONTENT_LENGTH]
+					elsif content_length = headers[:content_length]
 						return @stream.read(Integer(content_length))
 					end
 				end

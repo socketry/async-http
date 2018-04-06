@@ -20,7 +20,6 @@
 
 require_relative 'request'
 require_relative 'response'
-require_relative '../headers'
 
 require 'async/notification'
 
@@ -102,7 +101,7 @@ module Async
 					@controller.on(:stream) do |stream|
 						request = Request.new
 						request.version = "HTTP/2.0"
-						request.headers = Headers.new
+						request.headers = {}
 						
 						# stream.on(:active) { } # fires when stream transitions to open state
 						# stream.on(:close) { } # stream is closed by client and server
@@ -170,7 +169,7 @@ module Async
 					
 					response = Response.new
 					response.version = RESPONSE_VERSION
-					response.headers = Headers.new
+					response.headers = {}
 					response.body = Async::IO::BinaryString.new
 					
 					stream.on(:headers) do |headers|

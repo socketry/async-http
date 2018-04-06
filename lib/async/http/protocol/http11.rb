@@ -22,16 +22,12 @@ require 'async/io/protocol/line'
 
 require_relative 'request'
 require_relative 'response'
-require_relative '../headers'
 
 module Async
 	module HTTP
 		module Protocol
 			# Implements basic HTTP/1.1 request/response.
 			class HTTP11 < Async::IO::Protocol::Line
-				CONTENT_LENGTH = Headers['Content-Length']
-				TRANSFER_ENCODING = Headers['Transfer-Encoding']
-				
 				CRLF = "\r\n".freeze
 				
 				def initialize(stream)
@@ -64,7 +60,7 @@ module Async
 				end
 				
 				def keep_alive?(headers)
-					headers[:connection] != CLOSE
+					headers['connection'] != CLOSE
 				end
 				
 				# Server loop.
@@ -125,7 +121,7 @@ module Async
 					headers = read_headers
 					body = read_body(headers)
 					
-					return headers.delete(:host), method, path, version, headers, body
+					return headers.delete('host'), method, path, version, headers, body
 				end
 				
 				def write_response(version, status, headers, body)
@@ -146,11 +142,11 @@ module Async
 					end
 				end
 				
-				def read_headers(headers = Headers.new)
+				def read_headers(headers = {})
 					# Parsing headers:
 					each_line do |line|
 						if line =~ /^([a-zA-Z\-]+):\s*(.+?)\s*$/
-							headers[$1] = $2
+							headers[$1.downcase] = $2
 						else
 							break
 						end
@@ -182,7 +178,7 @@ module Async
 				end
 				
 				def read_body(headers)
-					if headers[:transfer_encoding] == 'chunked'
+					if headers['transfer-encoding'] == 'chunked'
 						buffer = Async::IO::BinaryString.new
 						
 						while true
@@ -199,7 +195,7 @@ module Async
 						end
 						
 						return buffer
-					elsif content_length = headers[:content_length]
+					elsif content_length = headers['content-length']
 						return @stream.read(Integer(content_length))
 					end
 				end

@@ -35,7 +35,7 @@ RSpec.describe Async::HTTP::Protocol::HTTP11 do
 			expect(method).to be == 'GET'
 			expect(url).to be == '/'
 			expect(version).to be == 'HTTP/1.1'
-			expect(headers).to be == {:accept => '*/*'}
+			expect(headers).to be == {'accept' => '*/*'}
 			expect(body).to be nil
 		end
 	end
@@ -51,7 +51,7 @@ RSpec.describe Async::HTTP::Protocol::HTTP11 do
 			expect(method).to be == 'GET'
 			expect(url).to be == '/'
 			expect(version).to be == 'HTTP/1.1'
-			expect(headers).to be == {:content_length => '11'}
+			expect(headers).to be == {'content-length' => '11'}
 			expect(body).to be == "Hello World"
 		end
 	end

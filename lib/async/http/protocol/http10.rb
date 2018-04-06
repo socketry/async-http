@@ -35,7 +35,7 @@ module Async
 				end
 				
 				def keep_alive?(headers)
-					headers[:connection] == KEEP_ALIVE
+					headers['connection'] == KEEP_ALIVE
 				end
 				
 				# Server loop.
@@ -64,7 +64,7 @@ module Async
 				end
 				
 				def read_body(headers)
-					if content_length = headers[:content_length]
+					if content_length = headers['content-length']
 						return @stream.read(Integer(content_length))
 					# elsif !keep_alive?(headers)
 					# 	return @stream.read

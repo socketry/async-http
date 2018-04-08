@@ -20,9 +20,6 @@
 
 require_relative 'http11'
 
-require_relative 'request'
-require_relative 'response'
-
 module Async
 	module HTTP
 		module Protocol

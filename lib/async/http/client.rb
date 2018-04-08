@@ -57,14 +57,23 @@ module Async
 			VERBS = ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE']
 			
 			VERBS.each do |verb|
-				define_method(verb.downcase) do |*args|
-					self.request(verb, *args)
+				define_method(verb.downcase) do |*args, &block|
+					self.request(verb, *args, &block)
 				end
 			end
 			
-			def request(*args)
+			def request(*args, &block)
 				@connections.acquire do |connection|
-					connection.send_request(@authority, *args)
+					response = connection.send_request(@authority, *args)
+					
+					begin
+						yield response if block_given?
+					ensure
+						# This forces the stream to complete reading.
+						response.close
+					end
+					
+					return response
 				end
 			end
 			

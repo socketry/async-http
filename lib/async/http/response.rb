@@ -18,26 +18,28 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+require_relative 'body'
+
 module Async
 	module HTTP
-		module Protocol
-			class Response < Struct.new(:version, :status, :reason, :headers, :body)
-				def continue?
-					status == 100
-				end
-				
-				def success?
-					status >= 200 && status < 300
-				end
-				
-				def redirection?
-					status >= 300 && status < 400
-				end
-				
-				def failure?
-					status >= 400 && status < 600
-				end
+		class Response < Struct.new(:version, :status, :reason, :headers, :body)
+			def continue?
+				status == 100
 			end
+			
+			def success?
+				status >= 200 && status < 300
+			end
+			
+			def redirection?
+				status >= 300 && status < 400
+			end
+			
+			def failure?
+				status >= 400 && status < 600
+			end
+			
+			include BufferedBody::Reader
 		end
 	end
 end

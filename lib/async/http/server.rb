@@ -25,9 +25,13 @@ require_relative 'protocol'
 module Async
 	module HTTP
 		class Server
-			def initialize(endpoint, protocol_class = Protocol::HTTP1)
+			def initialize(endpoint, protocol_class = Protocol::HTTP1, &block)
 				@endpoint = endpoint
-				@protocol_class = protocol_class
+				@protocol_class = protocol_class || endpoint.protocol
+				
+				if block_given?
+					self.define_singleton_method(:handle_request, block)
+				end
 			end
 			
 			def handle_request(request, peer, address)

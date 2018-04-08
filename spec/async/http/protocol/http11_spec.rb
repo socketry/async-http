@@ -52,7 +52,7 @@ RSpec.describe Async::HTTP::Protocol::HTTP11 do
 			expect(url).to be == '/'
 			expect(version).to be == 'HTTP/1.1'
 			expect(headers).to be == {'content-length' => '11'}
-			expect(body).to be == "Hello World"
+			expect(body.read).to be == "Hello World"
 		end
 	end
 end

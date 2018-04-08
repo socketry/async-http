@@ -18,8 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'request'
-require_relative 'response'
+require_relative '../request'
+require_relative '../response'
 
 require 'async/notification'
 
@@ -45,6 +45,7 @@ module Async
 				AUTHORITY = ':authority'.freeze
 				REASON = ':reason'.freeze
 				STATUS = ':status'.freeze
+				VERSION = 'HTTP/2.0'.freeze
 				
 				def initialize(controller, stream)
 					@controller = controller
@@ -55,18 +56,19 @@ module Async
 						@stream.flush
 					end
 					
-					# @controller.on(:frame_sent) do |frame|
-					# 	Async.logger.debug(self) {"Sent frame: #{frame.inspect}"}
-					# end
-					# 
-					# @controller.on(:frame_received) do |frame|
-					# 	Async.logger.debug(self) {"Received frame: #{frame.inspect}"}
-					# end
+					@controller.on(:frame_sent) do |frame|
+						Async.logger.debug(self) {"Sent frame: #{frame.inspect}"}
+					end
+					
+					@controller.on(:frame_received) do |frame|
+						Async.logger.debug(self) {"Received frame: #{frame.inspect}"}
+					end
 					
 					if @controller.is_a? ::HTTP2::Client
 						@controller.send_connection_preface
-						@reader = read_in_background
 					end
+					
+					@reader = read_in_background
 				end
 				
 				# Multiple requests can be processed at the same time.
@@ -96,12 +98,13 @@ module Async
 					@stream.close
 				end
 				
-				def receive_requests(&block)
+				def receive_requests(task: Task.current, &block)
 					# emits new streams opened by the client
 					@controller.on(:stream) do |stream|
 						request = Request.new
-						request.version = "HTTP/2.0"
+						request.version = VERSION
 						request.headers = {}
+						request.body = Body.new
 						
 						# stream.on(:active) { } # fires when stream transitions to open state
 						# stream.on(:close) { } # stream is closed by client and server
@@ -120,29 +123,28 @@ module Async
 							end
 						end
 						
-						stream.on(:data) do |body|
-							request.body = body
+						stream.on(:data) do |chunk|
+							request.body.write(chunk)
 						end
 						
 						stream.on(:half_close) do
 							response = yield request
 							
 							# send response
-							stream.headers(STATUS => response[0].to_s)
+							headers = {STATUS => response[0].to_s}
+							headers.update(response[1])
 							
-							stream.headers(response[1]) unless response[1].empty?
+							stream.headers(headers, end_stream: false)
 							
 							response[2].each do |chunk|
 								stream.data(chunk, end_stream: false)
 							end
 							
-							stream.data("", end_stream: true)
+							stream.close
 						end
 					end
 					
-					while data = @stream.io.read(1024)
-						@controller << data
-					end
+					@reader.wait
 				end
 				
 				RESPONSE_VERSION = 'HTTP/2'.freeze
@@ -157,20 +159,22 @@ module Async
 						AUTHORITY => authority,
 					}.merge(headers)
 					
-					stream.headers(internal_headers, end_stream: true)
+					stream.headers(internal_headers, end_stream: body.nil?)
 					
-					# if body
-					# 	body.each do |chunk|
-					# 		stream.data(chunk, end_stream: false)
-					# 	end
-					# 
-					# 	stream.data("", end_stream: true)
-					# end
+					if body
+						body.each do |chunk|
+							stream.data(chunk, end_stream: false)
+						end
+					
+						stream.close
+					end
+					
+					finished = Async::Notification.new
 					
 					response = Response.new
 					response.version = RESPONSE_VERSION
 					response.headers = {}
-					response.body = Async::IO::BinaryString.new
+					response.body = Body.new
 					
 					stream.on(:headers) do |headers|
 						# Async.logger.debug(self) {"Stream headers: #{headers.inspect}"}
@@ -184,14 +188,14 @@ module Async
 								response.headers[key] = value
 							end
 						end
+						
+						finished.signal
 					end
 					
-					stream.on(:data) do |body|
-						# Async.logger.debug(self) {"Stream data: #{body.size} bytes"}
-						response.body << body
+					stream.on(:data) do |chunk|
+						# Async.logger.debug(self) {"Stream data: #{chunk.inspect}"}
+						response.body.write(chunk.to_s)
 					end
-					
-					finished = Async::Notification.new
 					
 					stream.on(:half_close) do
 						# Async.logger.debug(self) {"Stream half-closed."}
@@ -199,7 +203,7 @@ module Async
 					
 					stream.on(:close) do
 						# Async.logger.debug(self) {"Stream closed, sending signal."}
-						finished.signal
+						response.body.close
 					end
 					
 					@stream.flush

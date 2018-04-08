@@ -20,8 +20,8 @@
 
 require 'async/io/protocol/line'
 
-require_relative 'request'
-require_relative 'response'
+require_relative '../request'
+require_relative '../response'
 
 module Async
 	module HTTP
@@ -165,6 +165,7 @@ module Async
 							@stream.write("#{chunk.bytesize.to_s(16).upcase}\r\n")
 							@stream.write(chunk)
 							@stream.write(CRLF)
+							@stream.flush
 						end
 						
 						@stream.write("0\r\n\r\n")
@@ -177,26 +178,51 @@ module Async
 					end
 				end
 				
-				def read_body(headers)
-					if headers['transfer-encoding'] == 'chunked'
-						buffer = Async::IO::BinaryString.new
+				class ChunkedBody
+					def initialize(protocol)
+						@protocol = protocol
+						@closed = false
+					end
+					
+					def closed?
+						@closed
+					end
+					
+					def each
+						return if @closed
 						
 						while true
-							size = read_line.to_i(16)
+							size = @protocol.read_line.to_i(16)
 							
 							if size == 0
-								read_line
-								break
+								@closed = true
+								@protocol.read_line
+								
+								return
 							end
 							
-							buffer << @stream.read(size)
+							yield @protocol.stream.read(size)
 							
-							read_line # Consume the trailing CRLF
+							@protocol.read_line # Consume the trailing CRLF
+						end
+					end
+					
+					def read
+						buffer = BinaryString.new
+						
+						self.each do |chunk|
+							buffer << chunk
 						end
 						
 						return buffer
+					end
+				end
+				
+				def read_body(headers)
+					if headers['transfer-encoding'] == 'chunked'
+						return ChunkedBody.new(self)
 					elsif content_length = headers['content-length']
-						return @stream.read(Integer(content_length))
+						return FixedBody.new(Integer(content_length), @stream)
 					end
 				end
 			end

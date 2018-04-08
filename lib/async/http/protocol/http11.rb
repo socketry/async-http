@@ -173,8 +173,8 @@ module Async
 						buffer = String.new
 						body.each{|chunk| buffer << chunk}
 						
-						@stream.write("Content-Length: #{chunk.bytesize}\r\n\r\n")
-						@stream.write(chunk)
+						@stream.write("Content-Length: #{buffer.bytesize}\r\n\r\n")
+						@stream.write(buffer)
 					end
 				end
 				
@@ -208,7 +208,7 @@ module Async
 					end
 					
 					def read
-						buffer = BinaryString.new
+						buffer = Async::IO::BinaryString.new
 						
 						self.each do |chunk|
 							buffer << chunk

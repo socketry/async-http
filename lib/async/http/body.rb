@@ -22,42 +22,6 @@ require 'async/queue'
 
 module Async
 	module HTTP
-		class BufferedBody
-			def initialize(body)
-				@chunks = []
-				
-				body.each do |chunk|
-					@chunks << chunk
-				end
-			end
-			
-			def each(&block)
-				@chunks.each(&block)
-			end
-			
-			def read
-				@buffer ||= @chunks.join
-			end
-			
-			def closed?
-				true
-			end
-			
-			module Reader
-				def read
-					self.body ? self.body.read : nil
-				end
-				
-				def close
-					return if self.body.nil? or self.body.closed?
-					
-					unless self.body.is_a? BufferedBody
-						self.body = BufferedBody.new(self.body)
-					end
-				end
-			end
-		end
-		
 		class Body < Async::Queue
 			def initialize
 				super
@@ -75,25 +39,66 @@ module Async
 				while chunk = self.dequeue
 					yield chunk
 				end
+				
+				@closed = true
 			end
 			
 			def read
-				buffer = BinaryString.new
+				buffer = Async::IO::BinaryString.new
 				
-				while chunk = self.dequeue
+				self.each do |chunk|
 					buffer << chunk
 				end
 				
 				return buffer
 			end
 			
+			alias join read
+			
 			def write(chunk)
 				self.enqueue(chunk)
 			end
 			
 			def close
-				@closed = true
 				self.enqueue(nil)
+			end
+		end
+		
+		class BufferedBody
+			def initialize(body)
+				@chunks = []
+				
+				body.each do |chunk|
+					@chunks << chunk
+				end
+			end
+			
+			def each(&block)
+				@chunks.each(&block)
+			end
+			
+			def read
+				@buffer ||= @chunks.join
+			end
+			
+			alias join read
+			
+			def closed?
+				true
+			end
+			
+			module Reader
+				def read
+					self.body ? self.body.read : nil
+				end
+				
+				def close
+					return if self.body.nil? or self.body.closed?
+					
+					unless self.body.is_a? BufferedBody
+						self.body = BufferedBody.new(self.body)
+					end
+				end
 			end
 		end
 		
@@ -127,6 +132,8 @@ module Async
 				
 				return buffer
 			end
+			
+			alias join read
 		end
 	end
 end

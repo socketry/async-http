@@ -106,9 +106,6 @@ module Async
 						request.headers = {}
 						request.body = Body.new
 						
-						# stream.on(:active) { } # fires when stream transitions to open state
-						# stream.on(:close) { } # stream is closed by client and server
-						
 						stream.on(:headers) do |headers|
 							headers.each do |key, value|
 								if key == METHOD
@@ -124,11 +121,13 @@ module Async
 						end
 						
 						stream.on(:data) do |chunk|
-							request.body.write(chunk)
+							request.body.write(chunk.to_s) unless chunk.empty?
 						end
 						
 						stream.on(:half_close) do
 							response = yield request
+							
+							request.body.close
 							
 							# send response
 							headers = {STATUS => response[0].to_s}
@@ -140,7 +139,7 @@ module Async
 								stream.data(chunk, end_stream: false)
 							end
 							
-							stream.close
+							stream.data("", end_stream: true)
 						end
 					end
 					
@@ -165,8 +164,8 @@ module Async
 						body.each do |chunk|
 							stream.data(chunk, end_stream: false)
 						end
-					
-						stream.close
+						
+						stream.data("", end_stream: true)
 					end
 					
 					finished = Async::Notification.new
@@ -193,16 +192,16 @@ module Async
 					end
 					
 					stream.on(:data) do |chunk|
-						# Async.logger.debug(self) {"Stream data: #{chunk.inspect}"}
-						response.body.write(chunk.to_s)
+						Async.logger.debug(self) {"Stream data: #{chunk.inspect}"}
+						response.body.write(chunk.to_s) unless chunk.empty?
 					end
 					
 					stream.on(:half_close) do
-						# Async.logger.debug(self) {"Stream half-closed."}
+						Async.logger.debug(self) {"Stream half-closed."}
 					end
 					
 					stream.on(:close) do
-						# Async.logger.debug(self) {"Stream closed, sending signal."}
+						Async.logger.debug(self) {"Stream closed, sending signal."}
 						response.body.close
 					end
 					

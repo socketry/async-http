@@ -29,7 +29,48 @@ require 'async/io/ssl_socket'
 require 'async/rspec/ssl'
 
 RSpec.shared_examples Async::HTTP::Body do
-	it "client can get resource" do
+	it "can stream requests" do
+		client = Async::HTTP::Client.new(client_endpoint, described_class)
+		
+		notification = Async::Notification.new
+		
+		server = Async::HTTP::Server.new(server_endpoint, described_class) do |request, peer, address|
+			input = request.body
+			output = Async::HTTP::Body.new
+			
+			Async::Task.current.async do |task|
+				input.each do |chunk|
+					output.write(chunk.reverse)
+				end
+				
+				output.close
+			end
+			
+			[200, {}, output]
+		end
+		
+		server_task = reactor.async do
+			server.run
+		end
+		
+		output = Async::HTTP::Body.new
+		
+		reactor.async do |task|
+			output.write("Hello World!")
+			output.close
+		end
+		
+		response = client.post("/", {}, output) do |response|
+			input = response.body
+			reversed = input.read
+		end
+		
+		expect(response).to be_success
+		server_task.stop
+		client.close
+	end
+	
+	it "can stream response" do
 		client = Async::HTTP::Client.new(client_endpoint, described_class)
 		
 		notification = Async::Notification.new
@@ -70,7 +111,7 @@ RSpec.shared_examples Async::HTTP::Body do
 	end
 end
 
-RSpec.describe Async::HTTP::Protocol::HTTP1 do
+RSpec.describe Async::HTTP::Protocol::HTTP1, timeout: 2 do
 	include_context Async::RSpec::Reactor
 	
 	let(:endpoint) {Async::HTTP::URLEndpoint.parse('http://127.0.0.1:9296', reuse_port: true)}
@@ -80,7 +121,7 @@ RSpec.describe Async::HTTP::Protocol::HTTP1 do
 	it_should_behave_like Async::HTTP::Body
 end
 
-RSpec.describe Async::HTTP::Protocol::HTTPS do
+RSpec.describe Async::HTTP::Protocol::HTTPS, timeout: 2 do
 	include_context Async::RSpec::Reactor
 	include_context Async::RSpec::SSL::ValidCertificate
 	

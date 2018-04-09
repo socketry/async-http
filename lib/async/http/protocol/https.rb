@@ -26,7 +26,7 @@ require_relative '../pool'
 require 'openssl'
 
 unless OpenSSL::SSL::SSLContext.instance_methods.include? :alpn_protocols=
-	abort "OpenSSL implementation doesn't support ALPN."
+	warn "OpenSSL implementation doesn't support ALPN."
 end
 
 module Async

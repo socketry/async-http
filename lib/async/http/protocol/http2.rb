@@ -202,6 +202,7 @@ module Async
 					
 					stream.on(:close) do
 						Async.logger.debug(self) {"Stream closed, sending signal."}
+						# TODO should we prefer response.close?
 						response.body.close
 					end
 					

@@ -72,6 +72,8 @@ module Async
 						
 						write_response(request.version, status, headers, body)
 						
+						request.close
+						
 						unless keep_alive?(request.headers) and keep_alive?(headers)
 							@keep_alive = false
 							
@@ -195,15 +197,17 @@ module Async
 							size = @protocol.read_line.to_i(16)
 							
 							if size == 0
-								@closed = true
 								@protocol.read_line
+								
+								@closed = true
 								
 								return
 							end
 							
-							yield @protocol.stream.read(size)
-							
+							chunk = @protocol.stream.read(size)
 							@protocol.read_line # Consume the trailing CRLF
+							
+							yield chunk
 						end
 					end
 					
@@ -215,6 +219,10 @@ module Async
 						end
 						
 						return buffer
+					end
+					
+					def close
+						self.each {}
 					end
 				end
 				

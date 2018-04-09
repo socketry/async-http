@@ -134,6 +134,10 @@ module Async
 			end
 			
 			alias join read
+			
+			def close
+				read
+			end
 		end
 	end
 end

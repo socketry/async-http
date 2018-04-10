@@ -29,11 +29,9 @@ require 'async/io/ssl_socket'
 require 'async/rspec/ssl'
 
 RSpec.shared_examples Async::HTTP::Body do
+	let(:client) {Async::HTTP::Client.new(client_endpoint, described_class)}
+	
 	it "can stream requests" do
-		client = Async::HTTP::Client.new(client_endpoint, described_class)
-		
-		notification = Async::Notification.new
-		
 		server = Async::HTTP::Server.new(server_endpoint, described_class) do |request, peer, address|
 			input = request.body
 			output = Async::HTTP::Body.new
@@ -71,8 +69,6 @@ RSpec.shared_examples Async::HTTP::Body do
 	end
 	
 	it "can stream response" do
-		client = Async::HTTP::Client.new(client_endpoint, described_class)
-		
 		notification = Async::Notification.new
 		
 		server = Async::HTTP::Server.new(server_endpoint, described_class) do |request, peer, address|

@@ -127,7 +127,7 @@ module Async
 						stream.on(:half_close) do
 							response = yield request
 							
-							request.body.close
+							request.body.finish
 							
 							# send response
 							headers = {STATUS => response[0].to_s}
@@ -202,8 +202,8 @@ module Async
 					
 					stream.on(:close) do
 						Async.logger.debug(self) {"Stream closed, sending signal."}
-						# TODO should we prefer response.close?
-						response.body.close
+						# TODO should we prefer `response.finish`?
+						response.body.finish
 					end
 					
 					@stream.flush

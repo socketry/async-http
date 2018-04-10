@@ -72,7 +72,7 @@ module Async
 						
 						write_response(request.version, status, headers, body)
 						
-						request.close
+						request.finish
 						
 						unless keep_alive?(request.headers) and keep_alive?(headers)
 							@keep_alive = false

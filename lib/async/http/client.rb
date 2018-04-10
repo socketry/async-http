@@ -70,7 +70,7 @@ module Async
 						yield response if block_given?
 					ensure
 						# This forces the stream to complete reading.
-						response.close
+						response.finish
 					end
 					
 					return response

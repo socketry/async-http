@@ -26,28 +26,28 @@ module Async
 			def initialize
 				super
 				
-				@closed = false
+				@finished = false
 			end
 			
-			def closed?
-				@closed
+			def finished?
+				@finished
 			end
 			
 			def each
-				return if @closed
+				return if @finished
 				
 				while chunk = self.dequeue
 					yield chunk
 				end
 				
-				@closed = true
+				@finished = true
 			end
 			
 			def read
-				return if @closed
+				return if @finished
 				
 				unless chunk = self.dequeue
-					@closed = true
+					@finished = true
 				end
 				
 				return chunk
@@ -69,7 +69,7 @@ module Async
 				self.enqueue(chunk)
 			end
 			
-			def close
+			def finish
 				self.enqueue(nil)
 			end
 		end
@@ -113,7 +113,7 @@ module Async
 				@index = 0
 			end
 			
-			def closed?
+			def finished?
 				true
 			end
 			
@@ -122,8 +122,8 @@ module Async
 					self.body ? self.body.join : nil
 				end
 				
-				def close
-					return if self.body.nil? or self.body.closed?
+				def finish
+					return if self.body.nil? or self.body.finished?
 					
 					unless self.body.is_a? BufferedBody
 						self.body = BufferedBody.new(self.body)
@@ -135,22 +135,22 @@ module Async
 		class ChunkedBody
 			def initialize(protocol)
 				@protocol = protocol
-				@closed = false
+				@finished = false
 			end
 			
-			def closed?
-				@closed
+			def finished?
+				@finished
 			end
 			
 			def read
-				return nil if @closed
+				return nil if @finished
 				
 				size = @protocol.read_line.to_i(16)
 				
 				if size == 0
 					@protocol.read_line
 					
-					@closed = true
+					@finished = true
 					
 					return nil
 				end
@@ -177,7 +177,7 @@ module Async
 				return buffer
 			end
 			
-			def close
+			def finish
 				self.each {}
 			end
 		end
@@ -191,7 +191,7 @@ module Async
 				@stream = stream
 			end
 			
-			def closed?
+			def finished?
 				@remaining == 0
 			end
 			
@@ -221,7 +221,7 @@ module Async
 			
 			alias join read
 			
-			def close
+			def finish
 				read
 			end
 		end

@@ -27,6 +27,18 @@ require 'openssl'
 
 unless OpenSSL::SSL::SSLContext.instance_methods.include? :alpn_protocols=
 	warn "OpenSSL implementation doesn't support ALPN."
+	
+	class OpenSSL::SSL::SSLContext
+		def alpn_protocols= names
+			return names
+		end
+	end
+	
+	class OpenSSL::SSL::SSLSocket
+		def alpn_protocol
+			return nil
+		end
+	end
 end
 
 module Async

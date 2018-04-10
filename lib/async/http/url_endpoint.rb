@@ -21,11 +21,12 @@
 require 'async/io/endpoint'
 require 'async/io/ssl_socket'
 
+require_relative 'protocol/http1'
+require_relative 'protocol/https'
+
 module Async
 	module HTTP
 		class URLEndpoint < Async::IO::Endpoint
-			DEFAULT_ALPH_PROTOCOLS = ['h2', 'http/1.1'].freeze
-			
 			def self.parse(string, **options)
 				self.new(URI.parse(string), **options)
 			end
@@ -72,9 +73,18 @@ module Async
 				@options.fetch(:hostname, @url.hostname)
 			end
 			
+			DEFAULT_ALPN_PROTOCOLS = ['h2', 'http/1.1'].freeze
+			
+			def alpn_protocols
+				@options.fetch(:alpn_protocols, DEFAULT_ALPN_PROTOCOLS)
+			end
+			
 			def ssl_context
 				@options[:ssl_context] || ::OpenSSL::SSL::SSLContext.new.tap do |context|
-					context.alpn_protocols = @options.fetch(:alpn_protocols, DEFAULT_ALPH_PROTOCOLS)
+					if alpn_protocols = self.alpn_protocols
+						context.alpn_protocols = alpn_protocols
+					end
+					
 					context.set_params
 				end
 			end

@@ -44,6 +44,16 @@ module Async
 			end
 			
 			def read
+				return if @closed
+				
+				unless chunk = self.dequeue
+					@closed = true
+				end
+				
+				return chunk
+			end
+			
+			def join
 				buffer = Async::IO::BinaryString.new
 				
 				self.each do |chunk|
@@ -67,6 +77,7 @@ module Async
 		class BufferedBody
 			def initialize(body)
 				@chunks = []
+				@index = 0
 				
 				body.each do |chunk|
 					@chunks << chunk
@@ -74,14 +85,33 @@ module Async
 			end
 			
 			def each(&block)
-				@chunks.each(&block)
+				while @index < @chunks.count
+					yield @chunks[@index]
+					@index += 1
+				end
 			end
 			
 			def read
-				@buffer ||= @chunks.join
+				if chunk = @chunks[@index]
+					@index += 1
+				end
+				
+				return chunk
 			end
 			
-			alias join read
+			def join
+				buffer = Async::IO::BinaryString.new
+				
+				self.each do |chunk|
+					buffer << chunk
+				end
+				
+				return buffer
+			end
+			
+			def rewind
+				@index = 0
+			end
 			
 			def closed?
 				true
@@ -89,7 +119,7 @@ module Async
 			
 			module Reader
 				def read
-					self.body ? self.body.read : nil
+					self.body ? self.body.join : nil
 				end
 				
 				def close
@@ -99,6 +129,56 @@ module Async
 						self.body = BufferedBody.new(self.body)
 					end
 				end
+			end
+		end
+		
+		class ChunkedBody
+			def initialize(protocol)
+				@protocol = protocol
+				@closed = false
+			end
+			
+			def closed?
+				@closed
+			end
+			
+			def read
+				return nil if @closed
+				
+				size = @protocol.read_line.to_i(16)
+				
+				if size == 0
+					@protocol.read_line
+					
+					@closed = true
+					
+					return nil
+				end
+				
+				chunk = @protocol.stream.read(size)
+				@protocol.read_line # Consume the trailing CRLF
+				
+				return chunk
+			end
+			
+			def each
+				while chunk = self.read
+					yield chunk
+				end
+			end
+			
+			def join
+				buffer = Async::IO::BinaryString.new
+				
+				self.each do |chunk|
+					buffer << chunk
+				end
+				
+				return buffer
+			end
+			
+			def close
+				self.each {}
 			end
 		end
 		
@@ -116,16 +196,22 @@ module Async
 			end
 			
 			def each
-				while @remaining > 0
-					if chunk = @stream.read(CHUNK_LENGTH)
-						@remaining -= chunk.bytesize
-						
-						yield chunk
-					end
+				while chunk = self.read
+					yield chunk
 				end
 			end
 			
 			def read
+				if @remaining > 0
+					if chunk = @stream.read(CHUNK_LENGTH)
+						@remaining -= chunk.bytesize
+						
+						return chunk
+					end
+				end
+			end
+			
+			def join
 				buffer = @stream.read(@remaining)
 				
 				@remaining = 0

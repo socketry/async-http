@@ -180,52 +180,6 @@ module Async
 					end
 				end
 				
-				class ChunkedBody
-					def initialize(protocol)
-						@protocol = protocol
-						@closed = false
-					end
-					
-					def closed?
-						@closed
-					end
-					
-					def each
-						return if @closed
-						
-						while true
-							size = @protocol.read_line.to_i(16)
-							
-							if size == 0
-								@protocol.read_line
-								
-								@closed = true
-								
-								return
-							end
-							
-							chunk = @protocol.stream.read(size)
-							@protocol.read_line # Consume the trailing CRLF
-							
-							yield chunk
-						end
-					end
-					
-					def read
-						buffer = Async::IO::BinaryString.new
-						
-						self.each do |chunk|
-							buffer << chunk
-						end
-						
-						return buffer
-					end
-					
-					def close
-						self.each {}
-					end
-				end
-				
 				def read_body(headers)
 					if headers['transfer-encoding'] == 'chunked'
 						return ChunkedBody.new(self)

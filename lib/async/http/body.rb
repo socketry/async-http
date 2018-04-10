@@ -183,8 +183,6 @@ module Async
 		end
 		
 		class FixedBody
-			CHUNK_LENGTH = 1024*1024
-			
 			def initialize(length, stream)
 				@length = length
 				@remaining = length
@@ -203,7 +201,7 @@ module Async
 			
 			def read
 				if @remaining > 0
-					if chunk = @stream.read(CHUNK_LENGTH)
+					if chunk = @stream.read(@remaining)
 						@remaining -= chunk.bytesize
 						
 						return chunk

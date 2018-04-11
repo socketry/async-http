@@ -86,6 +86,8 @@ module Async
 					@endpoint.each do |endpoint|
 						peer = endpoint.connect
 						
+						peer.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
+						
 						stream = IO::Stream.new(peer)
 						
 						break @protocol.client(stream)

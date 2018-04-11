@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
 	spec.authors       = ["Samuel Williams"]
 	spec.email         = ["samuel.williams@oriontransfer.co.nz"]
 
-	spec.summary       = ""
+	spec.summary       = "A HTTP client and server library."
 	spec.homepage      = "https://github.com/socketry/async-http"
 
 	spec.files         = `git ls-files -z`.split("\x0").reject do |f|

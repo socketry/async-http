@@ -1,8 +1,6 @@
 # Async::HTTP
 
-A multi-process, multi-fiber HTTP client/server built on top of [async] and [async-io]. Each request is run within a light weight fiber and can block on up-stream requests without stalling the entire server process.
-
-*This code is a proof-of-concept and not intended (yet) for production use.* The entire stack requires more scrutiny both in terms of performance and security.
+An asynchronous client and server implementation of HTTP/1.0, HTTP/1.1 and HTTP/2.0 including TLS. Support for streaming requests and responses. Built on top of [async] and [async-io]. [falcon] provides a rack-compatible server.
 
 [![Build Status](https://secure.travis-ci.org/socketry/async-http.svg)](http://travis-ci.org/socketry/async-http)
 [![Code Climate](https://codeclimate.com/github/socketry/async-http.svg)](https://codeclimate.com/github/socketry/async-http)
@@ -10,6 +8,7 @@ A multi-process, multi-fiber HTTP client/server built on top of [async] and [asy
 
 [async]: https://github.com/socketry/async
 [async-io]: https://github.com/socketry/async-io
+[falcon]: https://github.com/socketry/falcon
 
 ## Installation
 

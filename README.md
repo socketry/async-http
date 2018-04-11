@@ -31,11 +31,14 @@ Or install it yourself as:
 Here is a basic example of a client/server running in the same reactor:
 
 ```ruby
+#!/usr/bin/env ruby
+
 require 'async/http/server'
 require 'async/http/client'
 require 'async/reactor'
+require 'async/http/url_endpoint'
 
-endpoint = Async::IO::Endpoint.tcp('127.0.0.1', 9294, reuse_port: true)
+endpoint = Async::HTTP::URLEndpoint.parse('http://127.0.0.1:9294', reuse_port: true)
 
 class Server < Async::HTTP::Server
 	def handle_request(request, peer, address)
@@ -52,7 +55,7 @@ Async::Reactor.run do |task|
 	end
 	
 	response = client.get("/", {})
-	puts response.body
+	puts response.read
 	
 	server_task.stop
 end

@@ -27,6 +27,7 @@ module Async
 				super
 				
 				@finished = false
+				@stopped = false
 			end
 			
 			def finished?
@@ -39,7 +40,12 @@ module Async
 				while chunk = self.dequeue
 					yield chunk
 				end
+			rescue
+				# Stop the stream because the remote end is no longer reading from it. Any attempt to write to the stream will fail.
+				@stopped = $!
 				
+				raise
+			ensure
 				@finished = true
 			end
 			
@@ -66,6 +72,10 @@ module Async
 			alias join read
 			
 			def write(chunk)
+				if @stopped
+					raise @stopped
+				end
+				
 				self.enqueue(chunk)
 			end
 			

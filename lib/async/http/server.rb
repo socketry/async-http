@@ -58,7 +58,6 @@ module Async
 				end
 			rescue EOFError, Errno::ECONNRESET, Errno::EPIPE
 				# Sometimes client will disconnect without completing a result or reading the entire buffer.
-				return nil
 			ensure
 				peer.close
 			end

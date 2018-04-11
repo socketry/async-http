@@ -22,9 +22,9 @@ require 'async/queue'
 
 module Async
 	module HTTP
-		class Body < Async::Queue
+		class Body
 			def initialize
-				super
+				@queue = Async::Queue.new
 				
 				@finished = false
 				@stopped = false
@@ -35,9 +35,11 @@ module Async
 			end
 			
 			def each
+				return to_enum unless block_given?
+				
 				return if @finished
 				
-				while chunk = self.dequeue
+				while chunk = @queue.dequeue
 					yield chunk
 				end
 			rescue
@@ -52,7 +54,7 @@ module Async
 			def read
 				return if @finished
 				
-				unless chunk = self.dequeue
+				unless chunk = @queue.dequeue
 					@finished = true
 				end
 				
@@ -69,18 +71,18 @@ module Async
 				return buffer
 			end
 			
-			alias join read
-			
 			def write(chunk)
 				if @stopped
 					raise @stopped
 				end
 				
-				self.enqueue(chunk)
+				# TODO should this yield if the queue is full?
+				
+				@queue.enqueue(chunk)
 			end
 			
 			def finish
-				self.enqueue(nil)
+				@queue.enqueue(nil)
 			end
 		end
 		
@@ -226,8 +228,6 @@ module Async
 				
 				return buffer
 			end
-			
-			alias join read
 			
 			def finish
 				read

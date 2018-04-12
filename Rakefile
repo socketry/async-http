@@ -36,6 +36,8 @@ task :client do
 		response = client.get("/")
 		
 		puts response.inspect
+		
+		client.close
 	end
 end
 

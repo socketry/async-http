@@ -51,6 +51,9 @@ module Async
 						# Async.logger.debug(self) {"Incoming request from #{address.inspect}: #{request.method} #{request.path}"}
 						handle_request(request, peer, address)
 					end
+					
+					# hijack should be false by default.
+					false
 				end
 				
 				if hijack

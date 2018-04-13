@@ -1,4 +1,6 @@
-# Copyright, 2017, by Samuel G. D. Williams. <http://www.codeotaku.com>
+#!/usr/bin/env ruby
+
+# Copyright, 2012, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,8 +20,31 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-module Async
-	module HTTP
-		VERSION = "0.18.0"
+require 'async/http/server'
+require 'async/http/url_endpoint'
+require 'async/http/resource'
+
+RSpec.describe Async::HTTP::Resource do
+	include_context Async::RSpec::Reactor
+	
+	let(:endpoint) {Async::HTTP::URLEndpoint.parse('http://127.0.0.1:9295', reuse_port: true)}
+	
+	it "client can get resource" do
+		server = Async::HTTP::Server.new(endpoint) do |request, peer, address|
+			[200, {}, []]
+		end
+		
+		server_task = reactor.async do
+			server.run
+		end
+		
+		client = Async::HTTP::Client.new(endpoint)
+		resource = Async::HTTP::Resource.new(client)
+		
+		response = resource.get
+		expect(response).to be_success
+		
+		server_task.stop
+		client.close
 	end
 end

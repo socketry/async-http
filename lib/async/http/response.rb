@@ -35,6 +35,10 @@ module Async
 				status >= 300 && status < 400
 			end
 			
+			def preserve_method?
+				status == 307 || status == 308
+			end
+			
 			def failure?
 				status >= 400 && status < 600
 			end

@@ -31,7 +31,7 @@ RSpec.describe Async::HTTP::Resource do
 	
 	it "client can get resource" do
 		server = Async::HTTP::Server.new(endpoint) do |request, peer, address|
-			[200, {}, []]
+			[200, {'content-type' => 'application/json'}, ['{"foo": "bar"}']]
 		end
 		
 		server_task = reactor.async do
@@ -43,6 +43,8 @@ RSpec.describe Async::HTTP::Resource do
 		
 		response = resource.get
 		expect(response).to be_success
+		expect(response.body).to be_kind_of Async::HTTP::JSONBody
+		expect(response.read).to be == {foo: 'bar'}
 		
 		server_task.stop
 		client.close

@@ -137,12 +137,13 @@ RSpec.shared_examples Async::HTTP::Body do
 			output.finish
 		end
 		
-		response = client.post("/", {}, output) do |response|
+		client.post("/", {}, output) do |response|
+			expect(response).to be_success
+			
 			input = response.body
 			reversed = input.read
 		end
 		
-		expect(response).to be_success
 		server_task.stop
 		client.close
 	end
@@ -170,6 +171,8 @@ RSpec.shared_examples Async::HTTP::Body do
 		end
 		
 		response = client.get("/") do |response|
+			expect(response).to be_success
+			
 			j = 0
 			# This validates interleaving
 			response.body.each do |line|
@@ -180,7 +183,6 @@ RSpec.shared_examples Async::HTTP::Body do
 			end
 		end
 		
-		expect(response).to be_success
 		server_task.stop
 		client.close
 	end

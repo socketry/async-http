@@ -30,10 +30,17 @@ module Async
 				@stopped = false
 			end
 			
+			# Read all chunks until the stream is closed.
+			def close
+				BufferedBody.new(self)
+			end
+			
+			# Have all chunks been read?
 			def finished?
 				@finished
 			end
 			
+			# Enumerate all chunks until finished.
 			def each
 				return to_enum unless block_given?
 				
@@ -51,6 +58,7 @@ module Async
 				@finished = true
 			end
 			
+			# Read the next available chunk.
 			def read
 				return if @finished
 				
@@ -61,6 +69,7 @@ module Async
 				return chunk
 			end
 			
+			# Read all remaining chunks into a single binary string.
 			def join
 				buffer = Async::IO::BinaryString.new
 				
@@ -71,6 +80,7 @@ module Async
 				return buffer
 			end
 			
+			# Write a single chunk to the body. Signal completion by calling `#finish`.
 			def write(chunk)
 				if @stopped
 					raise @stopped
@@ -81,6 +91,7 @@ module Async
 				@queue.enqueue(chunk)
 			end
 			
+			# Signal that output has finished.
 			def finish
 				@queue.enqueue(nil)
 			end
@@ -94,6 +105,10 @@ module Async
 				body.each do |chunk|
 					@chunks << chunk
 				end
+			end
+			
+			def close
+				self
 			end
 			
 			def each(&block)
@@ -135,11 +150,9 @@ module Async
 				end
 				
 				def finish
-					return if self.body.nil? or self.body.finished?
+					return if self.body.nil?
 					
-					unless self.body.is_a? BufferedBody
-						self.body = BufferedBody.new(self.body)
-					end
+					self.body = self.body.close
 				end
 			end
 		end
@@ -148,6 +161,10 @@ module Async
 			def initialize(protocol)
 				@protocol = protocol
 				@finished = false
+			end
+			
+			def close
+				BufferedBody.new(self)
 			end
 			
 			def finished?
@@ -199,6 +216,10 @@ module Async
 				@length = length
 				@remaining = length
 				@stream = stream
+			end
+			
+			def close
+				BufferedBody.new(self)
 			end
 			
 			def finished?

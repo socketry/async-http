@@ -21,29 +21,38 @@
 require_relative 'client'
 require_relative 'reference'
 
+require 'json'
+
 module Async
 	module HTTP
-		class JSONWrapper
-			def initialize(response)
-				@response = response
-				@hash = nil
+		class JSONBody
+			def initialize(body)
+				@body = body
 			end
 			
-			attr :response
+			def close
+				@body = @body.close
+				
+				return self
+			end
 			
-			def to_hash
-				@hash ||= JSON.parse(@response.read, symbolize_names: symbolize_keys)
+			def join
+				JSON.parse(@body.join, symbolize_names: true)
 			end
 			
 			def self.dump(payload)
 				JSON.dump(payload)
 			end
+			
+			def finished?
+				@body.finished?
+			end
 		end
 		
 		class Resource
-			def initialize(client, reference = nil, headers = {}, max_redirects: 10)
+			def initialize(client, reference = Reference.parse, headers = {}, max_redirects: 10)
 				@client = client
-				@reference = reference || Reference.parse
+				@reference = reference
 				@headers = headers
 				
 				@max_redirects = max_redirects
@@ -59,7 +68,7 @@ module Async
 			
 			def wrapper_for(content_type)
 				if content_type == 'application/json'
-					return JSONWrapper
+					return JSONBody
 				end
 			end
 			
@@ -79,19 +88,21 @@ module Async
 				content_type = response.headers['content-type']
 				
 				if wrapper = wrapper_for(content_type)
-					wrapper.new(response)
-				else
-					return response
+					response.body = wrapper.new(response.body)
 				end
+				
+				return response
 			end
 			
 			Client::VERBS.each do |verb|
 				define_method(verb.downcase) do |payload = nil, **parameters, &block|
 					reference = @reference.dup(nil, parameters)
 					
-					self.request(verb, reference.to_str, @headers, prepare_body(payload)) do |response|
+					response = self.request(verb, reference.to_str, @headers, prepare_body(payload)) do |response|
 						process_response(response)
 					end
+					
+					return response
 				end
 			end
 			

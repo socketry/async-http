@@ -32,7 +32,7 @@ module Async
 			
 			# Read all chunks until the stream is closed.
 			def close
-				BufferedBody.new(self)
+				BufferedBody.for(self)
 			end
 			
 			# Have all chunks been read?
@@ -98,13 +98,19 @@ module Async
 		end
 		
 		class BufferedBody
-			def initialize(body)
-				@chunks = []
-				@index = 0
+			def self.for(body)
+				chunks = []
 				
 				body.each do |chunk|
-					@chunks << chunk
+					chunks << chunk
 				end
+				
+				self.new(chunks)
+			end
+			
+			def initialize(chunks)
+				@chunks = chunks
+				@index = 0
 			end
 			
 			def close
@@ -164,7 +170,7 @@ module Async
 			end
 			
 			def close
-				BufferedBody.new(self)
+				BufferedBody.for(self)
 			end
 			
 			def finished?
@@ -219,7 +225,7 @@ module Async
 			end
 			
 			def close
-				BufferedBody.new(self)
+				BufferedBody.for(self)
 			end
 			
 			def finished?

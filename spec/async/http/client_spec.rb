@@ -24,6 +24,7 @@ require 'async/reactor'
 
 require 'async/io/ssl_socket'
 require 'async/http/url_endpoint'
+require 'async/http/deflate_body'
 
 RSpec.describe Async::HTTP::Client, timeout: 5 do
 	include_context Async::RSpec::Reactor
@@ -62,6 +63,18 @@ RSpec.describe Async::HTTP::Client, timeout: 5 do
 			
 			response = client.get("/index")
 			expect(response).to be_success
+			
+			client.close
+		end
+		
+		it "can request remote resource with compression" do
+			response = client.get("/index", {'accept-encoding' => 'gzip'})
+			expect(response).to be_success
+			
+			expect(response.headers['content-encoding']).to be == 'gzip'
+			response.body = Async::HTTP::InflateBody.for_response(response)
+			
+			expect(response.read).to be_start_with('<!DOCTYPE html>')
 			
 			client.close
 		end

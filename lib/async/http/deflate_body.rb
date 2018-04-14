@@ -31,6 +31,16 @@ module Async
 				'gzip' => GZIP,
 			}
 			
+			def self.for_request(headers, body, *args)
+				if content_encoding = headers['content-encoding']
+					if encoding = ENCODINGS[content_encoding]
+						return self.for(body, encoding, *args)
+					end
+				end
+				
+				return body
+			end
+			
 			def self.for(body, encoding = GZIP, level = Zlib::DEFAULT_COMPRESSION)
 				self.new(body, Zlib::Deflate.new(level, encoding))
 			end
@@ -38,6 +48,14 @@ module Async
 			def initialize(body, stream)
 				@body = body
 				@stream = stream
+			end
+			
+			def each(&block)
+				return to_enum unless block_given?
+				
+				while chunk = self.read
+					yield chunk
+				end
 			end
 			
 			def read

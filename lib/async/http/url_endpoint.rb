@@ -28,11 +28,15 @@ module Async
 	module HTTP
 		class URLEndpoint < Async::IO::Endpoint
 			def self.parse(string, **options)
-				self.new(URI.parse(string), **options)
+				url = URI.parse(string).normalize
+				
+				self.new(url, **options)
 			end
 			
 			def initialize(url, endpoint = nil, **options)
 				super(**options)
+				
+				raise ArgumentError.new("URL must be absolute (include scheme, host): #{url}") unless url.absolute?
 				
 				@url = url
 				@endpoint = endpoint
@@ -119,6 +123,18 @@ module Async
 				self.endpoint.each do |endpoint|
 					yield self.class.new(@url, endpoint, @options)
 				end
+			end
+			
+			def key
+				[@url.scheme, @url.userinfo, @url.host, @url.port, @options]
+			end
+			
+			def eql? other
+				self.key.eql? other.key
+			end
+			
+			def hash
+				self.key.hash
 			end
 		end
 	end

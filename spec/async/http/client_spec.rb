@@ -64,6 +64,7 @@ RSpec.describe Async::HTTP::Client, timeout: 5 do
 			response = client.get("/index")
 			expect(response).to be_success
 			
+			response.finish
 			client.close
 		end
 		
@@ -76,6 +77,7 @@ RSpec.describe Async::HTTP::Client, timeout: 5 do
 			
 			expect(response.read).to be_start_with('<!DOCTYPE html>')
 			
+			response.finish
 			client.close
 		end
 	end

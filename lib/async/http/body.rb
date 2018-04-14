@@ -97,6 +97,46 @@ module Async
 			end
 		end
 		
+		class BodyWrapper
+			def initialize(body)
+				@body = body
+			end
+			
+			# Buffer any remaining body.
+			def close
+				BufferedBody.for(self)
+			end
+			
+			def finished?
+				@body.finished?
+			end
+			
+			# Enumerate all chunks until finished.
+			def each
+				return to_enum unless block_given?
+				
+				while chunk = self.read
+					yield chunk
+				end
+			end
+			
+			# Read the next available chunk.
+			def read
+				@body.read
+			end
+			
+			# Read all remaining chunks into a single binary string.
+			def join
+				buffer = Async::IO::BinaryString.new
+				
+				self.each do |chunk|
+					buffer << chunk
+				end
+				
+				return buffer
+			end
+		end
+		
 		class BufferedBody
 			def self.for(body)
 				chunks = []

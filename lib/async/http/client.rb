@@ -24,6 +24,32 @@ require_relative 'protocol'
 
 module Async
 	module HTTP
+		VERBS = ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE']
+		
+		class Streamable < BodyWrapper
+			def self.for_response(response, &block)
+				if response.body
+					response.body = self.new(response.body, block)
+				else
+					yield
+				end
+			end
+			
+			def initialize(body, callback)
+				super(body)
+				
+				@callback = callback
+			end
+			
+			def read
+				unless chunk = super
+					@callback.call
+				end
+				
+				return chunk
+			end
+		end
+		
 		class Client
 			def initialize(endpoint, protocol = nil, authority = nil, **options)
 				@endpoint = endpoint
@@ -54,8 +80,6 @@ module Async
 				@connections.close
 			end
 			
-			VERBS = ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE']
-			
 			VERBS.each do |verb|
 				define_method(verb.downcase) do |reference, *args, &block|
 					self.request(verb, reference.to_str, *args, &block)
@@ -63,18 +87,15 @@ module Async
 			end
 			
 			def request(*args, &block)
-				@connections.acquire do |connection|
-					response = connection.send_request(@authority, *args)
-					
-					begin
-						return yield response if block_given?
-					ensure
-						# This forces the stream to complete reading.
-						response.finish
-					end
-					
-					return response
+				connection = @connections.acquire
+				
+				response = connection.send_request(@authority, *args)
+				
+				Streamable.for_response(response) do
+					@connections.release(connection)
 				end
+				
+				return response
 			end
 			
 			protected

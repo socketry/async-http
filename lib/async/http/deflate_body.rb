@@ -23,6 +23,8 @@ require 'zlib'
 module Async
 	module HTTP
 		class DeflateBody
+			DEFAULT_LEVEL = Zlib::DEFAULT_COMPRESSION
+			
 			DEFLATE = -Zlib::MAX_WBITS
 			GZIP =  Zlib::MAX_WBITS | 16
 			
@@ -31,18 +33,30 @@ module Async
 				'gzip' => GZIP,
 			}
 			
-			def self.for_request(headers, body, *args)
-				if content_encoding = headers['content-encoding']
-					if encoding = ENCODINGS[content_encoding]
-						return self.for(body, encoding, *args)
-					end
+			def self.encoding_name(window_size)
+				if window_size <= -8
+					return 'deflate'
+				elsif window_size >= 16
+					return 'gzip'
+				else
+					return 'compress'
 				end
-				
-				return body
 			end
 			
-			def self.for(body, encoding = GZIP, level = Zlib::DEFAULT_COMPRESSION)
-				self.new(body, Zlib::Deflate.new(level, encoding))
+			def self.for_request(headers, body, window_size, *args)
+				return unless body
+				
+				if encoding = headers['content-encoding']
+					headers['content-encoding'] = "#{encoding}, #{encoding_name(window_size)}"
+				else
+					headers['content-encoding'] = encoding_name(window_size)
+				end
+				
+				return self.for(body, window_size, *args)
+			end
+			
+			def self.for(body, window_size = GZIP, level = DEFAULT_LEVEL)
+				self.new(body, Zlib::Deflate.new(level, window_size))
 			end
 			
 			def initialize(body, stream)
@@ -95,13 +109,11 @@ module Async
 			def self.for_response(response)
 				if content_encoding = response.headers['content-encoding']
 					if encoding = ENCODINGS[content_encoding]
-						return self.for(response.body, encoding)
+						response.body = self.for(response.body, encoding)
+					else
+						raise ArgumentError.new("Unsupported content encoding: #{content_encoding.inspect}")
 					end
-					
-					raise ArgumentError.new("Unsupported content encoding: #{content_encoding.inspect}")
 				end
-				
-				return response.body
 			end
 			
 			def self.for(body, encoding = GZIP)

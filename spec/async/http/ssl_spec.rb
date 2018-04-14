@@ -1,6 +1,7 @@
 
 require 'async/http/server'
 require 'async/http/client'
+require 'async/http/url_endpoint'
 
 require 'async/io/ssl_socket'
 
@@ -49,11 +50,11 @@ RSpec.describe Async::HTTP::Server, timeout: 5 do
 				end
 				
 				response = client.get("/")
-				client.close
 				
 				expect(response).to be_success
 				expect(response.read).to be == "Hello World"
 				
+				client.close
 				server_task.stop
 			end
 		end

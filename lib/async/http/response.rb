@@ -48,6 +48,10 @@ module Async
 			def self.[](status, headers = {}, body = [])
 				self.new(nil, status, nil, headers, body)
 			end
+			
+			def self.for_exception(exception)
+				Async::HTTP::Response[500, {'content-type' => 'text/plain'}, ["#{exception.class}: #{exception.message}"]]
+			end
 		end
 	end
 end

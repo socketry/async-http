@@ -109,7 +109,8 @@ module Async
 						request = Request.new
 						request.version = self.version
 						request.headers = {}
-						request.body = Body::Writable.new
+						body = Body::Writable.new
+						request.body = body
 						
 						stream.on(:headers) do |headers|
 							headers.each do |key, value|
@@ -126,13 +127,13 @@ module Async
 						end
 						
 						stream.on(:data) do |chunk|
-							request.body.write(chunk.to_s) unless chunk.empty?
+							body.write(chunk.to_s) unless chunk.empty?
 						end
 						
 						stream.on(:half_close) do
 							response = yield request
 							
-							request.body.finish
+							body.finish
 							
 							# send response
 							headers = {STATUS => response[0].to_s}
@@ -171,12 +172,17 @@ module Async
 						stream.data("", end_stream: true)
 					end
 					
+					read_response(stream)
+				end
+				
+				def read_response(stream)
 					finished = Async::Notification.new
 					
 					response = Response.new
 					response.version = self.version
 					response.headers = {}
-					response.body = Body::Writable.new
+					body = Body::Writable.new
+					response.body = body
 					
 					stream.on(:headers) do |headers|
 						# Async.logger.debug(self) {"Stream headers: #{headers.inspect}"}
@@ -196,7 +202,7 @@ module Async
 					
 					stream.on(:data) do |chunk|
 						Async.logger.debug(self) {"Stream data: #{chunk.inspect}"}
-						response.body.write(chunk.to_s) unless chunk.empty?
+						body.write(chunk.to_s) unless chunk.empty?
 					end
 					
 					stream.on(:half_close) do
@@ -206,7 +212,7 @@ module Async
 					stream.on(:close) do
 						Async.logger.debug(self) {"Stream closed, sending signal."}
 						# TODO should we prefer `response.finish`?
-						response.body.finish
+						body.finish
 					end
 					
 					@stream.flush

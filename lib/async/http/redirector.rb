@@ -34,7 +34,7 @@ module Async
 				}
 			end
 			
-			# The client which will be used for requests
+			# The client which will be used for requests.
 			attr :client
 			
 			# The maximum number of hops which will limit the number of redirects until an error is thrown.

@@ -23,6 +23,9 @@ require 'async/io/protocol/line'
 require_relative '../request'
 require_relative '../response'
 
+require_relative '../body/chunked'
+require_relative '../body/fixed'
+
 module Async
 	module HTTP
 		module Protocol
@@ -182,9 +185,9 @@ module Async
 				
 				def read_body(headers)
 					if headers['transfer-encoding'] == 'chunked'
-						return ChunkedBody.new(self)
+						return Body::Chunked.new(self)
 					elsif content_length = headers['content-length']
-						return FixedBody.new(Integer(content_length), @stream)
+						return Body::Fixed.new(Integer(content_length), @stream)
 					end
 				end
 			end

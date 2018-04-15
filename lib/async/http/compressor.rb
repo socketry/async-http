@@ -20,12 +20,14 @@
 
 require_relative 'client'
 require_relative 'url_endpoint'
-require_relative 'deflate_body'
+
+require_relative 'body/deflate'
+require_relative 'body/inflate'
 
 module Async
 	module HTTP
 		class Compressor
-			def initialize(client, window_size = DeflateBody::GZIP, level = DeflateBody::DEFAULT_LEVEL)
+			def initialize(client, window_size = Body::Deflate::GZIP, level = Body::Deflate::DEFAULT_LEVEL)
 				@client = client
 				
 				@window_size = window_size
@@ -42,14 +44,12 @@ module Async
 				end
 			end
 			
-			def request(verb, location, headers, body)
-				if body
-					body = HTTP::DeflateBody.for_request(headers, body, @window_size, @level)
-				end
+			def request(verb, location, headers = {}, body = [])
+				body = Body::Deflate.wrap_request(headers, body, @window_size, @level)
 				
 				response = @client.request(verb, location, headers, body)
 				
-				HTTP::InflateBody.for_response(response)
+				Body::Inflate.wrap_response(response)
 				
 				return response
 			end

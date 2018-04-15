@@ -21,34 +21,11 @@
 require 'async/io/endpoint'
 
 require_relative 'protocol'
+require_relative 'body/streamable'
 
 module Async
 	module HTTP
 		VERBS = ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE']
-		
-		class Streamable < BodyWrapper
-			def self.for_response(response, &block)
-				if response.body
-					response.body = self.new(response.body, block)
-				else
-					yield
-				end
-			end
-			
-			def initialize(body, callback)
-				super(body)
-				
-				@callback = callback
-			end
-			
-			def read
-				unless chunk = super
-					@callback.call
-				end
-				
-				return chunk
-			end
-		end
 		
 		class Client
 			def initialize(endpoint, protocol = nil, authority = nil, **options)
@@ -91,7 +68,8 @@ module Async
 				
 				response = connection.send_request(@authority, *args)
 				
-				Streamable.for_response(response) do
+				# The connection won't be released until the body is completely read/released.
+				Body::Streamable.wrap_response(response) do
 					@connections.release(connection)
 				end
 				

@@ -18,5 +18,40 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'body/writable'
-require_relative 'body/buffered'
+require_relative 'readable'
+
+module Async
+	module HTTP
+		module Body
+			class Chunked < Readable
+				def initialize(protocol)
+					@protocol = protocol
+					@finished = false
+				end
+				
+				def empty?
+					@finished
+				end
+				
+				def read
+					return nil if @finished
+					
+					size = @protocol.read_line.to_i(16)
+					
+					if size == 0
+						@protocol.read_line
+						
+						@finished = true
+						
+						return nil
+					end
+					
+					chunk = @protocol.stream.read(size)
+					@protocol.read_line # Consume the trailing CRLF
+					
+					return chunk
+				end
+			end
+		end
+	end
+end

@@ -18,12 +18,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'body'
+require_relative 'body/buffered'
 
 module Async
 	module HTTP
 		class Request < Struct.new(:authority, :method, :path, :version, :headers, :body)
-			include BufferedBody::Reader
+			include Body::Buffered::Reader
 		end
 	end
 end

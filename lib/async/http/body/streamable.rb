@@ -18,5 +18,35 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'body/writable'
-require_relative 'body/buffered'
+require_relative 'wrapper'
+
+module Async
+	module HTTP
+		module Body
+			# Invokes a callback once the body has finished reading.
+			class Streamable < Wrapper
+				def self.wrap_response(response, &block)
+					if response.body
+						response.body = self.new(response.body, block)
+					else
+						yield
+					end
+				end
+				
+				def initialize(body, callback)
+					super(body)
+					
+					@callback = callback
+				end
+				
+				def read
+					unless chunk = super
+						@callback.call
+					end
+					
+					return chunk
+				end
+			end
+		end
+	end
+end

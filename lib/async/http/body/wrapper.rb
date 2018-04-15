@@ -18,5 +18,33 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'body/writable'
-require_relative 'body/buffered'
+require_relative 'readable'
+
+module Async
+	module HTTP
+		module Body
+			# Wrapping body instance. Typically you'd override `#read`.
+			class Wrapper < Readable
+				def initialize(body)
+					@body = body
+				end
+				
+				def empty?
+					@body.empty?
+				end
+				
+				# Buffer any remaining body.
+				def close
+					@body = @body.close
+					
+					return self
+				end
+				
+				# Read the next available chunk.
+				def read
+					@body.read
+				end
+			end
+		end
+	end
+end

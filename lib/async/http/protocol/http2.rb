@@ -20,6 +20,7 @@
 
 require_relative '../request'
 require_relative '../response'
+require_relative '../body/writable'
 
 require 'async/notification'
 
@@ -104,7 +105,7 @@ module Async
 						request = Request.new
 						request.version = VERSION
 						request.headers = {}
-						request.body = Body.new
+						request.body = Body::Writable.new
 						
 						stream.on(:headers) do |headers|
 							headers.each do |key, value|
@@ -173,7 +174,7 @@ module Async
 					response = Response.new
 					response.version = RESPONSE_VERSION
 					response.headers = {}
-					response.body = Body.new
+					response.body = Body::Writable.new
 					
 					stream.on(:headers) do |headers|
 						# Async.logger.debug(self) {"Stream headers: #{headers.inspect}"}

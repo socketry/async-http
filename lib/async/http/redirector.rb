@@ -29,12 +29,12 @@ module Async
 				@client = client
 				@maximum_hops = maximum_hops
 				
-				@clients = {}
+				@clients = {
+					client.endpoint => client
+				}
 			end
 			
 			def close
-				@client.close
-				
 				@clients.each_value(&:close)
 				@clients.clear
 			end
@@ -71,7 +71,7 @@ module Async
 				hops = 0
 				
 				# We need to cache the body as it might be submitted multiple times.
-				body = BufferedBody.for(body)
+				body = Body::Buffered.for(body)
 				
 				while hops < @maximum_hops
 					response = client.request(verb, location, headers, body)

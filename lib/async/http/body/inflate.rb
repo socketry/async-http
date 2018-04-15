@@ -18,5 +18,40 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'body/writable'
-require_relative 'body/buffered'
+require 'zlib'
+
+require_relative 'deflate'
+
+module Async
+	module HTTP
+		module Body
+			class Inflate < Deflate
+				def self.wrap_response(response)
+					if content_encoding = response.headers['content-encoding']
+						if encoding = ENCODINGS[content_encoding]
+							response.body = self.for(response.body, encoding)
+						else
+							raise ArgumentError.new("Unsupported content encoding: #{content_encoding.inspect}")
+						end
+					end
+				end
+				
+				def self.for(body, encoding = GZIP)
+					self.new(body, Zlib::Inflate.new(encoding))
+				end
+				
+				def read
+					return if @stream.finished?
+					
+					if chunk = @body.read
+						chunk = @stream.inflate(chunk)
+					else
+						chunk = @stream.finish
+					end
+					
+					return chunk.empty? ? nil : chunk
+				end
+			end
+		end
+	end
+end

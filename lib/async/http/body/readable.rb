@@ -1,6 +1,4 @@
-#!/usr/bin/env ruby
-
-# Copyright, 2012, by Samuel G. D. Williams. <http://www.codeotaku.com>
+# Copyright, 2018, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,37 +18,46 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'async/http/deflate_body'
-
-RSpec.describe Async::HTTP::DeflateBody do
-	let(:body) {Async::HTTP::Body.new}
-	let(:compressed_body) {Async::HTTP::DeflateBody.for(body)}
-	let(:decompressed_body) {Async::HTTP::InflateBody.for(compressed_body)}
-	
-	it "should round-trip data" do
-		body.write("Hello World!")
-		body.finish
-		
-		expect(decompressed_body.join).to be == "Hello World!"
-	end
-	
-	it "should read chunks" do
-		body.write("Hello ")
-		body.write("World!")
-		body.finish
-		
-		expect(body.read).to be == "Hello "
-		expect(body.read).to be == "World!"
-		expect(body.read).to be == nil
-	end
-	
-	it "should round-trip chunks" do
-		body.write("Hello ")
-		body.write("World!")
-		body.finish
-		
-		expect(decompressed_body.read).to be == "Hello "
-		expect(decompressed_body.read).to be == "World!"
-		expect(decompressed_body.read).to be == nil
+module Async
+	module HTTP
+		module Body
+			# A generic base class for wrapping body instances. Typically you'd override `#read`.
+			class Readable
+				# Buffer any remaining body.
+				def close
+					Buffered.for(self)
+				end
+				
+				# Will read return any data?
+				def empty?
+					false
+				end
+				
+				# Enumerate all chunks until finished.
+				def each
+					return to_enum unless block_given?
+					
+					while chunk = self.read
+						yield chunk
+					end
+				end
+				
+				# Read the next available chunk.
+				def read
+					nil
+				end
+				
+				# Read all remaining chunks into a single binary string.
+				def join
+					buffer = IO::BinaryString.new
+					
+					self.each do |chunk|
+						buffer << chunk
+					end
+					
+					return buffer
+				end
+			end
+		end
 	end
 end

@@ -18,5 +18,40 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'body/writable'
-require_relative 'body/buffered'
+require_relative 'readable'
+
+module Async
+	module HTTP
+		module Body
+			class Fixed < Readable
+				def initialize(length, stream)
+					@length = length
+					@remaining = length
+					@stream = stream
+				end
+				
+				def empty?
+					@remaining == 0
+				end
+				
+				def read
+					if @remaining > 0
+						if chunk = @stream.read(@remaining)
+							@remaining -= chunk.bytesize
+							
+							return chunk
+						end
+					end
+				end
+				
+				def join
+					buffer = @stream.read(@remaining)
+					
+					@remaining = 0
+					
+					return buffer
+				end
+			end
+		end
+	end
+end

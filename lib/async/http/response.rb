@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'body'
+require_relative 'body/buffered'
 
 module Async
 	module HTTP
@@ -43,7 +43,7 @@ module Async
 				status >= 400 && status < 600
 			end
 			
-			include BufferedBody::Reader
+			include Body::Buffered::Reader
 		end
 	end
 end

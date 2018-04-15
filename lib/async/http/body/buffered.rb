@@ -18,5 +18,78 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'body/writable'
-require_relative 'body/buffered'
+require_relative 'readable'
+
+module Async
+	module HTTP
+		module Body
+			# A body which buffers all it's contents.
+			class Buffered < Readable
+				# Wraps an array into a buffered body.
+				def self.wrap(body)
+					if body.is_a? Array
+						self.new(body)
+					else
+						body
+					end
+				end
+				
+				def self.for(body)
+					chunks = []
+					
+					body.each do |chunk|
+						chunks << chunk
+					end
+					
+					self.new(chunks)
+				end
+				
+				def initialize(chunks)
+					@chunks = chunks
+					@index = 0
+				end
+				
+				def empty?
+					@chunks.empty?
+				end
+				
+				def close
+					self
+				end
+				
+				def each
+					return to_enum unless block_given?
+					
+					while @index < @chunks.count
+						yield @chunks[@index]
+						@index += 1
+					end
+				end
+				
+				def read
+					if chunk = @chunks[@index]
+						@index += 1
+					end
+					
+					return chunk
+				end
+				
+				def rewind
+					@index = 0
+				end
+				
+				module Reader
+					def read
+						self.body ? self.body.join : nil
+					end
+					
+					def finish
+						return if self.body.nil?
+						
+						self.body = self.body.close
+					end
+				end
+			end
+		end
+	end
+end

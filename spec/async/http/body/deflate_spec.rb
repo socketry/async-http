@@ -1,4 +1,6 @@
-# Copyright, 2018, by Samuel G. D. Williams. <http://www.codeotaku.com>
+#!/usr/bin/env ruby
+
+# Copyright, 2012, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,5 +20,38 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'body/writable'
-require_relative 'body/buffered'
+require 'async/http/body/deflate'
+require 'async/http/body/inflate'
+
+RSpec.describe Async::HTTP::Body::Deflate do
+	let(:body) {Async::HTTP::Body::Writable.new}
+	let(:compressed_body) {Async::HTTP::Body::Deflate.for(body)}
+	let(:decompressed_body) {Async::HTTP::Body::Inflate.for(compressed_body)}
+	
+	it "should round-trip data" do
+		body.write("Hello World!")
+		body.finish
+		
+		expect(decompressed_body.join).to be == "Hello World!"
+	end
+	
+	it "should read chunks" do
+		body.write("Hello ")
+		body.write("World!")
+		body.finish
+		
+		expect(body.read).to be == "Hello "
+		expect(body.read).to be == "World!"
+		expect(body.read).to be == nil
+	end
+	
+	it "should round-trip chunks" do
+		body.write("Hello ")
+		body.write("World!")
+		body.finish
+		
+		expect(decompressed_body.read).to be == "Hello "
+		expect(decompressed_body.read).to be == "World!"
+		expect(decompressed_body.read).to be == nil
+	end
+end

@@ -45,8 +45,8 @@ module Async
 			
 			include Verbs
 			
-			def call(request)
-				@app.call(request)
+			def call(*args)
+				@app.call(*args)
 			end
 			
 			module Okay

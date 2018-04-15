@@ -31,14 +31,14 @@ module Async
 				'gzip' => Body::Deflate.method(:for)
 			}
 			
-			def initialize(app, wrappers = {})
+			def initialize(app, wrappers = DEFAULT_WRAPPERS)
 				super(app)
 				
 				@wrappers = wrappers
 			end
 			
-			def call(request)
-				response = super(request)
+			def call(request, *)
+				response = super
 				
 				if !response.body.empty? and accept_encoding = request.headers['accept-encoding']
 					# TODO use http-accept and sort by priority

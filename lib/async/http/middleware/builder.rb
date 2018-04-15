@@ -42,7 +42,7 @@ module Async
 				end
 				
 				def to_app
-					app = @use.reverse.inject(app) {|app, use| use.call(app)}
+					app = @use.reverse.inject(app) {|app, use| use.call(app).freeze}
 				end
 			end
 		end

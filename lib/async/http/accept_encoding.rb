@@ -38,10 +38,10 @@ module Async
 				@wrappers = wrappers
 			end
 			
-			def call(request)
+			def call(request, *)
 				request.headers['accept-encoding'] = @accept_encoding
 				
-				response = super(request)
+				response = super
 				
 				if !response.body.empty? and content_encoding = response.headers['content-encoding']
 					encodings = content_encoding.split(/\s*,\s*/)

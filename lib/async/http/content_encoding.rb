@@ -1,4 +1,4 @@
-# Copyright, 2018, by Samuel G. D. Williams. <http://www.codeotaku.com>
+# Copyright, 2017, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,29 +18,48 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'zlib'
+require_relative 'middleware'
 
-require_relative 'deflate'
+require_relative 'body/buffered'
+require_relative 'body/deflate'
 
 module Async
 	module HTTP
-		module Body
-			class Inflate < Deflate
-				def self.for(body, encoding = GZIP)
-					self.new(body, Zlib::Inflate.new(encoding))
-				end
+		# Encode a response according the the request's acceptable encodings.
+		class ContentEncoding < Middleware
+			DEFAULT_WRAPPERS = {
+				'gzip' => Body::Deflate.method(:for)
+			}
+			
+			def initialize(app, wrappers = {})
+				super(app)
 				
-				def read
-					return if @stream.finished?
+				@wrappers = wrappers
+			end
+			
+			def call(request)
+				# TODO use http-accept and sort by priority
+				encodings = request.headers['accept-encoding'].split(/\s*,\s*/)
+				
+				response = super(request)
+				
+				unless response.body.empty?
+					body = response.body
 					
-					if chunk = @body.read
-						chunk = @stream.inflate(chunk)
-					else
-						chunk = @stream.finish
+					encodings.each do |name|
+						if wrapper = @wrappers[name]
+							response.headers['content-encoding'] = name
+							
+							body = wrapper.call(body)
+							
+							break
+						end
 					end
 					
-					return chunk.empty? ? nil : chunk
+					response.body = body
 				end
+				
+				return response
 			end
 		end
 	end

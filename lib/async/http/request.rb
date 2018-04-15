@@ -23,7 +23,13 @@ require_relative 'body/buffered'
 module Async
 	module HTTP
 		class Request < Struct.new(:authority, :method, :path, :version, :headers, :body)
-			include Body::Buffered::Reader
+			prepend Body::Buffered::Reader
+			
+			def self.[](method, path, headers, body)
+				body = Body::Buffered.wrap(body)
+				
+				self.new(nil, method, path, nil, headers, body)
+			end
 		end
 	end
 end

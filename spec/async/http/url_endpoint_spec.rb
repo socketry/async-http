@@ -42,4 +42,9 @@ RSpec.describe "http://www.google.com/search" do
 	it "should parse the correct hostname" do
 		expect(endpoint.hostname).to be == "www.google.com"
 	end
+	
+	it "should be eql? if host part is same" do
+		other = Async::HTTP::URLEndpoint.parse('http://www.google.com/search?q=ruby')
+		expect(endpoint).to be_eql other
+	end
 end

@@ -18,38 +18,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'async/http/redirector'
+require 'async/http/relative_location'
 require 'async/http/server'
 
-RSpec.describe Async::HTTP::Redirector do
+RSpec.describe Async::HTTP::RelativeLocation do
 	let(:endpoint) {Async::HTTP::URLEndpoint.parse('http://127.0.0.1:9294', reuse_port: true)}
 	let(:client) {Async::HTTP::Client.new(endpoint)}
 	
 	subject {described_class.new(client)}
-	
-	context '#lookup' do
-		it "should create client" do
-			url = URI.parse("http://www.google.com/search?q=ruby")
-			client, location = subject.lookup url
-			
-			expect(client.endpoint.hostname).to be == "www.google.com"
-			expect(location).to be == "/search?q=ruby"
-		end
-		
-		it "should reuse client" do
-			first_client, first_location = subject["http://www.google.com/search?q=ruby"]
-			second_client, second_location = subject["http://www.google.com/search?q=async"]
-			
-			expect(first_client).to be_equal second_client
-		end
-		
-		it "should create second client" do
-			first_client, first_location = subject["http://www.google.com/search?q=ruby"]
-			second_client, second_location = subject["http://www.groogle.com/search?q=async"]
-			
-			expect(first_client).to_not be_equal second_client
-		end
-	end
 	
 	context 'server redirections' do
 		include_context Async::RSpec::Reactor
@@ -70,11 +46,11 @@ RSpec.describe Async::HTTP::Redirector do
 				Async::HTTP::Server.new(endpoint) do |request, peer, address|
 					case request.path
 					when '/'
-						[301, {'location' => '/index.html'}, []]
+						Async::HTTP::Response[301, {'location' => '/index.html'}, []]
 					when '/forever'
-						[301, {'location' => '/forever'}, []]
+						Async::HTTP::Response[301, {'location' => '/forever'}, []]
 					when '/index.html'
-						[200, {}, [request.method]]
+						Async::HTTP::Response[200, {}, [request.method]]
 					end
 				end
 			end
@@ -98,9 +74,9 @@ RSpec.describe Async::HTTP::Redirector do
 				Async::HTTP::Server.new(endpoint) do |request, peer, address|
 					case request.path
 					when '/'
-						[302, {'location' => '/index.html'}, []]
+						Async::HTTP::Response[302, {'location' => '/index.html'}, []]
 					when '/index.html'
-						[200, {}, [request.method]]
+						Async::HTTP::Response[200, {}, [request.method]]
 					end
 				end
 			end
@@ -118,9 +94,9 @@ RSpec.describe Async::HTTP::Redirector do
 				Async::HTTP::Server.new(endpoint) do |request, peer, address|
 					case request.path
 					when '/'
-						[307, {'location' => '/index.html'}, []]
+						Async::HTTP::Response[307, {'location' => '/index.html'}, []]
 					when '/index.html'
-						[200, {}, [request.method]]
+						Async::HTTP::Response[200, {}, [request.method]]
 					end
 				end
 			end
@@ -138,9 +114,9 @@ RSpec.describe Async::HTTP::Redirector do
 				Async::HTTP::Server.new(endpoint) do |request, peer, address|
 					case request.path
 					when '/'
-						[308, {'location' => '/index.html'}, []]
+						Async::HTTP::Response[308, {'location' => '/index.html'}, []]
 					when '/index.html'
-						[200, {}, [request.method]]
+						Async::HTTP::Response[200, {}, [request.method]]
 					end
 				end
 			end

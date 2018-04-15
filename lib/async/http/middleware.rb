@@ -1,4 +1,4 @@
-# Copyright, 2018, by Samuel G. D. Williams. <http://www.codeotaku.com>
+# Copyright, 2017, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,28 +18,40 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'zlib'
-
-require_relative 'deflate'
-
 module Async
 	module HTTP
-		module Body
-			class Inflate < Deflate
-				def self.for(body, encoding = GZIP)
-					self.new(body, Zlib::Inflate.new(encoding))
+		VERBS = ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE']
+		
+		module Verbs
+			VERBS.each do |verb|
+				define_method(verb.downcase) do |location, headers = {}, body = []|
+					self.call(Request[verb, location.to_str, headers, body])
 				end
-				
-				def read
-					return if @stream.finished?
-					
-					if chunk = @body.read
-						chunk = @stream.inflate(chunk)
-					else
-						chunk = @stream.finish
-					end
-					
-					return chunk.empty? ? nil : chunk
+			end
+		end
+		
+		class Middleware
+			def initialize(app)
+				@app = app
+			end
+			
+			def self.build(&block)
+				Buidler.new(&block).to_app
+			end
+			
+			def close
+				@app.close
+			end
+			
+			include Verbs
+			
+			def call(request)
+				@app.call(request)
+			end
+			
+			module Okay
+				def self.call
+					Response.local(200, {}, [])
 				end
 			end
 		end

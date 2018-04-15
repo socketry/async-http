@@ -21,6 +21,8 @@
 require 'async/io/endpoint'
 
 require_relative 'protocol'
+require_relative 'response'
+
 
 module Async
 	module HTTP
@@ -30,12 +32,12 @@ module Async
 				@protocol_class = protocol_class || endpoint.protocol
 				
 				if block_given?
-					self.define_singleton_method(:handle_request, block)
+					define_singleton_method(:handle_request, block)
 				end
 			end
 			
 			def handle_request(request, peer, address)
-				[200, {"Content-Type" => "text/plain"}, ["Hello World"]]
+				Response[200, {}, []]
 			end
 			
 			def accept(peer, address, task: Task.current)

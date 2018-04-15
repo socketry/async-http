@@ -25,9 +25,9 @@ module Async
 		module Body
 			# Invokes a callback once the body has finished reading.
 			class Streamable < Wrapper
-				def self.wrap_response(response, &block)
-					if response.body
-						response.body = self.new(response.body, block)
+				def self.wrap(message, &block)
+					if message.body
+						message.body = self.new(message.body, block)
 					else
 						yield
 					end

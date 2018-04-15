@@ -136,46 +136,38 @@ module Async
 							body.finish
 							
 							# send response
-							headers = {STATUS => response[0].to_s}
-							headers.update(response[1])
+							headers = {STATUS => response.status.to_s}
+							headers.update(response.headers)
 							
-							stream.headers(headers, end_stream: false)
-							
-							response[2].each do |chunk|
-								stream.data(chunk, end_stream: false)
+							if response.body.empty?
+								stream.headers(headers, end_stream: true)
+							else
+								stream.headers(headers, end_stream: false)
+								
+								response.body.each do |chunk|
+									stream.data(chunk, end_stream: false)
+								end
+								
+								stream.data("", end_stream: true)
 							end
-							
-							stream.data("", end_stream: true)
 						end
 					end
 					
 					@reader.wait
 				end
 				
-				def send_request(authority, method, path, headers = {}, body = nil)
+				def call(request)
+					request.version ||= self.version
+					
 					stream = @controller.new_stream
 					
-					internal_headers = {
+					headers = {
 						SCHEME => HTTPS,
-						METHOD => method,
-						PATH => path,
-						AUTHORITY => authority,
-					}.merge(headers)
+						METHOD => request.method.to_s,
+						PATH => request.path.to_s,
+						AUTHORITY => request.authority.to_s,
+					}.merge(request.headers)
 					
-					stream.headers(internal_headers, end_stream: body.nil?)
-					
-					if body
-						body.each do |chunk|
-							stream.data(chunk, end_stream: false)
-						end
-						
-						stream.data("", end_stream: true)
-					end
-					
-					read_response(stream)
-				end
-				
-				def read_response(stream)
 					finished = Async::Notification.new
 					
 					response = Response.new
@@ -185,8 +177,6 @@ module Async
 					response.body = body
 					
 					stream.on(:headers) do |headers|
-						# Async.logger.debug(self) {"Stream headers: #{headers.inspect}"}
-						
 						headers.each do |key, value|
 							if key == STATUS
 								response.status = value.to_i
@@ -201,18 +191,23 @@ module Async
 					end
 					
 					stream.on(:data) do |chunk|
-						Async.logger.debug(self) {"Stream data: #{chunk.inspect}"}
 						body.write(chunk.to_s) unless chunk.empty?
 					end
 					
-					stream.on(:half_close) do
-						Async.logger.debug(self) {"Stream half-closed."}
+					stream.on(:close) do
+						body.finish
 					end
 					
-					stream.on(:close) do
-						Async.logger.debug(self) {"Stream closed, sending signal."}
-						# TODO should we prefer `response.finish`?
-						body.finish
+					if request.body.empty?
+						stream.headers(headers, end_stream: true)
+					else
+						stream.headers(headers, end_stream: false)
+						
+						request.body.each do |chunk|
+							stream.data(chunk, end_stream: false)
+						end
+							
+						stream.data("", end_stream: true)
 					end
 					
 					@stream.flush

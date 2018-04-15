@@ -23,6 +23,8 @@ require_relative 'body/buffered'
 module Async
 	module HTTP
 		class Response < Struct.new(:version, :status, :reason, :headers, :body)
+			prepend Body::Buffered::Reader
+			
 			def continue?
 				status == 100
 			end
@@ -43,7 +45,9 @@ module Async
 				status >= 400 && status < 600
 			end
 			
-			include Body::Buffered::Reader
+			def self.[](status, headers = {}, body = [])
+				self.new(nil, status, nil, headers, body)
+			end
 		end
 	end
 end

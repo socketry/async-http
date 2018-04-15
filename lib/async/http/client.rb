@@ -22,11 +22,10 @@ require 'async/io/endpoint'
 
 require_relative 'protocol'
 require_relative 'body/streamable'
+require_relative 'middleware'
 
 module Async
 	module HTTP
-		VERBS = ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE']
-		
 		class Client
 			def initialize(endpoint, protocol = nil, authority = nil, **options)
 				@endpoint = endpoint
@@ -57,19 +56,16 @@ module Async
 				@connections.close
 			end
 			
-			VERBS.each do |verb|
-				define_method(verb.downcase) do |reference, *args, &block|
-					self.request(verb, reference.to_str, *args, &block)
-				end
-			end
+			include Verbs
 			
-			def request(*args, &block)
+			def call(request)
 				connection = @connections.acquire
 				
-				response = connection.send_request(@authority, *args)
+				request.authority ||= @authority
+				response = connection.call(request)
 				
 				# The connection won't be released until the body is completely read/released.
-				Body::Streamable.wrap_response(response) do
+				Body::Streamable.wrap(response) do
 					@connections.release(connection)
 				end
 				

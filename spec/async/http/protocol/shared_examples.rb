@@ -33,9 +33,9 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		Async::HTTP::Server.new(endpoint, protocol) do |request, peer, address|
 			if request.method == 'POST'
 				# We stream the request body directly to the response.
-				[200, {}, request.body]
+				Async::HTTP::Response[200, {}, request.body]
 			else
-				[200, {}, ["#{request.method} #{request.version}"]]
+				Async::HTTP::Response[200, {}, ["#{request.method} #{request.version}"]]
 			end
 		end
 	end

@@ -1,4 +1,4 @@
-# Copyright, 2018, by Samuel G. D. Williams. <http://www.codeotaku.com>
+# Copyright, 2017, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,29 +18,46 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'zlib'
+require_relative 'middleware'
 
-require_relative 'deflate'
+require_relative 'body/buffered'
+require_relative 'body/inflate'
 
 module Async
 	module HTTP
-		module Body
-			class Inflate < Deflate
-				def self.for(body, encoding = GZIP)
-					self.new(body, Zlib::Inflate.new(encoding))
-				end
+		# Set a valid accept-encoding header and decode the response.
+		class AcceptEncoding < Middleware
+			DEFAULT_WRAPPERS = {
+				'gzip' => Body::Inflate.method(:for)
+			}
+			
+			def initialize(app, wrappers = DEFAULT_WRAPPERS)
+				super(app)
 				
-				def read
-					return if @stream.finished?
+				@accept_encoding = wrappers.keys.join(', ')
+				@wrappers = wrappers
+			end
+			
+			def call(request)
+				request.headers['accept-encoding'] = @accept_encoding
+				
+				response = super(request)
+				
+				unless response.body.empty?
+					encodings = response.headers['content-encoding'].split(/\s*,\s*/)
+					body = response.body
 					
-					if chunk = @body.read
-						chunk = @stream.inflate(chunk)
-					else
-						chunk = @stream.finish
+					# We want to unwrap all encodings
+					encodings.reverse_each do |name|
+						if wrapper = @wrappers[name]
+							body = wrapper.call(body)
+						end
 					end
 					
-					return chunk.empty? ? nil : chunk
+					response.body = body
 				end
+				
+				return response
 			end
 		end
 	end

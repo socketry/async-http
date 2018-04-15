@@ -45,7 +45,7 @@ RSpec.shared_examples Async::HTTP::Body do
 				output.finish
 			end
 			
-			[200, {}, output]
+			Async::HTTP::Response[200, {}, output]
 		end
 		
 		server_task = reactor.async do
@@ -85,7 +85,7 @@ RSpec.shared_examples Async::HTTP::Body do
 				body.finish
 			end
 			
-			[200, {}, body]
+			Async::HTTP::Response[200, {}, body]
 		end
 		
 		server_task = reactor.async do

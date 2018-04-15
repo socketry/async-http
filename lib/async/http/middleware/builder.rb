@@ -1,4 +1,4 @@
-# Copyright, 2018, by Samuel G. D. Williams. <http://www.codeotaku.com>
+# Copyright, 2017, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,28 +18,31 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'zlib'
-
-require_relative 'deflate'
-
 module Async
 	module HTTP
-		module Body
-			class Inflate < Deflate
-				def self.for(body, encoding = GZIP)
-					self.new(body, Zlib::Inflate.new(encoding))
+		class Middleware
+			def self.build(&block)
+				Builder.new(block)
+			end
+			
+			class Builder
+				def initialize(default_app = nil, &block)
+					@use = []
+					@run = default_app
+					
+					instance_eval(&block) if block_given?
 				end
 				
-				def read
-					return if @stream.finished?
-					
-					if chunk = @body.read
-						chunk = @stream.inflate(chunk)
-					else
-						chunk = @stream.finish
-					end
-					
-					return chunk.empty? ? nil : chunk
+				def use(middleware, *args, &block)
+					@use << proc {|app| middleware.new(app, *args, &block)}
+				end
+				
+				def run(app)
+					@app = app
+				end
+				
+				def to_app
+					app = @use.reverse.inject(app) {|app, use| use.call(app)}
 				end
 			end
 		end

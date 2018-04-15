@@ -24,7 +24,7 @@ require 'async/reactor'
 
 require 'async/io/ssl_socket'
 require 'async/http/url_endpoint'
-require 'async/http/compressor'
+require 'async/http/accept_encoding'
 
 RSpec.describe Async::HTTP::Client, timeout: 5 do
 	include_context Async::RSpec::Reactor
@@ -69,7 +69,7 @@ RSpec.describe Async::HTTP::Client, timeout: 5 do
 		end
 		
 		it "can request remote resource with compression" do
-			compressor = Async::HTTP::Compressor.new(client)
+			compressor = Async::HTTP::AcceptEncoding.new(client)
 			
 			response = compressor.get("/index", {'accept-encoding' => 'gzip'})
 			expect(response).to be_success

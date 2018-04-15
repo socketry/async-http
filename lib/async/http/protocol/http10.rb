@@ -38,9 +38,11 @@ module Async
 				# Server loop.
 				def receive_requests
 					while request = Request.new(*self.read_request)
-						status, headers, body = yield request
+						response = yield request
 						
-						write_response(request.version, status, headers, body)
+						response.version ||= request.version
+						
+						write_response(response.version, response.status, response.headers, response.body)
 						
 						unless keep_alive?(request.headers) && keep_alive?(headers)
 							@keep_alive = false

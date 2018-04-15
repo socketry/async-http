@@ -21,45 +21,54 @@
 require_relative 'client'
 require_relative 'url_endpoint'
 
-require_relative 'body/deflate'
-require_relative 'body/inflate'
+require_relative 'reference'
 
 module Async
 	module HTTP
-		class Compressor
-			def initialize(client, window_size = Body::Deflate::GZIP, level = Body::Deflate::DEFAULT_LEVEL)
-				@client = client
-				@window_size = window_size
-				@level = level
+		# A client wrapper which transparently handles both relative and absolute redirects to a given maximum number of hops.
+		class RelativeLocation < Middleware
+			DEFAULT_METHOD = 'GET'.freeze
+			
+			def initialize(app, maximum_hops = 4)
+				super(app)
+				
+				@maximum_hops = maximum_hops
 			end
 			
-			# The client which will be used for requests.
-			attr :client
+			# The maximum number of hops which will limit the number of redirects until an error is thrown.
+			attr :maximum_hops
 			
-			# The compression window size.
-			attr :window_size
-			
-			# The compression level.
-			attr :level
-			
-			def close
-				@client.close
-			end
-			
-			VERBS.each do |verb|
-				define_method(verb.downcase) do |*args, &block|
-					self.request(verb, *args, &block)
+			def call(request)
+				hops = 0
+				
+				# We need to cache the body as it might be submitted multiple times.
+				request.finish
+				
+				while hops < @maximum_hops
+					response = super(request)
+					hops += 1
+						
+					if response.redirection?
+						response.finish
+						
+						location = response.headers['location']
+						uri = URI.parse(location)
+						
+						if uri.absolute?
+							return response
+						else
+							request.path = Reference[request.path] + location
+						end
+						
+						unless response.preserve_method?
+							request.method = DEFAULT_METHOD
+						end
+					else
+						return response
+					end
 				end
-			end
-			
-			def request(verb, location, headers = {}, body = [])
-				body = Body::Deflate.wrap_request(headers, body, @window_size, @level)
 				
-				response = @client.request(verb, location, headers, body)
-				
-				Body::Inflate.wrap_response(response)
-				
-				return response
+				raise ArgumentError, "Redirected #{hops} times, exceeded maximum!"
 			end
 		end
 	end

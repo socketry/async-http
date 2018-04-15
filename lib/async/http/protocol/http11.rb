@@ -71,13 +71,15 @@ module Async
 					while true
 						request = Request.new(*read_request)
 						
-						status, headers, body = yield request
+						response = yield request
 						
-						write_response(request.version, status, headers, body)
+						response.version ||= request.version
+						
+						write_response(response.version, response.status, response.headers, response.body)
 						
 						request.finish
 						
-						unless keep_alive?(request.headers) and keep_alive?(headers)
+						unless keep_alive?(request.headers) and keep_alive?(response.headers)
 							@keep_alive = false
 							
 							break
@@ -88,11 +90,11 @@ module Async
 					end
 				end
 				
-				# Client request.
-				def send_request(authority, method, path, headers = {}, body = [])
-					Async.logger.debug(self) {"#{method} #{path} #{headers.inspect}"}
+				def call(request)
+					request.version ||= self.version
 					
-					write_request(authority, method, path, version, headers, body)
+					Async.logger.debug(self) {"#{request.method} #{request.path} #{request.headers.inspect}"}
+					write_request(request.authority, request.method, request.path, request.version, request.headers, request.body)
 					
 					return Response.new(*read_response)
 				rescue EOFError

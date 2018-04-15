@@ -46,18 +46,6 @@ module Async
 					end
 				end
 				
-				def self.wrap_request(headers, body, window_size, *args)
-					return body if body.empty?
-					
-					if encoding = headers['content-encoding']
-						headers['content-encoding'] = "#{encoding}, #{encoding_name(window_size)}"
-					else
-						headers['content-encoding'] = encoding_name(window_size)
-					end
-					
-					return self.for(Body::Buffered.wrap(body), window_size, *args)
-				end
-				
 				def self.for(body, window_size = GZIP, level = DEFAULT_LEVEL)
 					self.new(body, Zlib::Deflate.new(level, window_size))
 				end

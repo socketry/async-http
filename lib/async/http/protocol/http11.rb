@@ -161,7 +161,9 @@ module Async
 				end
 				
 				def write_body(body, chunked = true)
-					if chunked
+					if body.empty?
+						@stream.write("Content-Length: 0\r\n\r\n")
+					elsif chunked
 						@stream.write("Transfer-Encoding: chunked\r\n\r\n")
 						
 						body.each do |chunk|
@@ -175,11 +177,13 @@ module Async
 						
 						@stream.write("0\r\n\r\n")
 					else
-						buffer = String.new
-						body.each{|chunk| buffer << chunk}
+						body = Body::Buffered.for(body)
 						
-						@stream.write("Content-Length: #{buffer.bytesize}\r\n\r\n")
-						@stream.write(buffer)
+						@stream.write("Content-Length: #{body.bytesize}\r\n\r\n")
+						
+						body.each do |chunk|
+							@stream.write(chunk)
+						end
 					end
 				end
 				
@@ -187,7 +191,7 @@ module Async
 					if headers['transfer-encoding'] == 'chunked'
 						return Body::Chunked.new(self)
 					elsif content_length = headers['content-length']
-						return Body::Fixed.new(Integer(content_length), @stream)
+						return Body::Fixed.new(@stream, Integer(content_length))
 					end
 				end
 			end

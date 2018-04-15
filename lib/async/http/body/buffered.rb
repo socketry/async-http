@@ -46,7 +46,13 @@ module Async
 				
 				def initialize(chunks)
 					@chunks = chunks
+					@bytesize = nil
+					
 					@index = 0
+				end
+				
+				def bytesize
+					@bytesize ||= @chunks.sum(&:bytesize)
 				end
 				
 				def empty?

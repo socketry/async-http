@@ -81,6 +81,10 @@ module Async
 					@reader.alive?
 				end
 				
+				def version
+					VERSION
+				end
+				
 				def read_in_background(task: Task.current)
 					task.async do |nested_task|
 						buffer = Async::IO::BinaryString.new
@@ -103,7 +107,7 @@ module Async
 					# emits new streams opened by the client
 					@controller.on(:stream) do |stream|
 						request = Request.new
-						request.version = VERSION
+						request.version = self.version
 						request.headers = {}
 						request.body = Body::Writable.new
 						
@@ -147,8 +151,6 @@ module Async
 					@reader.wait
 				end
 				
-				RESPONSE_VERSION = 'HTTP/2'.freeze
-				
 				def send_request(authority, method, path, headers = {}, body = nil)
 					stream = @controller.new_stream
 					
@@ -172,7 +174,7 @@ module Async
 					finished = Async::Notification.new
 					
 					response = Response.new
-					response.version = RESPONSE_VERSION
+					response.version = self.version
 					response.headers = {}
 					response.body = Body::Writable.new
 					

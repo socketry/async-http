@@ -18,58 +18,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'readable'
+require 'async/http/protocol/http2'
+require_relative 'shared_examples'
 
-module Async
-	module HTTP
-		module Body
-			class Fixed < Readable
-				def initialize(stream, length)
-					@stream = stream
-					@length = length
-					@remaining = length
-				end
-				
-				def empty?
-					@remaining == 0
-				end
-				
-				def read
-					if @remaining > 0
-						if chunk = @stream.read(@remaining)
-							@remaining -= chunk.bytesize
-							
-							return chunk
-						end
-					end
-				end
-				
-				def join
-					buffer = @stream.read(@remaining)
-					
-					@remaining = 0
-					
-					return buffer
-				end
-			end
-			
-			class Remainder < Readable
-				def initialize(stream)
-					@stream = stream
-				end
-				
-				def empty?
-					@stream.closed?
-				end
-				
-				def read
-					@stream.read unless @stream.closed?
-				end
-				
-				def join
-					read
-				end
-			end
-		end
-	end
+RSpec.describe Async::HTTP::Protocol::HTTP2 do
+	it_behaves_like Async::HTTP::Protocol
 end

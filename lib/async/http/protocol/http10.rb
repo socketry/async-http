@@ -53,18 +53,18 @@ module Async
 				end
 				
 				def write_body(body, chunked = true)
-					buffer = String.new
-					body.each{|chunk| buffer << chunk}
-						
-					@stream.write("Content-Length: #{buffer.bytesize}\r\n\r\n")
-					@stream.write(buffer)
+					# We don't support chunked encoding.
+					super(body, false)
 				end
 				
 				def read_body(headers)
-					if content_length = headers['content-length']
-						return @stream.read(Integer(content_length))
-					# elsif !keep_alive?(headers)
-					# 	return @stream.read
+					if body = super
+						return body
+					end
+					
+					# Technically, with HTTP/1.0, if no content-length is specified, we just need to read everything until the connection is closed.
+					if !keep_alive?(headers)
+						return Body::Remainder.new(@stream)
 					end
 				end
 			end

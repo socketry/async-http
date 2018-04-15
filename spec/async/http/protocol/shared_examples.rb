@@ -18,58 +18,47 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'readable'
+require 'async/http/client'
+require 'async/http/server'
+require 'async/http/url_endpoint'
 
-module Async
-	module HTTP
-		module Body
-			class Fixed < Readable
-				def initialize(stream, length)
-					@stream = stream
-					@length = length
-					@remaining = length
-				end
-				
-				def empty?
-					@remaining == 0
-				end
-				
-				def read
-					if @remaining > 0
-						if chunk = @stream.read(@remaining)
-							@remaining -= chunk.bytesize
-							
-							return chunk
-						end
-					end
-				end
-				
-				def join
-					buffer = @stream.read(@remaining)
-					
-					@remaining = 0
-					
-					return buffer
-				end
-			end
-			
-			class Remainder < Readable
-				def initialize(stream)
-					@stream = stream
-				end
-				
-				def empty?
-					@stream.closed?
-				end
-				
-				def read
-					@stream.read unless @stream.closed?
-				end
-				
-				def join
-					read
-				end
+RSpec.shared_examples_for Async::HTTP::Protocol do
+	include_context Async::RSpec::Reactor
+	
+	let(:protocol) {described_class}
+	let(:endpoint) {Async::HTTP::URLEndpoint.parse('http://127.0.0.1:9294', reuse_port: true)}
+	let!(:client) {Async::HTTP::Client.new(endpoint, protocol)}
+	
+	let(:server) do
+		Async::HTTP::Server.new(endpoint, protocol) do |request, peer, address|
+			if request.method == 'POST'
+				[200, {}, request.body]
+			else
+				[200, {}, ["#{request.method} #{request.version}"]]
 			end
 		end
+	end
+	
+	let!(:server_task) do
+		server_task = reactor.async do
+			server.run
+		end
+	end
+	
+	after(:each) do
+		server_task.stop
+		client.close
+	end
+	
+	it "can get /" do
+		response = client.get("/")
+		expect(response).to be_success
+		expect(response.read).to be == "GET #{protocol::VERSION}"
+	end
+	
+	it "can post body to /" do
+		response = client.post("/", {}, ["Hello", " ", "World"])
+		expect(response).to be_success
+		expect(response.read).to be == "Hello World"
 	end
 end

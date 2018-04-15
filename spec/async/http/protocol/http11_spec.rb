@@ -1,4 +1,4 @@
-# Copyright, 2017, by Samuel G. D. Williams. <http://www.codeotaku.com>
+# Copyright, 2018, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -19,40 +19,45 @@
 # THE SOFTWARE.
 
 require 'async/http/protocol/http11'
+require_relative 'shared_examples'
 
 RSpec.describe Async::HTTP::Protocol::HTTP11 do
-	let(:stream) {Async::IO::Stream.new(io)}
-	subject {described_class.new(stream)}
+	it_behaves_like Async::HTTP::Protocol
 	
-	describe "simple request" do
-		let(:request) {"GET / HTTP/1.1\r\nHost: localhost\r\nAccept: */*\r\n\r\n"}
-		let(:io) {StringIO.new(request)}
-	
-		it "reads request" do
-			authority, method, url, version, headers, body = subject.read_request
-			
-			expect(authority).to be == 'localhost'
-			expect(method).to be == 'GET'
-			expect(url).to be == '/'
-			expect(version).to be == 'HTTP/1.1'
-			expect(headers).to be == {'accept' => '*/*'}
-			expect(body).to be nil
+	context '#read_request' do
+		let(:stream) {Async::IO::Stream.new(io)}
+		subject {described_class.new(stream)}
+
+		describe "simple request" do
+			let(:request) {"GET / HTTP/1.1\r\nHost: localhost\r\nAccept: */*\r\n\r\n"}
+			let(:io) {StringIO.new(request)}
+		
+			it "reads request" do
+				authority, method, url, version, headers, body = subject.read_request
+				
+				expect(authority).to be == 'localhost'
+				expect(method).to be == 'GET'
+				expect(url).to be == '/'
+				expect(version).to be == 'HTTP/1.1'
+				expect(headers).to be == {'accept' => '*/*'}
+				expect(body).to be nil
+			end
 		end
-	end
-	
-	describe "simple request with body" do
-		let(:request) {"GET / HTTP/1.1\r\nHost: localhost\r\nContent-Length: 11\r\n\r\nHello World"}
-		let(:io) {StringIO.new(request)}
-	
-		it "reads request" do
-			authority, method, url, version, headers, body = subject.read_request
-			
-			expect(authority).to be == 'localhost'
-			expect(method).to be == 'GET'
-			expect(url).to be == '/'
-			expect(version).to be == 'HTTP/1.1'
-			expect(headers).to be == {'content-length' => '11'}
-			expect(body.read).to be == "Hello World"
+		
+		describe "simple request with body" do
+			let(:request) {"GET / HTTP/1.1\r\nHost: localhost\r\nContent-Length: 11\r\n\r\nHello World"}
+			let(:io) {StringIO.new(request)}
+		
+			it "reads request" do
+				authority, method, url, version, headers, body = subject.read_request
+				
+				expect(authority).to be == 'localhost'
+				expect(method).to be == 'GET'
+				expect(url).to be == '/'
+				expect(version).to be == 'HTTP/1.1'
+				expect(headers).to be == {'content-length' => '11'}
+				expect(body.read).to be == "Hello World"
+			end
 		end
 	end
 end

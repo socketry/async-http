@@ -43,8 +43,9 @@ module Async
 				
 				response = super(request)
 				
-				unless response.body.empty?
-					encodings = response.headers['content-encoding'].split(/\s*,\s*/)
+				if !response.body.empty? and content_encoding = response.headers['content-encoding']
+					encodings = content_encoding.split(/\s*,\s*/)
+					
 					body = response.body
 					
 					# We want to unwrap all encodings

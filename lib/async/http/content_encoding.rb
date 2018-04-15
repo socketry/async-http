@@ -38,12 +38,12 @@ module Async
 			end
 			
 			def call(request)
-				# TODO use http-accept and sort by priority
-				encodings = request.headers['accept-encoding'].split(/\s*,\s*/)
-				
 				response = super(request)
 				
-				unless response.body.empty?
+				if !response.body.empty? and accept_encoding = request.headers['accept-encoding']
+					# TODO use http-accept and sort by priority
+					encodings = accept_encoding.split(/\s*,\s*/)
+					
 					body = response.body
 					
 					encodings.each do |name|

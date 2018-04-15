@@ -29,10 +29,18 @@ module Async
 		class Compressor
 			def initialize(client, window_size = Body::Deflate::GZIP, level = Body::Deflate::DEFAULT_LEVEL)
 				@client = client
-				
 				@window_size = window_size
 				@level = level
 			end
+			
+			# The client which will be used for requests.
+			attr :client
+			
+			# The compression window size.
+			attr :window_size
+			
+			# The compression level.
+			attr :level
 			
 			def close
 				@client.close

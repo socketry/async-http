@@ -34,6 +34,15 @@ module Async
 				}
 			end
 			
+			# The client which will be used for requests
+			attr :client
+			
+			# The maximum number of hops which will limit the number of redirects until an error is thrown.
+			attr :maximum_hops
+			
+			# Any other clients which were connected to service redirects.
+			attr :clients
+			
 			def close
 				@clients.each_value(&:close)
 				@clients.clear

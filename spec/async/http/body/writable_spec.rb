@@ -23,6 +23,7 @@ require 'async/http/client'
 require 'async/reactor'
 
 require 'async/http/body'
+require 'async/http/body/deflate'
 require 'async/http/url_endpoint'
 
 require 'async/io/ssl_socket'
@@ -66,6 +67,8 @@ RSpec.describe Async::HTTP::Body::Writable do
 				subject.write("Hello World #{i}")
 			end
 			
+			subject.finish
+			
 			subject.each.with_index do |chunk, i|
 				expect(chunk).to be == "Hello World #{i}"
 			end
@@ -75,6 +78,24 @@ RSpec.describe Async::HTTP::Body::Writable do
 			reactor.async do
 				expect do
 					subject.each do |chunk|
+						raise RuntimeError.new("It was too big!")
+					end
+				end.to raise_error(RuntimeError, /big/)
+			end
+			
+			expect{
+				subject.write("Beep boop") # This will cause a failure.
+				Async::Task.current.yield
+				subject.write("Beep boop") # This will fail.
+			}.to raise_error(RuntimeError, /big/)
+		end
+		
+		it "can propagate failures in nested bodies" do
+			nested = Async::HTTP::Body::Deflate.for(subject)
+			
+			reactor.async do
+				expect do
+					nested.each do |chunk|
 						raise RuntimeError.new("It was too big!")
 					end
 				end.to raise_error(RuntimeError, /big/)

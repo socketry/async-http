@@ -18,14 +18,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'readable'
+require_relative 'wrapper'
 
 require 'zlib'
 
 module Async
 	module HTTP
 		module Body
-			class Deflate < Readable
+			class Deflate < Wrapper
 				DEFAULT_LEVEL = Zlib::DEFAULT_COMPRESSION
 				
 				DEFLATE = -Zlib::MAX_WBITS
@@ -51,17 +51,27 @@ module Async
 				end
 				
 				def initialize(body, stream)
-					@body = body
+					super(body)
+					
 					@stream = stream
 				end
 				
-				def read
-					return if @stream.finished?
+				def stop(error)
+					# There are two ways for the stream to be closed. Either #read returns nil or #stop is called.
+					@stream.close
 					
-					if chunk = @body.read
+					super
+				end
+				
+				def read
+					return if @stream.closed?
+					
+					if chunk = super
 						return @stream.deflate(chunk, Zlib::SYNC_FLUSH)
 					else
 						chunk = @stream.finish
+						
+						@stream.close
 						
 						return chunk.empty? ? nil : chunk
 					end

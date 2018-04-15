@@ -44,6 +44,10 @@ module Async
 				def read
 					@body.read
 				end
+				
+				def stop(error)
+					@body.stop(error)
+				end
 			end
 		end
 	end

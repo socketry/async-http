@@ -33,18 +33,26 @@ module Async
 					false
 				end
 				
-				# Enumerate all chunks until finished.
+				# Read the next available chunk.
+				def read
+					nil
+				end
+				
+				# The consumer can call stop to signal that the stream output has terminated.
+				def stop(error)
+				end
+				
+				# Enumerate all chunks until finished. If an error is thrown, #stop will be invoked.
 				def each
 					return to_enum unless block_given?
 					
 					while chunk = self.read
 						yield chunk
 					end
-				end
-				
-				# Read the next available chunk.
-				def read
-					nil
+				rescue
+					stop($!)
+					
+					raise
 				end
 				
 				# Read all remaining chunks into a single binary string.

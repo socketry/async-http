@@ -31,29 +31,11 @@ module Async
 					@queue = Async::Queue.new
 					
 					@finished = false
-					@stopped = false
+					@stopped = nil
 				end
 				
 				def empty?
 					@finished
-				end
-				
-				# Enumerate all chunks until finished.
-				def each
-					return to_enum unless block_given?
-					
-					return if @finished
-					
-					while chunk = @queue.dequeue
-						yield chunk
-					end
-				rescue
-					# Stop the stream because the remote end is no longer reading from it. Any attempt to write to the stream will fail.
-					@stopped = $!
-					
-					raise
-				ensure
-					@finished = true
 				end
 				
 				# Read the next available chunk.
@@ -65,6 +47,10 @@ module Async
 					end
 					
 					return chunk
+				end
+				
+				def stop(error)
+					@stopped = error
 				end
 				
 				# Write a single chunk to the body. Signal completion by calling `#finish`.

@@ -31,9 +31,12 @@ module Async
 				'gzip' => Body::Deflate.method(:for)
 			}
 			
-			def initialize(app, wrappers = DEFAULT_WRAPPERS)
+			DEFAULT_CONTENT_TYPES = %r{^(text/.*?)|(.*?/json)|(.*?/javascript)$}
+			
+			def initialize(app, content_types = DEFAULT_CONTENT_TYPES, wrappers = DEFAULT_WRAPPERS)
 				super(app)
 				
+				@content_types = content_types
 				@wrappers = wrappers
 			end
 			
@@ -41,22 +44,24 @@ module Async
 				response = super
 				
 				if !response.body.empty? and accept_encoding = request.headers['accept-encoding']
-					# TODO use http-accept and sort by priority
-					encodings = accept_encoding.split(/\s*,\s*/)
-					
-					body = response.body
-					
-					encodings.each do |name|
-						if wrapper = @wrappers[name]
-							response.headers['content-encoding'] = name
-							
-							body = wrapper.call(body)
-							
-							break
+					if content_type = response.headers['content-type'] and @content_types.match?(content_type)
+						# TODO use http-accept and sort by priority
+						encodings = accept_encoding.split(/\s*,\s*/)
+						
+						body = response.body
+						
+						encodings.each do |name|
+							if wrapper = @wrappers[name]
+								response.headers['content-encoding'] = name
+								
+								body = wrapper.call(body)
+								
+								break
+							end
 						end
+						
+						response.body = body
 					end
-					
-					response.body = body
 				end
 				
 				return response

@@ -64,12 +64,6 @@ module Async
 					@controller.on(:frame_received) do |frame|
 						Async.logger.debug(self) {"Received frame: #{frame.inspect}"}
 					end
-					
-					if @controller.is_a? ::HTTP2::Client
-						@controller.send_connection_preface
-					end
-					
-					@reader = read_in_background
 				end
 				
 				# Multiple requests can be processed at the same time.
@@ -83,6 +77,10 @@ module Async
 				
 				def version
 					VERSION
+				end
+				
+				def start_connection
+					@reader ||= read_in_background
 				end
 				
 				def read_in_background(task: Task.current)
@@ -113,6 +111,7 @@ module Async
 						request.body = body
 						
 						stream.on(:headers) do |headers|
+							# puts "Got request headers: #{headers.inspect}"
 							headers.each do |key, value|
 								if key == METHOD
 									request.method = value
@@ -127,32 +126,41 @@ module Async
 						end
 						
 						stream.on(:data) do |chunk|
+							# puts "Got request data: #{chunk.inspect}"
 							body.write(chunk.to_s) unless chunk.empty?
 						end
 						
 						stream.on(:half_close) do
+							# puts "Generating response..."
 							response = yield request
 							
+							# puts "Finishing body..."
 							body.finish
 							
+							# puts "Sending response..."
 							# send response
 							headers = {STATUS => response.status.to_s}
 							headers.update(response.headers)
 							
+							# puts "Sending headers #{headers}"
 							if response.body.empty?
 								stream.headers(headers, end_stream: true)
 							else
 								stream.headers(headers, end_stream: false)
 								
+								# puts "Streaming body..."
 								response.body.each do |chunk|
+									# puts "Sending chunk #{chunk.inspect}"
 									stream.data(chunk, end_stream: false)
 								end
 								
+								# puts "Ending stream..."
 								stream.data("", end_stream: true)
 							end
 						end
 					end
 					
+					start_connection
 					@reader.wait
 				end
 				
@@ -210,6 +218,7 @@ module Async
 						stream.data("", end_stream: true)
 					end
 					
+					start_connection
 					@stream.flush
 					
 					# Async.logger.debug(self) {"Stream flushed, waiting for signal."}

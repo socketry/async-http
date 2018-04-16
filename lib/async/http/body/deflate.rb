@@ -26,7 +26,7 @@ module Async
 	module HTTP
 		module Body
 			class Deflate < Wrapper
-				DEFAULT_LEVEL = Zlib::DEFAULT_COMPRESSION
+				DEFAULT_LEVEL = 7
 				
 				DEFLATE = -Zlib::MAX_WBITS
 				GZIP =  Zlib::MAX_WBITS | 16

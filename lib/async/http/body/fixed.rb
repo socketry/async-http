@@ -53,7 +53,7 @@ module Async
 				end
 				
 				def inspect
-					"\#<#{self.class} #{protocol.version} length=#{@length} remaining=#{@remaining}>"
+					"\#<#{self.class} length=#{@length} remaining=#{@remaining}>"
 				end
 			end
 			
@@ -75,7 +75,7 @@ module Async
 				end
 				
 				def inspect
-					"\#<#{self.class} #{protocol.version} #{@stream.closed? ? 'closed' : 'open'}>"
+					"\#<#{self.class} #{@stream.closed? ? 'closed' : 'open'}>"
 				end
 			end
 		end

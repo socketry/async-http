@@ -54,7 +54,7 @@ module Async
 				end
 				
 				def bytesize
-					@bytesize ||= @chunks.sum(&:bytesize)
+					@bytesize ||= @chunks.inject(0) {|sum, chunk| sum + chunk.bytesize}
 				end
 				
 				def empty?

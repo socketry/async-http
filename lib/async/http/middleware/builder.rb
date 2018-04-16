@@ -21,10 +21,6 @@
 module Async
 	module HTTP
 		class Middleware
-			def self.build(&block)
-				Builder.new(block)
-			end
-			
 			class Builder
 				def initialize(default_app = nil, &block)
 					@use = []
@@ -44,6 +40,10 @@ module Async
 				def to_app
 					app = @use.reverse.inject(app) {|app, use| use.call(app).freeze}
 				end
+			end
+			
+			def self.build(&block)
+				Builder.new(&block).to_app
 			end
 		end
 	end

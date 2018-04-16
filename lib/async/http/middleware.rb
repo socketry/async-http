@@ -35,10 +35,6 @@ module Async
 				@app = app
 			end
 			
-			def self.build(&block)
-				Buidler.new(&block).to_app
-			end
-			
 			def close
 				@app.close
 			end

@@ -33,16 +33,49 @@ module Async
 					super(body)
 					
 					@bytesize = 0
+					
+					@start_time = Time.now
+					@first_chunk_time = nil
+					@end_time = nil
+					
+					@callback = callback
 				end
 				
+				attr :start_time
+				attr :first_chunk_time
+				attr :end_time
+				
 				attr :bytesize
+				
+				def duration
+					@end_time - @start_time
+				end
+				
+				def stop(error)
+					complete_statistics
+					
+					super
+				end
 				
 				def read
 					chunk = super
 					
-					@bytesize += chunk.bytesize
+					@first_chunk_time ||= Time.now
+					
+					if chunk
+						@bytesize += chunk.bytesize
+					else
+						complete_statistics
+					end
 					
 					return chunk
+				end
+				
+				private
+				
+				def complete_statistics
+					@end_time = Time.now
+					@callback.call(self) if @callback
 				end
 			end
 		end

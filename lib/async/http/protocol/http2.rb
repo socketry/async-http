@@ -145,6 +145,7 @@ module Async
 							# puts "Sending headers #{headers}"
 							if response.body.empty?
 								stream.headers(headers, end_stream: true)
+								response.body.read
 							else
 								stream.headers(headers, end_stream: false)
 								

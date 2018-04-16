@@ -165,6 +165,7 @@ module Async
 				def write_body(body, chunked = true)
 					if body.empty?
 						@stream.write("Content-Length: 0\r\n\r\n")
+						body.read
 					elsif chunked
 						@stream.write("Transfer-Encoding: chunked\r\n\r\n")
 						

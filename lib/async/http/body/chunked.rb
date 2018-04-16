@@ -53,7 +53,7 @@ module Async
 				end
 				
 				def inspect
-					"\#<#{self.class} #{protocol.version}>"
+					"\#<#{self.class} #{@protocol.version}>"
 				end
 			end
 		end

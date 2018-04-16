@@ -25,18 +25,26 @@ require_relative 'deflate'
 module Async
 	module HTTP
 		module Body
-			class Inflate < Deflate
+			class Inflate < ZStream
 				def self.for(body, encoding = GZIP)
 					self.new(body, Zlib::Inflate.new(encoding))
 				end
 				
 				def read
-					return if @stream.finished?
+					return if @stream.closed?
 					
-					if chunk = @body.read
+					if chunk = super
+						@input_size += chunk.bytesize
+						
 						chunk = @stream.inflate(chunk)
+						
+						@output_size += chunk.bytesize
 					else
 						chunk = @stream.finish
+						
+						@output_size += chunk.bytesize
+						
+						@stream.close
 					end
 					
 					return chunk.empty? ? nil : chunk

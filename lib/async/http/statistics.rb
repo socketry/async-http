@@ -18,23 +18,35 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'wrapper'
+require_relative 'body/wrapper'
+
+require 'async/clock'
 
 module Async
 	module HTTP
+		class Statistics
+			def self.start
+				self.new(Clock.now)
+			end
+			
+			def initialize(start_time)
+				@start_time = start_time
+			end
+			
+			def wrap(response, &block)
+				response.body = Body::Statistics.new(@start_time, response.body, block)
+			end
+		end
+		
 		module Body
 			# Invokes a callback once the body has finished reading.
 			class Statistics < Wrapper
-				def self.wrap(message, &block)
-					message.body = self.new(message.body, block)
-				end
-				
-				def initialize(body, callback)
+				def initialize(start_time, body, callback)
 					super(body)
 					
 					@bytesize = 0
 					
-					@start_time = Time.now
+					@start_time = start_time
 					@first_chunk_time = nil
 					@end_time = nil
 					
@@ -47,12 +59,20 @@ module Async
 				
 				attr :bytesize
 				
-				def duration
-					@end_time - @start_time
+				def total_duration
+					if @end_time
+						@end_time - @start_time
+					end
+				end
+				
+				def first_chunk_duration
+					if @first_chunk_time
+						@first_chunk_time - @start_time
+					end
 				end
 				
 				def stop(error)
-					complete_statistics
+					complete_statistics(error)
 					
 					super
 				end
@@ -60,7 +80,7 @@ module Async
 				def read
 					chunk = super
 					
-					@first_chunk_time ||= Time.now
+					@first_chunk_time ||= Clock.now
 					
 					if chunk
 						@bytesize += chunk.bytesize
@@ -71,11 +91,39 @@ module Async
 					return chunk
 				end
 				
+				def to_s
+					parts = ["sent #{@bytesize} bytes"]
+					
+					if duration = self.total_duration
+						parts << "took #{format_duration(duration)} in total"
+					end
+					
+					if duration = self.first_chunk_duration
+						parts << "took #{format_duration(duration)} until first chunk"
+					end
+					
+					return parts.join('; ')
+				end
+				
+				def inspect
+					"#{super} | \#<#{self.class} #{self.to_s}>"
+				end
+				
 				private
 				
-				def complete_statistics
-					@end_time = Time.now
-					@callback.call(self) if @callback
+				def complete_statistics(error = nil)
+					@end_time = Clock.now
+					
+					@callback.call(self, error) if @callback
+				end
+				
+				def format_duration(seconds)
+					if seconds < 1.0
+						seconds * 1000.0
+						return "#{(seconds * 1000.0).round(2)}ms"
+					else
+						return "#{seconds.round(1)}s"
+					end
 				end
 			end
 		end

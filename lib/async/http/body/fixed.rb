@@ -51,6 +51,10 @@ module Async
 					
 					return buffer
 				end
+				
+				def inspect
+					"\#<#{self.class} #{protocol.version} length=#{@length} remaining=#{@remaining}>"
+				end
 			end
 			
 			class Remainder < Readable
@@ -68,6 +72,10 @@ module Async
 				
 				def join
 					read
+				end
+				
+				def inspect
+					"\#<#{self.class} #{protocol.version} #{@stream.closed? ? 'closed' : 'open'}>"
 				end
 			end
 		end

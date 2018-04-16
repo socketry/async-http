@@ -86,6 +86,10 @@ module Async
 					@index = 0
 				end
 				
+				def inspect
+					"\#<#{self.class} #{@chunks.count} chunks, #{self.bytesize} bytes>"
+				end
+				
 				module Reader
 					def read
 						self.body ? self.body.join : nil

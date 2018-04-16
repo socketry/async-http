@@ -30,6 +30,8 @@ module Async
 				def initialize
 					@queue = Async::Queue.new
 					
+					@count = 0
+					
 					@finished = false
 					@stopped = nil
 				end
@@ -61,12 +63,17 @@ module Async
 					
 					# TODO should this yield if the queue is full?
 					
+					@count += 1
 					@queue.enqueue(chunk)
 				end
 				
 				# Signal that output has finished.
 				def finish
 					@queue.enqueue(nil)
+				end
+				
+				def inspect
+					"\#<#{self.class} #{@count} chunks written>"
 				end
 			end
 		end

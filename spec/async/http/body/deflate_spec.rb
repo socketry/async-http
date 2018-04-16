@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+require 'async/http/body/writable'
 require 'async/http/body/deflate'
 require 'async/http/body/inflate'
 

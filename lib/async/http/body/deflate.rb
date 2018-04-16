@@ -25,7 +25,7 @@ require 'zlib'
 module Async
 	module HTTP
 		module Body
-			class Deflate < Wrapper
+			class ZStream < Wrapper
 				DEFAULT_LEVEL = 7
 				
 				DEFLATE = -Zlib::MAX_WBITS
@@ -46,30 +46,54 @@ module Async
 					end
 				end
 				
-				def self.for(body, window_size = GZIP, level = DEFAULT_LEVEL)
-					self.new(body, Zlib::Deflate.new(level, window_size))
-				end
-				
 				def initialize(body, stream)
 					super(body)
 					
 					@stream = stream
+					
+					@input_size = 0
+					@output_size = 0
+				end
+				
+				attr :input_size
+				attr :output_size
+				
+				def ratio
+					@output_size.to_f / @input_size.to_f
 				end
 				
 				def stop(error)
 					# There are two ways for the stream to be closed. Either #read returns nil or #stop is called.
-					@stream.close
+					@stream.close unless @stream.closed?
 					
 					super
+				end
+				
+				def inspect
+					"#{super} | \#<#{self.class} #{(ratio*100).round(2)}%>"
+				end
+			end
+			
+			class Deflate < ZStream
+				def self.for(body, window_size = GZIP, level = DEFAULT_LEVEL)
+					self.new(body, Zlib::Deflate.new(level, window_size))
 				end
 				
 				def read
 					return if @stream.closed?
 					
 					if chunk = super
-						return @stream.deflate(chunk, Zlib::SYNC_FLUSH)
+						@input_size += chunk.bytesize
+						
+						chunk = @stream.deflate(chunk, Zlib::SYNC_FLUSH)
+						
+						@output_size += chunk.bytesize
+						
+						return chunk
 					else
 						chunk = @stream.finish
+						
+						@output_size += chunk.bytesize
 						
 						@stream.close
 						

@@ -46,6 +46,8 @@ module Async
 			end
 			
 			def self.[](status, headers = {}, body = [])
+				body = Body::Buffered.wrap(body)
+				
 				self.new(nil, status, nil, headers, body)
 			end
 			

@@ -48,6 +48,10 @@ module Async
 				def stop(error)
 					@body.stop(error)
 				end
+				
+				def inspect
+					return @body.inspect
+				end
 			end
 		end
 	end

@@ -51,6 +51,10 @@ module Async
 					
 					return chunk
 				end
+				
+				def inspect
+					"\#<#{self.class} #{protocol.version}>"
+				end
 			end
 		end
 	end

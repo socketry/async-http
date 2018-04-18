@@ -51,6 +51,7 @@ module Async
 					return chunk
 				end
 				
+				# Cause the next call to write to fail with the given error.
 				def stop(error)
 					@stopped = error
 				end
@@ -66,6 +67,8 @@ module Async
 					@count += 1
 					@queue.enqueue(chunk)
 				end
+				
+				alias << write
 				
 				# Signal that output has finished.
 				def finish

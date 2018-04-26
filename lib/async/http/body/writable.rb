@@ -76,7 +76,7 @@ module Async
 				end
 				
 				def inspect
-					"\#<#{self.class} #{@count} chunks written>"
+					"\#<#{self.class} #{@count} chunks written#{@finished ? ', finished' : ''}>"
 				end
 			end
 		end

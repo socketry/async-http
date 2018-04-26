@@ -59,17 +59,24 @@ module Async
 			include Verbs
 			
 			def call(request)
-				connection = @connections.acquire
-				
 				request.authority ||= @authority
-				response = connection.call(request)
 				
-				# The connection won't be released until the body is completely read/released.
-				Body::Streamable.wrap(response) do
-					@connections.release(connection)
+				# As we cache connections, it's possible these connections go bad (e.g. closed by remote host). In this case, we need to try again. It's up to the caller to impose a timeout on this.
+				while true
+					connection = @connections.acquire
+					
+					if response = connection.call(request)
+						# The connection won't be released until the body is completely read/released.
+						Body::Streamable.wrap(response) do
+							@connections.release(connection)
+						end
+						
+						return response
+					else
+						# The connection failed for some reason, we close it.
+						connection.close
+					end
 				end
-				
-				return response
 			end
 			
 			protected

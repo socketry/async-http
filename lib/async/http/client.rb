@@ -78,15 +78,10 @@ module Async
 				Pool.new(connection_limit) do
 					Async.logger.debug(self) {"Making connection to #{@endpoint.inspect}"}
 					
-					@endpoint.each do |endpoint|
-						peer = endpoint.connect
-						
-						peer.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
-						
-						stream = IO::Stream.new(peer)
-						
-						break @protocol.client(stream)
-					end
+					peer = @endpoint.connect
+					peer.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
+					
+					@protocol.client(IO::Stream.new(peer))
 				end
 			end
 		end

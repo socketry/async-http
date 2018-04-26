@@ -85,6 +85,8 @@ module Async
 				
 				def read_in_background(task: Task.current)
 					task.async do |nested_task|
+						nested_task.annotate("#{version} reading data")
+						
 						buffer = Async::IO::BinaryString.new
 						
 						while data = @stream.io.read(1024*8, buffer)

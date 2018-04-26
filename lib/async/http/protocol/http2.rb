@@ -64,7 +64,11 @@ module Async
 					@controller.on(:frame_received) do |frame|
 						Async.logger.debug(self) {"Received frame: #{frame.inspect}"}
 					end
+					
+					@count = 0
 				end
+				
+				attr :count
 				
 				# Multiple requests can be processed at the same time.
 				def multiplex
@@ -106,6 +110,8 @@ module Async
 				def receive_requests(task: Task.current, &block)
 					# emits new streams opened by the client
 					@controller.on(:stream) do |stream|
+						@count += 1
+						
 						request = Request.new
 						request.version = self.version
 						request.headers = {}
@@ -145,7 +151,7 @@ module Async
 							headers.update(response.headers)
 							
 							# puts "Sending headers #{headers}"
-							if response.body.empty?
+							if response.body.nil? or response.body.empty?
 								stream.headers(headers, end_stream: true)
 								response.body.read
 							else
@@ -168,6 +174,8 @@ module Async
 				end
 				
 				def call(request)
+					@count += 1
+					
 					request.version ||= self.version
 					
 					stream = @controller.new_stream

@@ -31,7 +31,7 @@ module Async
 					VERSION
 				end
 				
-				def keep_alive?(headers)
+				def persistent?(headers)
 					headers['connection'] == KEEP_ALIVE
 				end
 				
@@ -44,7 +44,7 @@ module Async
 						
 						write_response(response.version, response.status, response.headers, response.body)
 						
-						unless keep_alive?(request.headers) && keep_alive?(headers)
+						unless persistent?(request.headers) && persistent?(headers)
 							@keep_alive = false
 							
 							break
@@ -54,9 +54,9 @@ module Async
 					return false
 				end
 				
-				def write_body(body, chunked = true)
+				def write_body(body, chunked = false)
 					# We don't support chunked encoding.
-					super(body, false)
+					super(body, chunked)
 				end
 				
 				def read_body(headers)
@@ -65,7 +65,7 @@ module Async
 					end
 					
 					# Technically, with HTTP/1.0, if no content-length is specified, we just need to read everything until the connection is closed.
-					if !keep_alive?(headers)
+					if !persistent?(headers)
 						return Body::Remainder.new(@stream)
 					end
 				end

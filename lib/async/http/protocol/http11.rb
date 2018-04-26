@@ -36,8 +36,11 @@ module Async
 				def initialize(stream)
 					super(stream, CRLF)
 					
-					@keep_alive = true
+					@persistent = true
+					@count = 0
 				end
+				
+				attr :count
 				
 				# Only one simultaneous connection at a time.
 				def multiplex
@@ -45,7 +48,7 @@ module Async
 				end
 				
 				def reusable?
-					@keep_alive
+					@persistent
 				end
 				
 				class << self
@@ -62,7 +65,7 @@ module Async
 					VERSION
 				end
 				
-				def keep_alive?(headers)
+				def persistent?(headers)
 					headers['connection'] != CLOSE
 				end
 				
@@ -70,6 +73,7 @@ module Async
 				def receive_requests(task: Task.current)
 					while true
 						request = Request.new(*read_request)
+						@count += 1
 						
 						response = yield request
 						
@@ -79,8 +83,8 @@ module Async
 						
 						request.finish
 						
-						unless keep_alive?(request.headers) and keep_alive?(response.headers)
-							@keep_alive = false
+						unless persistent?(request.headers) and persistent?(response.headers)
+							@persistent = false
 							
 							break
 						end
@@ -91,6 +95,8 @@ module Async
 				end
 				
 				def call(request)
+					@count += 1
+					
 					request.version ||= self.version
 					
 					Async.logger.debug(self) {"#{request.method} #{request.path} #{request.headers.inspect}"}
@@ -98,6 +104,7 @@ module Async
 					
 					return Response.new(*read_response)
 				rescue EOFError
+					Async.logger.debug(self) {"Connection failed with EOFError after #{@count} requests."}
 					return nil
 				end
 				
@@ -118,7 +125,7 @@ module Async
 					headers = read_headers
 					body = read_body(headers)
 					
-					@keep_alive = keep_alive?(headers)
+					@keep_alive = persistent?(headers)
 					
 					return version, Integer(status), reason, headers, body
 				end
@@ -163,7 +170,7 @@ module Async
 				end
 				
 				def write_body(body, chunked = true)
-					if body.empty?
+					if body.nil? or body.empty?
 						@stream.write("Content-Length: 0\r\n\r\n")
 						body.read
 					elsif chunked

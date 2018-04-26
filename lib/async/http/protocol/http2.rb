@@ -153,7 +153,7 @@ module Async
 							# puts "Sending headers #{headers}"
 							if response.body.nil? or response.body.empty?
 								stream.headers(headers, end_stream: true)
-								response.body.read
+								response.body.read if request.body
 							else
 								stream.headers(headers, end_stream: false)
 								
@@ -217,8 +217,9 @@ module Async
 						body.finish
 					end
 					
-					if request.body.empty?
+					if request.body.nil? or request.body.empty?
 						stream.headers(headers, end_stream: true)
+						response.body.read if request.body
 					else
 						stream.headers(headers, end_stream: false)
 						

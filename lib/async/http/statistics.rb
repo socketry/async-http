@@ -34,7 +34,9 @@ module Async
 			end
 			
 			def wrap(response, &block)
-				response.body = Body::Statistics.new(@start_time, response.body, block)
+				if response and response.body
+					response.body = Body::Statistics.new(@start_time, response.body, block)
+				end
 			end
 		end
 		

@@ -172,7 +172,7 @@ module Async
 				def write_body(body, chunked = true)
 					if body.nil? or body.empty?
 						@stream.write("Content-Length: 0\r\n\r\n")
-						body.read
+						body.read if body
 					elsif chunked
 						@stream.write("Transfer-Encoding: chunked\r\n\r\n")
 						

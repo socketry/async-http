@@ -24,8 +24,6 @@ module Async
 	module HTTP
 		module Body
 			class Fixed < Readable
-				CHUNK_SIZE = 1024*8
-				
 				def initialize(stream, length)
 					@stream = stream
 					@length = length
@@ -38,9 +36,7 @@ module Async
 				
 				def read
 					if @remaining > 0
-						amount = [@remaining, CHUNK_SIZE].min
-						
-						if chunk = @stream.read(amount)
+						if chunk = @stream.read_partial(@remaining)
 							@remaining -= chunk.bytesize
 							
 							return chunk

@@ -42,8 +42,9 @@ module Async
 			
 			def accept(peer, address, task: Task.current)
 				peer.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
+				block_size = peer.getsockopt(Socket::SOL_SOCKET, Socket::SO_RCVBUF).int
 				
-				stream = Async::IO::Stream.new(peer)
+				stream = Async::IO::Stream.new(peer, block_size: block_size)
 				protocol = @protocol_class.server(stream)
 				
 				# Async.logger.debug(self) {"Incoming connnection from #{address.inspect}"}

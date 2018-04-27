@@ -91,10 +91,8 @@ module Async
 					task.async do |nested_task|
 						nested_task.annotate("#{version} reading data")
 						
-						buffer = Async::IO::BinaryString.new
-						
-						while data = @stream.io.read(1024*8, buffer)
-							@controller << data
+						while buffer = @stream.read_partial
+							@controller << buffer
 						end
 						
 						Async.logger.debug(self) {"Connection reset by peer!"}

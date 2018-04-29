@@ -26,6 +26,7 @@ module Async
 			# Implements basic HTTP/1.1 request/response.
 			class HTTP10 < HTTP11
 				VERSION = "HTTP/1.0".freeze
+				KEEP_ALIVE = 'keep-alive'.freeze
 				
 				def version
 					VERSION
@@ -45,7 +46,7 @@ module Async
 						write_response(response.version, response.status, response.headers, response.body)
 						
 						unless persistent?(request.headers) && persistent?(headers)
-							@keep_alive = false
+							@persistent = false
 							
 							break
 						end

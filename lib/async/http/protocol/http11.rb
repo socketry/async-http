@@ -56,7 +56,6 @@ module Async
 					alias client new
 				end
 				
-				KEEP_ALIVE = 'keep-alive'.freeze
 				CLOSE = 'close'.freeze
 				
 				VERSION = "HTTP/1.1".freeze
@@ -125,7 +124,7 @@ module Async
 					headers = read_headers
 					body = read_body(headers)
 					
-					@keep_alive = persistent?(headers)
+					@persistent = persistent?(headers)
 					
 					return version, Integer(status), reason, headers, body
 				end

@@ -20,6 +20,8 @@
 
 require 'async/http/server'
 require 'async/http/client'
+
+require 'async/io/host_endpoint'
 require 'async/reactor'
 
 require 'etc'

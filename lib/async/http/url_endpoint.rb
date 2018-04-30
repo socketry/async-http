@@ -18,7 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'async/io/endpoint'
+require 'async/io/host_endpoint'
+require 'async/io/ssl_endpoint'
 require 'async/io/ssl_socket'
 
 require_relative 'protocol/http1'
@@ -99,7 +100,7 @@ module Async
 					
 					if secure?
 						# Wrap it in SSL:
-						@endpoint = Async::IO::SecureEndpoint.new(@endpoint,
+						@endpoint = Async::IO::SSLEndpoint.new(@endpoint,
 							ssl_context: ssl_context,
 							hostname: self.hostname
 						)

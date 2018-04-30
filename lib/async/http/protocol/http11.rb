@@ -22,6 +22,7 @@ require 'async/io/protocol/line'
 
 require_relative '../request'
 require_relative '../response'
+require_relative '../headers'
 
 require_relative '../body/chunked'
 require_relative '../body/fixed'
@@ -155,17 +156,18 @@ module Async
 					end
 				end
 				
-				def read_headers(headers = {})
-					# Parsing headers:
+				def read_headers
+					fields = []
+					
 					each_line do |line|
 						if line =~ /^([a-zA-Z\-]+):\s*(.+?)\s*$/
-							headers[$1.downcase] = $2
+							fields << [$1, $2]
 						else
 							break
 						end
 					end
 					
-					return headers
+					return Headers.new(fields)
 				end
 				
 				def write_body(body, chunked = true)

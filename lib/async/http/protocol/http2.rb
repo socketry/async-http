@@ -20,6 +20,7 @@
 
 require_relative '../request'
 require_relative '../response'
+require_relative '../headers'
 require_relative '../body/writable'
 
 require 'async/notification'
@@ -112,12 +113,11 @@ module Async
 						
 						request = Request.new
 						request.version = self.version
-						request.headers = {}
+						request.headers = Headers.new
 						body = Body::Writable.new
 						request.body = body
 						
 						stream.on(:headers) do |headers|
-							# puts "Got request headers: #{headers.inspect}"
 							headers.each do |key, value|
 								if key == METHOD
 									request.method = value

@@ -21,7 +21,7 @@
 require 'async/http/protocol/http11'
 require_relative 'shared_examples'
 
-RSpec.describe Async::HTTP::Protocol::HTTP11 do
+RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 2 do
 	it_behaves_like Async::HTTP::Protocol
 	
 	context '#read_request' do

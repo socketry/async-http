@@ -27,12 +27,13 @@ require_relative 'middleware'
 module Async
 	module HTTP
 		class Client
-			def initialize(endpoint, protocol = nil, authority = nil, **options)
+			def initialize(endpoint, protocol = nil, authority = nil, retries: 3, **options)
 				@endpoint = endpoint
 				
 				@protocol = protocol || endpoint.protocol
 				@authority = authority || endpoint.hostname
 				
+				@retries = retries
 				@connections = connect(**options)
 			end
 			
@@ -60,21 +61,39 @@ module Async
 			
 			def call(request)
 				request.authority ||= @authority
+				attempt = 0
 				
-				# As we cache connections, it's possible these connections go bad (e.g. closed by remote host). In this case, we need to try again. It's up to the caller to impose a timeout on this.
-				while true
+				begin
+					attempt += 1
+					
+					# As we cache connections, it's possible these connections go bad (e.g. closed by remote host). In this case, we need to try again. It's up to the caller to impose a timeout on this.
 					connection = @connections.acquire
 					
-					if response = connection.call(request)
-						# The connection won't be released until the body is completely read/released.
-						Body::Streamable.wrap(response) do
-							@connections.release(connection)
-						end
-						
-						return response
+					response = connection.call(request)
+					
+					# The connection won't be released until the body is completely read/released.
+					Body::Streamable.wrap(response) do
+						@connections.release(connection)
+					end
+					
+					return response
+				rescue Protocol::RequestFailed
+					# This is a specific case where the entire request wasn't sent before a failure occurred. So, we can even resend non-idempotent requests.
+					@connections.release(connection)
+					
+					attempt += 1
+					if attempt < @retries
+						retry
 					else
-						# The connection failed for some reason, we close it.
-						connection.close
+						raise
+					end
+				rescue
+					@connections.release(connection)
+					
+					if request.idempotent? and attempt < @retries
+						retry
+					else
+						raise
 					end
 				end
 			end

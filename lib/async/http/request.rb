@@ -30,6 +30,10 @@ module Async
 				
 				self.new(nil, method, path, nil, headers, body)
 			end
+			
+			def idempotent?
+				method != 'POST' && (body.nil? || body.empty?)
+			end
 		end
 	end
 end

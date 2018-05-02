@@ -46,7 +46,7 @@ module Async
 				stream = Async::IO::Stream.new(peer)
 				protocol = @protocol_class.server(stream)
 				
-				# Async.logger.debug(self) {"Incoming connnection from #{address.inspect}"}
+				Async.logger.debug(self) {"Incoming connnection from #{address.inspect} to #{protocol}"}
 				
 				hijack = catch(:hijack) do
 					protocol.receive_requests do |request|
@@ -62,7 +62,7 @@ module Async
 					hijack.call(peer)
 				end
 			rescue EOFError, Errno::ECONNRESET, Errno::EPIPE
-				# Sometimes client will disconnect without completing a result or reading the entire buffer.
+				# Sometimes client will disconnect without completing a result or reading the entire buffer. That means we are done.
 			end
 			
 			def run

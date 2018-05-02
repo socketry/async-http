@@ -20,6 +20,8 @@
 
 require 'async/io/protocol/line'
 
+require_relative 'request_failed'
+
 require_relative '../request'
 require_relative '../response'
 require_relative '../headers'
@@ -33,6 +35,11 @@ module Async
 			# Implements basic HTTP/1.1 request/response.
 			class HTTP11 < Async::IO::Protocol::Line
 				CRLF = "\r\n".freeze
+				CONNECTION = 'connection'.freeze
+				HOST = 'host'.freeze
+				CLOSE = 'close'.freeze
+				
+				VERSION = "HTTP/1.1".freeze
 				
 				def initialize(stream)
 					super(stream, CRLF)
@@ -49,7 +56,7 @@ module Async
 				end
 				
 				def reusable?
-					@persistent
+					@persistent && !@stream.closed?
 				end
 				
 				class << self
@@ -57,23 +64,22 @@ module Async
 					alias client new
 				end
 				
-				CLOSE = 'close'.freeze
-				
-				VERSION = "HTTP/1.1".freeze
-				
 				def version
 					VERSION
 				end
 				
 				def persistent?(headers)
-					headers['connection'] != CLOSE
+					headers.delete(CONNECTION) != CLOSE
 				end
 				
 				# Server loop.
 				def receive_requests(task: Task.current)
-					while true
+					while @persistent
 						request = Request.new(*read_request)
-						@count += 1
+						
+						unless persistent?(request.headers)
+							@persistent = false
+						end
 						
 						response = yield request
 						
@@ -83,47 +89,49 @@ module Async
 						
 						request.finish
 						
-						unless persistent?(request.headers) and persistent?(response.headers)
-							@persistent = false
-							
-							break
-						end
-						
 						# This ensures we yield at least once every iteration of the loop and allow other fibers to execute.
 						task.yield
 					end
 				end
 				
 				def call(request)
-					@count += 1
-					
 					request.version ||= self.version
 					
 					Async.logger.debug(self) {"#{request.method} #{request.path} #{request.headers.inspect}"}
-					write_request(request.authority, request.method, request.path, request.version, request.headers, request.body)
+					
+					# We carefully interpret https://tools.ietf.org/html/rfc7230#section-6.3.1 to implement this correctly.
+					begin
+						write_request(request.authority, request.method, request.path, request.version, request.headers)
+					rescue
+						# If we fail to fully write the request and body, we can retry this request.
+						raise RequestFailed.new
+					end
+					
+					# Once we start writing the body, we can't recover if the request fails. That's because the body might be generated dynamically, streaming, etc.
+					write_body(request.body)
 					
 					return Response.new(*read_response)
 				rescue EOFError
-					Async.logger.debug(self) {"Connection failed with EOFError after #{@count} requests."}
-					return nil
+					# This will ensure that #reusable? returns false.
+					@stream.close
+					
+					raise
 				end
 				
-				def write_request(authority, method, path, version, headers, body)
+				def write_request(authority, method, path, version, headers)
 					@stream.write("#{method} #{path} #{version}\r\n")
 					@stream.write("Host: #{authority}\r\n")
-					
 					write_headers(headers)
-					write_body(body)
 					
 					@stream.flush
-					
-					return true
 				end
 				
 				def read_response
 					version, status, reason = read_line.split(/\s+/, 3)
 					headers = read_headers
 					body = read_body(headers)
+					
+					@count += 1
 					
 					@persistent = persistent?(headers)
 					
@@ -135,7 +143,9 @@ module Async
 					headers = read_headers
 					body = read_body(headers)
 					
-					return headers.delete('host'), method, path, version, headers, body
+					@count += 1
+					
+					return headers.delete(HOST), method, path, version, headers, body
 				end
 				
 				def write_response(version, status, headers, body)
@@ -144,16 +154,20 @@ module Async
 					write_body(body)
 					
 					@stream.flush
-					
-					return true
 				end
 				
 				protected
+				
+				def write_persistent_header
+					@stream.write("Connection: close\r\n") unless @persistent
+				end
 				
 				def write_headers(headers)
 					headers.each do |name, value|
 						@stream.write("#{name}: #{value}\r\n")
 					end
+					
+					write_persistent_header
 				end
 				
 				def read_headers
@@ -196,6 +210,8 @@ module Async
 							@stream.write(chunk)
 						end
 					end
+					
+					@stream.flush
 				end
 				
 				def read_body(headers)

@@ -42,6 +42,11 @@ module Async
 				
 				# Read the next available chunk.
 				def read
+					# I'm not sure if this is a good idea (*).
+					# if @stopped
+					# 	raise @stopped
+					# end
+					
 					return if @finished
 					
 					unless chunk = @queue.dequeue
@@ -58,6 +63,8 @@ module Async
 				
 				# Write a single chunk to the body. Signal completion by calling `#finish`.
 				def write(chunk)
+					# If the reader breaks, the writer will break.
+					# The inverse of this is less obvious (*)
 					if @stopped
 						raise @stopped
 					end

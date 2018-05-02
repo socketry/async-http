@@ -25,34 +25,40 @@ module Async
 		module Protocol
 			# Implements basic HTTP/1.1 request/response.
 			class HTTP10 < HTTP11
-				VERSION = "HTTP/1.0".freeze
 				KEEP_ALIVE = 'keep-alive'.freeze
+				
+				VERSION = "HTTP/1.0".freeze
 				
 				def version
 					VERSION
 				end
 				
 				def persistent?(headers)
-					headers['connection'] == KEEP_ALIVE
+					headers.delete(CONNECTION) == KEEP_ALIVE
 				end
 				
 				# Server loop.
-				def receive_requests
-					while request = Request.new(*self.read_request)
+				def receive_requests(task: Task.current)
+					while @persistent
+						request = Request.new(*self.read_request)
+						
+						unless persistent?(request.headers)
+							@persistent = false
+						end
+						
 						response = yield request
 						
 						response.version ||= request.version
 						
 						write_response(response.version, response.status, response.headers, response.body)
 						
-						unless persistent?(request.headers) && persistent?(headers)
-							@persistent = false
-							
-							break
-						end
+						# This ensures we yield at least once every iteration of the loop and allow other fibers to execute.
+						task.yield
 					end
-					
-					return false
+				end
+				
+				def write_persistent_header
+					@stream.write("Connection: keep-alive\r\n") if @persistent
 				end
 				
 				def write_body(body, chunked = false)
@@ -66,7 +72,7 @@ module Async
 					end
 					
 					# Technically, with HTTP/1.0, if no content-length is specified, we just need to read everything until the connection is closed.
-					if !persistent?(headers)
+					unless @persistent
 						return Body::Remainder.new(@stream)
 					end
 				end

@@ -1,4 +1,4 @@
-# Copyright, 2018, by Samuel G. D. Williams. <http://www.codeotaku.com>
+# Copyright, 2017, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,9 +18,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'async/http/protocol/http10'
-require_relative 'shared_examples'
-
-RSpec.describe Async::HTTP::Protocol::HTTP10, timeout: 2 do
-	it_behaves_like Async::HTTP::Protocol
+module Async
+	module HTTP
+		module Protocol
+			# Failed to send the request. The request body has NOT been consumed (i.e. #read) and you should retry the request.
+			class RequestFailed < StandardError
+			end
+		end
+	end
 end

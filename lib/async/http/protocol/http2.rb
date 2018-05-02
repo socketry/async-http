@@ -66,6 +66,13 @@ module Async
 						Async.logger.debug(self) {"Received frame: #{frame.inspect}"}
 					end
 					
+					@controller.on(:goaway) do |payload|
+						Async.logger.error(self) {"goaway: #{payload.inspect}"}
+						
+						@reader.stop
+						@stream.io.close
+					end
+					
 					@count = 0
 				end
 				
@@ -77,7 +84,7 @@ module Async
 				end
 				
 				def reusable?
-					@reader.alive?
+					!@stream.closed?
 				end
 				
 				def version
@@ -102,15 +109,14 @@ module Async
 				
 				def close
 					Async.logger.debug(self) {"Closing connection"}
-					@reader.stop
+					
+					@reader.stop if @reader
 					@stream.close
 				end
 				
 				def receive_requests(task: Task.current, &block)
 					# emits new streams opened by the client
 					@controller.on(:stream) do |stream|
-						@count += 1
-						
 						request = Request.new
 						request.version = self.version
 						request.headers = Headers.new
@@ -136,33 +142,40 @@ module Async
 							body.write(chunk.to_s) unless chunk.empty?
 						end
 						
+						stream.on(:close) do |error|
+							if error
+								body.stop(EOFError.new(error))
+							end
+						end
+						
 						stream.on(:half_close) do
-							# puts "Generating response..."
-							response = yield request
-							
-							# puts "Finishing body..."
-							body.finish
-							
-							# puts "Sending response..."
-							# send response
-							headers = {STATUS => response.status.to_s}
-							headers.update(response.headers)
-							
-							# puts "Sending headers #{headers}"
-							if response.body.nil? or response.body.empty?
-								stream.headers(headers, end_stream: true)
-								response.body.read if response.body
-							else
-								stream.headers(headers, end_stream: false)
+							begin
+								# We are no longer receiving any more data frames:
+								body.finish
 								
-								# puts "Streaming body..."
-								response.body.each do |chunk|
-									# puts "Sending chunk #{chunk.inspect}"
-									stream.data(chunk, end_stream: false)
+								# Generate the response:
+								response = yield request
+								
+								headers = {STATUS => response.status.to_s}
+								headers.update(response.headers)
+								
+								if response.body.nil? or response.body.empty?
+									stream.headers(headers, end_stream: true)
+									response.body.read if response.body
+								else
+									stream.headers(headers, end_stream: false)
+									
+									response.body.each do |chunk|
+										stream.data(chunk, end_stream: false)
+									end
+									
+									stream.data("", end_stream: true)
 								end
+							rescue
+								Async.logger.error(self) {$!}
 								
-								# puts "Ending stream..."
-								stream.data("", end_stream: true)
+								# Generating the response failed.
+								stream.close(:internal_error)
 							end
 						end
 					end
@@ -172,11 +185,10 @@ module Async
 				end
 				
 				def call(request)
-					@count += 1
-					
 					request.version ||= self.version
 					
 					stream = @controller.new_stream
+					@count += 1
 					
 					headers = {
 						SCHEME => HTTPS,
@@ -187,6 +199,7 @@ module Async
 					
 					finished = Async::Notification.new
 					
+					exception = nil
 					response = Response.new
 					response.version = self.version
 					response.headers = {}
@@ -204,6 +217,16 @@ module Async
 							end
 						end
 						
+						# At this point, we are now expecting two events: data and close.
+						stream.on(:close) do |error|
+							# If we receive close after this point, it's not a request error, but a failure we need to signal to the body.
+							if error
+								body.stop(EOFError.new(error))
+							else
+								body.finish
+							end
+						end
+						
 						finished.signal
 					end
 					
@@ -211,15 +234,23 @@ module Async
 						body.write(chunk.to_s) unless chunk.empty?
 					end
 					
-					stream.on(:close) do
-						body.finish
+					stream.on(:close) do |error|
+						# The remote server has closed the connection while we were sending the request.
+						if error
+							exception = EOFError.new(error)
+							finished.signal
+						end
 					end
 					
 					if request.body.nil? or request.body.empty?
 						stream.headers(headers, end_stream: true)
 						request.body.read if request.body
 					else
-						stream.headers(headers, end_stream: false)
+						begin
+							stream.headers(headers, end_stream: false)
+						rescue
+							raise RequestFailed.new
+						end
 						
 						request.body.each do |chunk|
 							stream.data(chunk, end_stream: false)
@@ -231,10 +262,14 @@ module Async
 					start_connection
 					@stream.flush
 					
-					# Async.logger.debug(self) {"Stream flushed, waiting for signal."}
+					Async.logger.debug(self) {"Stream flushed, waiting for signal."}
 					finished.wait
 					
-					# Async.logger.debug(self) {"Stream finished: #{response.inspect}"}
+					if exception
+						raise exception
+					end
+					
+					Async.logger.debug(self) {"Stream finished: #{response.inspect}"}
 					return response
 				end
 			end

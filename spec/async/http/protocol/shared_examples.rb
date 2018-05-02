@@ -29,37 +29,64 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 	let(:endpoint) {Async::HTTP::URLEndpoint.parse('http://127.0.0.1:9294', reuse_port: true)}
 	let!(:client) {Async::HTTP::Client.new(endpoint, protocol)}
 	
-	let(:server) do
-		Async::HTTP::Server.new(endpoint, protocol) do |request, peer, address|
-			if request.method == 'POST'
-				# We stream the request body directly to the response.
-				Async::HTTP::Response[200, {}, request.body]
-			else
-				Async::HTTP::Response[200, {}, ["#{request.method} #{request.version}"]]
+	context 'working server' do
+		let(:server) do
+			Async::HTTP::Server.new(endpoint, protocol) do |request, peer, address|
+				if request.method == 'POST'
+					# We stream the request body directly to the response.
+					Async::HTTP::Response[200, {}, request.body]
+				else
+					Async::HTTP::Response[200, {}, ["#{request.method} #{request.version}"]]
+				end
 			end
 		end
-	end
-	
-	let!(:server_task) do
-		server_task = reactor.async do
-			server.run
+		
+		let!(:server_task) do
+			server_task = reactor.async do
+				server.run
+			end
+		end
+		
+		after(:each) do
+			server_task.stop
+			client.close
+		end
+		
+		it "can get /" do
+			response = client.get("/")
+			expect(response).to be_success
+			expect(response.read).to be == "GET #{protocol::VERSION}"
+		end
+		
+		it "can post body to /" do
+			response = client.post("/", {}, ["Hello", " ", "World"])
+			expect(response).to be_success
+			expect(response.read).to be == "Hello World"
 		end
 	end
 	
-	after(:each) do
-		server_task.stop
-		client.close
-	end
-	
-	it "can get /" do
-		response = client.get("/")
-		expect(response).to be_success
-		expect(response.read).to be == "GET #{protocol::VERSION}"
-	end
-	
-	it "can post body to /" do
-		response = client.post("/", {}, ["Hello", " ", "World"])
-		expect(response).to be_success
-		expect(response.read).to be == "Hello World"
+	context 'broken server' do
+		let(:server) do
+			Async::HTTP::Server.new(endpoint, protocol) do |request, peer, address|
+				raise RuntimeError.new('simulated failure')
+			end
+		end
+		
+		let!(:server_task) do
+			server_task = reactor.async do
+				server.run
+			end
+		end
+		
+		after(:each) do
+			server_task.stop
+			client.close
+		end
+		
+		it "can't get /" do
+			expect do
+				response = client.get("/")
+			end.to raise_error(EOFError)
+		end
 	end
 end

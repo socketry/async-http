@@ -63,6 +63,7 @@ module Async
 				request.authority ||= @authority
 				attempt = 0
 				
+				# TODO review the attempt counter. There is a problem with how this works. If you have 8 connections in the connection pool and they've all expired, retrying 3 times isn't going to work. We need to, perhaps, on the last retry, initiate a completely new connection.
 				begin
 					attempt += 1
 					

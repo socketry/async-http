@@ -149,6 +149,8 @@ module Async
 						end
 						
 						stream.on(:half_close) do
+							# The requirements for this to be in lock-step with other opertaions is minimal.
+							# TODO consider putting this in it's own async task.
 							begin
 								# We are no longer receiving any more data frames:
 								body.finish

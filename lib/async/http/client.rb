@@ -63,12 +63,12 @@ module Async
 				request.authority ||= @authority
 				attempt = 0
 				
-				# TODO review the attempt counter. There is a problem with how this works. If you have 8 connections in the connection pool and they've all expired, retrying 3 times isn't going to work. We need to, perhaps, on the last retry, initiate a completely new connection.
+				# There is a challenge with how this works. If you have 8 connections in the connection pool and they've all expired, retrying 3 times isn't going to work. We need to, perhaps, on the last retry, initiate a completely new connection.
 				begin
 					attempt += 1
 					
-					# As we cache connections, it's possible these connections go bad (e.g. closed by remote host). In this case, we need to try again. It's up to the caller to impose a timeout on this.
-					connection = @connections.acquire
+					# As we cache connections, it's possible these connections go bad (e.g. closed by remote host). In this case, we need to try again. It's up to the caller to impose a timeout on this. If this is the last attempt, we force a new connection.
+					connection = @connections.acquire(attempt == @retries)
 					
 					response = connection.call(request)
 					

@@ -44,8 +44,8 @@ module Async
 				@constructor = block
 			end
 			
-			def acquire
-				resource = wait_for_next_available
+			def acquire(force_new = false)
+				resource = wait_for_next_available(force_new)
 				
 				return resource unless block_given?
 				
@@ -79,7 +79,11 @@ module Async
 			
 			protected
 			
-			def wait_for_next_available
+			def wait_for_next_available(force_new)
+				if force_new
+					return create_resource
+				end
+				
 				until resource = next_available
 					@waiting << Fiber.current
 					Task.yield

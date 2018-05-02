@@ -111,7 +111,7 @@ module Async
 					write_body(request.body)
 					
 					return Response.new(*read_response)
-				rescue EOFError
+				rescue
 					# This will ensure that #reusable? returns false.
 					@stream.close
 					

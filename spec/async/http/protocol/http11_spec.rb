@@ -44,7 +44,7 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 2 do
 			end
 		end
 		
-		describe "simple request with body" do
+		describe "simple request with fixed body" do
 			let(:request) {"GET / HTTP/1.1\r\nHost: localhost\r\nContent-Length: 11\r\n\r\nHello World"}
 			let(:io) {StringIO.new(request)}
 		
@@ -55,7 +55,23 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 2 do
 				expect(method).to be == 'GET'
 				expect(url).to be == '/'
 				expect(version).to be == 'HTTP/1.1'
-				expect(headers).to be == {'content-length' => '11'}
+				expect(headers).to be == {}
+				expect(body.read).to be == "Hello World"
+			end
+		end
+		
+		describe "simple request with chunked body" do
+			let(:request) {"GET / HTTP/1.1\r\nHost: localhost\r\nTransfer-Encoding: chunked\r\n\r\nb\r\nHello World\r\n0\r\n\r\n"}
+			let(:io) {StringIO.new(request)}
+			
+			it "reads request" do
+				authority, method, url, version, headers, body = subject.read_request
+				
+				expect(authority).to be == 'localhost'
+				expect(method).to be == 'GET'
+				expect(url).to be == '/'
+				expect(version).to be == 'HTTP/1.1'
+				expect(headers).to be == {}
 				expect(body.read).to be == "Hello World"
 			end
 		end

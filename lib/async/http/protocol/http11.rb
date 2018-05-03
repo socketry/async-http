@@ -220,9 +220,9 @@ module Async
 				end
 				
 				def read_body(headers)
-					if headers['transfer-encoding'] == 'chunked'
+					if headers.delete('transfer-encoding') == 'chunked'
 						return Body::Chunked.new(self)
-					elsif content_length = headers['content-length']
+					elsif content_length = headers.delete('content-length')
 						return Body::Fixed.new(@stream, Integer(content_length))
 					end
 				end

@@ -66,11 +66,12 @@ module Async
 						Async.logger.debug(self) {"Received frame: #{frame.inspect}"}
 					end
 					
+					@goaway = false
+					
 					@controller.on(:goaway) do |payload|
 						Async.logger.error(self) {"goaway: #{payload.inspect}"}
 						
-						@reader.stop
-						@stream.close
+						@goaway = true
 					end
 					
 					@count = 0
@@ -89,7 +90,7 @@ module Async
 				end
 				
 				def reusable?
-					!@stream.closed?
+					!@goaway || !@stream.closed?
 				end
 				
 				def version

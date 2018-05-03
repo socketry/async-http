@@ -21,6 +21,34 @@
 module Async
 	module HTTP
 		class Headers
+			class Split < Array
+				COMMA = /\s*,\s*/
+				
+				def initialize(value)
+					super(value.split(COMMA))
+				end
+				
+				def << value
+					super value.split(COMMA)
+				end
+				
+				def to_s
+					join(", ")
+				end
+			end
+			
+			class Multiple < Array
+				def initialize(value)
+					super()
+					
+					self << value
+				end
+				
+				def to_s
+					join("\n")
+				end
+			end
+			
 			def initialize(fields = [])
 				@fields = fields
 				@indexed = to_h
@@ -59,17 +87,59 @@ module Async
 				end
 			end
 			
+			def reject!
+				values, @fields = @fields.partition do |field|
+					yield(*field)
+				end
+				
+				if @indexed
+					@indexed.reject!(&block)
+				end
+			end
+			
 			def []= key, value
 				@fields << [key, value]
 				
 				if @indexed
-					key = key.downcase
-					
-					if current_value = @indexed[key]
-						@indexed[key] = Array(current_value) << value
+					# It would be good to do some kind of validation here.
+					merge(@indexed, key.downcase, value)
+				end
+			end
+			
+			MERGE_POLICY = {
+				# Headers which may only be specified once.
+				'content-type' => false,
+				'content-disposition' => false,
+				'content-length' => false,
+				'user-agent' => false,
+				'referer' => false,
+				'host' => false,
+				'authorization' => false,
+				'proxy-authorization' => false,
+				'if-modified-since' => false,
+				'if-unmodified-since' => false,
+				'from' => false,
+				'location' => false,
+				'max-forwards' => false,
+				
+				'connection' => Split,
+				
+				# Headers which may be specified multiple times, but which can't be concatenated.
+				'set-cookie' => Multiple,
+				'www-authenticate' => Multiple,
+				'proxy-authenticate' => Multiple
+			}.tap{|hash| hash.default = Multiple}
+			
+			def merge(hash, key, value)
+				if policy = MERGE_POLICY[key]
+					if current_value = hash[key]
+						current_value << value
 					else
-						@indexed[key] = value
+						hash[key] = policy.new(value)
 					end
+				else
+					# We can't merge these, we only expose the last one set.
+					hash[key] = value
 				end
 			end
 			
@@ -81,13 +151,7 @@ module Async
 			
 			def to_h
 				@fields.inject({}) do |hash, (key, value)|
-					key = key.downcase
-					
-					if current_value = hash[key]
-						hash[key] = Array(current_value) << value
-					else
-						hash[key] = value
-					end
+					merge(hash, key.downcase, value)
 					
 					hash
 				end

@@ -34,7 +34,11 @@ module Async
 				end
 				
 				def persistent?(headers)
-					headers.delete(CONNECTION) == KEEP_ALIVE
+					if connection = headers[CONNECTION]
+						return connection.include?(KEEP_ALIVE)
+					else
+						return false
+					end
 				end
 				
 				# Server loop.

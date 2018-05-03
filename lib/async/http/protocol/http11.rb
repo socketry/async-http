@@ -38,7 +38,6 @@ module Async
 				CONNECTION = 'connection'.freeze
 				HOST = 'host'.freeze
 				CLOSE = 'close'.freeze
-				
 				VERSION = "HTTP/1.1".freeze
 				
 				def initialize(stream)
@@ -74,7 +73,11 @@ module Async
 				end
 				
 				def persistent?(headers)
-					headers.delete(CONNECTION) != CLOSE
+					if connection = headers[CONNECTION]
+						return !connection.include?(CLOSE)
+					else
+						return true
+					end
 				end
 				
 				# Server loop.
@@ -225,11 +228,25 @@ module Async
 					@stream.flush
 				end
 				
+				TRANSFER_ENCODING = 'transfer-encoding'.freeze
+				CONTENT_LENGTH = 'content-length'.freeze
+				CHUNKED = 'chunked'.freeze
+				
+				def chunked?(headers)
+					if transfer_encoding = headers[TRANSFER_ENCODING]
+						if transfer_encoding.count == 1
+							return transfer_encoding.first == CHUNKED
+						end
+					end
+				end
+				
 				def read_body(headers)
-					if headers.delete('transfer-encoding') == 'chunked'
+					if chunked?(headers)
 						return Body::Chunked.new(self)
-					elsif content_length = headers.delete('content-length')
-						return Body::Fixed.new(@stream, Integer(content_length))
+					elsif content_length = headers[CONTENT_LENGTH]
+						if content_length != 0
+							return Body::Fixed.new(@stream, Integer(content_length))
+						end
 					end
 				end
 			end

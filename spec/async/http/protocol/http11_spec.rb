@@ -39,7 +39,7 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 2 do
 				expect(method).to be == 'GET'
 				expect(url).to be == '/'
 				expect(version).to be == 'HTTP/1.1'
-				expect(headers).to be == {'accept' => '*/*'}
+				expect(headers).to be == {'accept' => ['*/*']}
 				expect(body).to be nil
 			end
 		end
@@ -55,7 +55,7 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 2 do
 				expect(method).to be == 'GET'
 				expect(url).to be == '/'
 				expect(version).to be == 'HTTP/1.1'
-				expect(headers).to be == {}
+				expect(headers).to be == {'content-length' => "11"}
 				expect(body.read).to be == "Hello World"
 			end
 		end
@@ -71,7 +71,7 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 2 do
 				expect(method).to be == 'GET'
 				expect(url).to be == '/'
 				expect(version).to be == 'HTTP/1.1'
-				expect(headers).to be == {}
+				expect(headers).to be == {'transfer-encoding' => ['chunked']}
 				expect(body.read).to be == "Hello World"
 			end
 		end

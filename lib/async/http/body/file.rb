@@ -23,15 +23,23 @@ require_relative 'readable'
 module Async
 	module HTTP
 		module Body
-			class Fixed < Readable
-				def initialize(stream, length)
-					@stream = stream
-					@length = length
-					@remaining = length
+			class File < Readable
+				def initialize(path, range = nil, block_size: Async::IO::Stream::BLOCK_SIZE)
+					@path = path
+					@file = File.open(path)
+					
+					@block_size = block_size
+					
+					if range
+						@offset = range.min
+						@length = @remaining = range.size
+					else
+						@offset = 0
+						@length = @remaining = @file.size
+					end
 				end
 				
 				attr :length
-				attr :remaining
 				
 				def empty?
 					@remaining == 0
@@ -39,16 +47,20 @@ module Async
 				
 				def read
 					if @remaining > 0
-						if chunk = @stream.read_partial(@remaining)
+						amount = [@remaining, @block_size].min
+						
+						if chunk = @file.read(amount)
 							@remaining -= chunk.bytesize
 							
 							return chunk
+						else
+							@file.close
 						end
 					end
 				end
 				
 				def join
-					buffer = @stream.read(@remaining)
+					buffer = @file.read(@remaining)
 					
 					@remaining = 0
 					
@@ -56,29 +68,7 @@ module Async
 				end
 				
 				def inspect
-					"\#<#{self.class} length=#{@length} remaining=#{@remaining}>"
-				end
-			end
-			
-			class Remainder < Readable
-				def initialize(stream)
-					@stream = stream
-				end
-				
-				def empty?
-					@stream.closed?
-				end
-				
-				def read
-					@stream.read unless @stream.closed?
-				end
-				
-				def join
-					read
-				end
-				
-				def inspect
-					"\#<#{self.class} #{@stream.closed? ? 'closed' : 'open'}>"
+					"\#<#{self.class} path=#{@path} offset=#{@offset} remaining=#{@remaining}>"
 				end
 			end
 		end

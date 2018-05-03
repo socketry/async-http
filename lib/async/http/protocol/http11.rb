@@ -193,6 +193,12 @@ module Async
 					if body.nil? or body.empty?
 						@stream.write("Content-Length: 0\r\n\r\n")
 						body.read if body
+					elsif length = body.length
+						@stream.write("Content-Length: #{length}\r\n\r\n")
+						
+						body.each do |chunk|
+							@stream.write(chunk)
+						end
 					elsif chunked
 						@stream.write("Transfer-Encoding: chunked\r\n\r\n")
 						

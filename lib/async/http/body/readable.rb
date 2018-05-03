@@ -35,6 +35,10 @@ module Async
 					false
 				end
 				
+				def length
+					nil
+				end
+				
 				# Read the next available chunk.
 				def read
 					nil

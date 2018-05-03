@@ -94,9 +94,13 @@ module Async
 				end
 			end
 			
+			def tcp_options
+				{reuse_port: @options[:reuse_port] ? true : false}
+			end
+			
 			def endpoint
 				unless @endpoint
-					@endpoint = Async::IO::Endpoint.tcp(hostname, port)
+					@endpoint = Async::IO::Endpoint.tcp(hostname, port, tcp_options)
 					
 					if secure?
 						# Wrap it in SSL:

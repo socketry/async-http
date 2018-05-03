@@ -21,31 +21,35 @@
 require 'async/http/server'
 require 'async/http/client'
 
-require 'async/io/host_endpoint'
+require 'async/http/url_endpoint'
+require 'async/io/shared_endpoint'
 require 'async/reactor'
 
 require 'etc'
 require 'benchmark'
 
 RSpec.describe Async::HTTP::Server do
-	let(:endpoint) {
-		Async::IO::Endpoint.tcp('127.0.0.1', 9294, reuse_port: true)
-	}
+	let(:endpoint) {Async::HTTP::URLEndpoint.parse("http://127.0.0.1:9292", reuse_port: true)}
+	let(:url) {endpoint.url.to_s}
 	
 	let(:protocol) {Async::HTTP::Protocol::HTTP1}
-	
-	let(:server_url) {"http://127.0.0.1:9294/"}
 	
 	let(:concurrency) {Etc.nprocessors rescue 2}
 	
 	# TODO making this higher causes issues in connect - what's the issue?
-	let(:repeats) {100}
+	let(:repeats) {200}
 	
 	let(:client) {Async::HTTP::Client.new(endpoint, protocol)}
 	
 	describe "simple response" do
 		it "runs quickly" do
-			server = Async::HTTP::Server.new(endpoint, protocol)
+			bound_endpoint = nil
+			
+			Async::Reactor.run do
+				bound_endpoint = Async::IO::SharedEndpoint.bound(endpoint)
+			end
+			
+			server = Async::HTTP::Server.new(bound_endpoint, protocol)
 
 			pids = concurrency.times.collect do
 				fork do
@@ -55,28 +59,30 @@ RSpec.describe Async::HTTP::Server do
 				end
 			end
 			
-			# duration = Benchmark.realtime do
-			# 	Async::Reactor.run do |task|
-			# 		concurrency.times do
-			# 			task.async do
-			# 				repeats.times do
-			# 					response = client.get("/")
-			# 					expect(response).to be_success
-			# 				end
-			# 			end
-			# 		end
-			# 	end
-			# end
-			# 	
-			# puts "#{concurrency*repeats} requests in #{duration}s: #{(concurrency*repeats)/duration}req/s"
+			bound_endpoint.close if bound_endpoint
+			
+			duration = Benchmark.realtime do
+				Async::Reactor.run do |task|
+					concurrency.times do
+						task.async do
+							repeats.times do
+								response = client.get("/")
+								expect(response).to be_success
+							end
+						end
+					end
+				end
+			end
+				
+			puts "#{concurrency*repeats} requests in #{duration}s: #{(concurrency*repeats)/duration}req/s"
 			
 			if ab = `which ab`.chomp!
-				puts [ab, "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, server_url].join(' ')
-				system(ab, "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, server_url)
+				puts [ab, "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, url].join(' ')
+				system(ab, "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, url)
 			end
 			
 			if wrk = `which wrk`.chomp!
-				system(wrk, "-c", concurrency.to_s, "-d", "10", "-t", concurrency.to_s, server_url)
+				system(wrk, "-c", concurrency.to_s, "-d", "10", "-t", concurrency.to_s, url)
 			end
 			
 			pids.each do |pid|

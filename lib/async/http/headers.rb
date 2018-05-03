@@ -49,6 +49,10 @@ module Async
 				end
 			end
 			
+			def self.[] hash
+				self.new(hash.to_a)
+			end
+			
 			def initialize(fields = [])
 				@fields = fields
 				@indexed = to_h
@@ -62,6 +66,10 @@ module Async
 				@indexed = to_h
 				
 				super
+			end
+			
+			def empty?
+				@fields.empty?
 			end
 			
 			def each(&block)
@@ -87,14 +95,20 @@ module Async
 				end
 			end
 			
-			def reject!
+			def slice!(keys)
 				values, @fields = @fields.partition do |field|
-					yield(*field)
+					keys.include?(field.first.downcase)
 				end
 				
 				if @indexed
-					@indexed.reject!(&block)
+					keys.each do |key|
+						@indexed.delete(key)
+					end
 				end
+			end
+			
+			def add(key, value)
+				self[key] = value
 			end
 			
 			def []= key, value
@@ -124,11 +138,15 @@ module Async
 				
 				'connection' => Split,
 				
+				# Headers specifically for proxies:
+				'via' => Split,
+				'x-forwarded-for' => Split,
+				
 				# Headers which may be specified multiple times, but which can't be concatenated.
 				'set-cookie' => Multiple,
 				'www-authenticate' => Multiple,
 				'proxy-authenticate' => Multiple
-			}.tap{|hash| hash.default = Multiple}
+			}.tap{|hash| hash.default = Split}
 			
 			def merge(hash, key, value)
 				if policy = MERGE_POLICY[key]
@@ -162,6 +180,20 @@ module Async
 					to_h == other
 				else
 					@fields == other.fields
+				end
+			end
+			
+			class Merged
+				def initialize(*all)
+					@all = all
+				end
+				
+				def each(&block)
+					@all.each do |headers|
+						headers.each do |key, value|
+							yield key, value.to_s
+						end
+					end
 				end
 			end
 		end

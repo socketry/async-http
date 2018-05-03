@@ -198,19 +198,19 @@ module Async
 					stream = @controller.new_stream
 					@count += 1
 					
-					headers = {
+					headers = Headers::Merged.new({
 						SCHEME => HTTPS,
-						METHOD => request.method.to_s,
-						PATH => request.path.to_s,
-						AUTHORITY => request.authority.to_s,
-					}.merge(request.headers)
+						METHOD => request.method,
+						PATH => request.path,
+						AUTHORITY => request.authority,
+					}, request.headers)
 					
 					finished = Async::Notification.new
 					
 					exception = nil
 					response = Response.new
 					response.version = self.version
-					response.headers = {}
+					response.headers = Headers.new
 					body = Body::Writable.new
 					response.body = body
 					
@@ -255,7 +255,7 @@ module Async
 						request.body.read if request.body
 					else
 						begin
-							stream.headers(headers, end_stream: false)
+							stream.headers(headers)
 						rescue
 							raise RequestFailed.new
 						end
@@ -264,7 +264,7 @@ module Async
 							stream.data(chunk, end_stream: false)
 						end
 							
-						stream.data("", end_stream: true)
+						stream.data("")
 					end
 					
 					start_connection

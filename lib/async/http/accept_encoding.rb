@@ -44,12 +44,10 @@ module Async
 				response = super
 				
 				if !response.body.empty? and content_encoding = response.headers['content-encoding']
-					encodings = content_encoding.split(/\s*,\s*/)
-					
 					body = response.body
 					
 					# We want to unwrap all encodings
-					encodings.reverse_each do |name|
+					content_encoding.reverse_each do |name|
 						if wrapper = @wrappers[name]
 							body = wrapper.call(body)
 						end

@@ -63,7 +63,7 @@ module Async
 				request.authority ||= @authority
 				attempt = 0
 				
-				# There is a challenge with how this works. If you have 8 connections in the connection pool and they've all expired, retrying 3 times isn't going to work. We need to, perhaps, on the last retry, initiate a completely new connection.
+				# We may retry the request if it is possible to do so. https://tools.ietf.org/html/draft-nottingham-httpbis-retry-01 is a good guide for how retrying requests should work.
 				begin
 					attempt += 1
 					

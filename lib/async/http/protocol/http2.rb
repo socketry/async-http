@@ -70,7 +70,7 @@ module Async
 						Async.logger.error(self) {"goaway: #{payload.inspect}"}
 						
 						@reader.stop
-						@stream.io.close
+						@stream.close
 					end
 					
 					@count = 0
@@ -81,6 +81,11 @@ module Async
 				# Multiple requests can be processed at the same time.
 				def multiplex
 					@controller.remote_settings[:settings_max_concurrent_streams]
+				end
+				
+				# Can we use this connection to make requests?
+				def good?
+					@stream.connected?
 				end
 				
 				def reusable?

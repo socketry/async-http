@@ -55,6 +55,11 @@ module Async
 					1
 				end
 				
+				# Can we use this connection to make requests?
+				def good?
+					@stream.connected?
+				end
+				
 				def reusable?
 					@persistent && !@stream.closed?
 				end

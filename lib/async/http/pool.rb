@@ -44,8 +44,8 @@ module Async
 				@constructor = block
 			end
 			
-			def acquire(force_new = false)
-				resource = wait_for_next_available(force_new)
+			def acquire
+				resource = wait_for_next_available
 				
 				return resource unless block_given?
 				
@@ -58,17 +58,11 @@ module Async
 			
 			# Make the resource available and let waiting tasks know that there is something available.
 			def release(resource)
+				# A resource that is not good should also not be reusable.
 				if resource.reusable?
-					Async.logger.debug(self) {"Reusing resource #{resource}"}
-					
-					@available[resource] -= 1
-					
-					if task = @waiting.pop
-						task.resume
-					end
+					reuse(resource)
 				else
-					Async.logger.debug(self) {"Closing resource: #{resource}"}
-					resource.close
+					retire(resource)
 				end
 			end
 			
@@ -79,11 +73,25 @@ module Async
 			
 			protected
 			
-			def wait_for_next_available(force_new)
-				if force_new
-					return create_resource
-				end
+			def reuse(resource)
+				Async.logger.debug(self) {"Reuse #{resource}"}
 				
+				@available[resource] -= 1
+				
+				if task = @waiting.pop
+					task.resume
+				end
+			end
+			
+			def retire(resource)
+				Async.logger.debug(self) {"Retire #{resource}"}
+				
+				@available.delete(resource)
+				
+				resource.close
+			end
+			
+			def wait_for_next_available
 				until resource = next_available
 					@waiting << Fiber.current
 					Task.yield
@@ -92,11 +100,11 @@ module Async
 				return resource
 			end
 			
-			def create_resource
+			def create
 				begin
 					# This might fail, which is okay :)
 					resource = @constructor.call
-				rescue StandardError
+				rescue
 					Async.logger.error "#{$!}: #{$!.backtrace}"
 					return nil
 				end
@@ -106,19 +114,24 @@ module Async
 				return resource
 			end
 			
-			# TODO this does not take into account resources that start off good but can fail.
 			def next_available
 				@available.each do |resource, count|
 					if count < resource.multiplex
-						@available[resource] += 1
-						
-						return resource
+						# We want to use this resource... but is it good?
+						if resource.good?
+							@available[resource] += 1
+							
+							return resource
+						else
+							retire(resource)
+						end
 					end
 				end
 				
 				if !@limit or @available.count < @limit
 					Async.logger.debug(self) {"No available resources, allocating new one..."}
-					return create_resource
+					
+					return create
 				end
 			end
 		end

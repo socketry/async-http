@@ -68,7 +68,7 @@ module Async
 					attempt += 1
 					
 					# As we cache connections, it's possible these connections go bad (e.g. closed by remote host). In this case, we need to try again. It's up to the caller to impose a timeout on this. If this is the last attempt, we force a new connection.
-					connection = @connections.acquire(attempt == @retries)
+					connection = @connections.acquire
 					
 					response = connection.call(request)
 					

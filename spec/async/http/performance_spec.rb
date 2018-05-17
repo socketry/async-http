@@ -61,28 +61,13 @@ RSpec.describe Async::HTTP::Server do
 			
 			bound_endpoint.close if bound_endpoint
 			
-			duration = Benchmark.realtime do
-				Async::Reactor.run do |task|
-					concurrency.times do
-						task.async do
-							repeats.times do
-								response = client.get("/")
-								expect(response).to be_success
-							end
-						end
-					end
-				end
-			end
-				
-			puts "#{concurrency*repeats} requests in #{duration}s: #{(concurrency*repeats)/duration}req/s"
-			
-			if ab = `which ab`.chomp!
-				puts [ab, "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, url].join(' ')
-				system(ab, "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, url)
-			end
+			# if ab = `which ab`.chomp!
+			# 	puts [ab, "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, url].join(' ')
+			# 	system(ab, "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, url)
+			# end
 			
 			if wrk = `which wrk`.chomp!
-				system(wrk, "-c", concurrency.to_s, "-d", "10", "-t", concurrency.to_s, url)
+				system(wrk, "-c", concurrency.to_s, "-d", "120", "-t", concurrency.to_s, url)
 			end
 			
 			pids.each do |pid|

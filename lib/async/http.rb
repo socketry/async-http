@@ -18,4 +18,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require "async/http/version"
+require_relative 'http/version'
+
+require_relative 'http/client'
+require_relative 'http/server'
+
+require_relative 'http/url_endpoint'

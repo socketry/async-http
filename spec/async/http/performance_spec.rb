@@ -61,13 +61,13 @@ RSpec.describe Async::HTTP::Server do
 			
 			bound_endpoint.close if bound_endpoint
 			
-			# if ab = `which ab`.chomp!
-			# 	puts [ab, "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, url].join(' ')
-			# 	system(ab, "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, url)
-			# end
+			if ab = `which ab`.chomp!
+				# puts [ab, "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, url].join(' ')
+				system(ab, "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, url)
+			end
 			
 			if wrk = `which wrk`.chomp!
-				system(wrk, "-c", concurrency.to_s, "-d", "120", "-t", concurrency.to_s, url)
+				system(wrk, "-c", concurrency.to_s, "-d", "2", "-t", concurrency.to_s, url)
 			end
 			
 			pids.each do |pid|

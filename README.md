@@ -37,12 +37,13 @@ require 'async/http/server'
 require 'async/http/client'
 require 'async/reactor'
 require 'async/http/url_endpoint'
+require 'async/http/response'
 
 endpoint = Async::HTTP::URLEndpoint.parse('http://127.0.0.1:9294', reuse_port: true)
 
 class Server < Async::HTTP::Server
 	def handle_request(request, peer, address)
-		[200, {}, ["Hello World"]]
+		Async::HTTP::Response[200, {}, ["Hello World"]]
 	end
 end
 

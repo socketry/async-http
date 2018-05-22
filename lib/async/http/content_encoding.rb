@@ -48,7 +48,7 @@ module Async
 					if content_type = response.headers['content-type'] and @content_types.match?(content_type)
 						body = response.body
 						
-						encodings.each do |name|
+						accept_encoding.each do |name|
 							if wrapper = @wrappers[name]
 								response.headers['content-encoding'] = name
 								

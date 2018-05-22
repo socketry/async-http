@@ -18,50 +18,52 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-module Async
-	module HTTP
-		VERBS = ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE']
+require 'async/http/server'
+require 'async/http/client'
+require 'async/reactor'
+
+require 'async/io/ssl_socket'
+require 'async/http/url_endpoint'
+require 'async/http/accept_encoding'
+require 'async/http/content_encoding'
+
+RSpec.describe Async::HTTP::ContentEncoding, timeout: 5 do
+	include_context Async::RSpec::Reactor
+	
+	let(:endpoint) {Async::HTTP::URLEndpoint.parse('http://127.0.0.1:9294', reuse_port: true)}
+	let(:client) {Async::HTTP::Client.new(endpoint)}
+	
+	subject {described_class.new(Async::HTTP::Middleware::HelloWorld)}
+	
+	let(:server) do
+		middleware = subject
 		
-		module Verbs
-			VERBS.each do |verb|
-				define_method(verb.downcase) do |location, headers = {}, body = []|
-					self.call(Request[verb, location.to_str, headers, body])
-				end
-			end
+		Async::HTTP::Server.new(endpoint) do |request, peer, address|
+			middleware.call(request)
 		end
+	end
+	
+	let!(:server_task) do
+		reactor.async do
+			server.run
+		end
+	end
+	
+	after(:each) do
+		server_task.stop
+		subject.close
+	end
+	
+	it "can request resource with compression" do
+		compressor = Async::HTTP::AcceptEncoding.new(client)
 		
-		class Middleware
-			def initialize(app)
-				@app = app
-			end
-			
-			def close
-				@app.close
-			end
-			
-			include Verbs
-			
-			def call(*args)
-				@app.call(*args)
-			end
-			
-			module Okay
-				def self.close
-				end
-				
-				def self.call(request, *)
-					Response[200, {}, []]
-				end
-			end
-			
-			module HelloWorld
-				def self.close
-				end
-				
-				def self.call(request, *)
-					Response[200, {'content-type' => 'text/plain'}, ["Hello World!"]]
-				end
-			end
-		end
+		response = compressor.get("/index", {'accept-encoding' => 'gzip'})
+		expect(response).to be_success
+		
+		expect(response.headers['content-encoding']).to be == ['gzip']
+		expect(response.read).to be == "Hello World!"
+		
+		response.finish
+		client.close
 	end
 end

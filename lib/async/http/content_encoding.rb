@@ -43,11 +43,9 @@ module Async
 			def call(request, *)
 				response = super
 				
+				# TODO use http-accept and sort by priority
 				if !response.body.empty? and accept_encoding = request.headers['accept-encoding']
 					if content_type = response.headers['content-type'] and @content_types.match?(content_type)
-						# TODO use http-accept and sort by priority
-						encodings = accept_encoding.split(/\s*,\s*/)
-						
 						body = response.body
 						
 						encodings.each do |name|

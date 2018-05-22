@@ -45,7 +45,7 @@ module Async
 				
 				# TODO use http-accept and sort by priority
 				if !response.body.empty? and accept_encoding = request.headers['accept-encoding']
-					if content_type = response.headers['content-type'] and @content_types.match?(content_type)
+					if content_type = response.headers['content-type'] and @content_types =~ content_type
 						body = response.body
 						
 						accept_encoding.each do |name|

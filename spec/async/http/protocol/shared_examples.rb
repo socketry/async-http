@@ -32,8 +32,6 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 	context 'working server' do
 		let(:server) do
 			Async::HTTP::Server.new(endpoint, protocol) do |request, peer, address|
-				puts "Server got request: #{request.inspect}"
-				
 				if request.method == 'POST'
 					# We stream the request body directly to the response.
 					Async::HTTP::Response[200, {}, request.body]
@@ -74,9 +72,8 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 				
 				Async::Reactor.run do |task|
 					10.times do |i|
-						puts "Writing chunk #{i}"
 						body.write "Chunk #{i}"
-						task.sleep 0.2
+						task.sleep 0.25
 					end
 					
 					body.finish
@@ -98,14 +95,13 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		end
 		
 		it "can cancel response" do
-			puts "Making request"
 			response = client.get("/")
 			
-			puts "Got response: #{response.inspect}"
 			expect(response.body.read).to be == "Chunk 0"
 			
-			puts "Stopping body..."
 			response.body.stop(true)
+			
+			
 		end
 	end
 	

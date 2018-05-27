@@ -36,6 +36,11 @@ module Async
 					@finished
 				end
 				
+				def stop(error)
+					@protocol.close
+					@finished = true
+				end
+				
 				def read
 					return nil if @finished
 					

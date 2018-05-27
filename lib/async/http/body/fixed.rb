@@ -37,6 +37,10 @@ module Async
 					@remaining == 0
 				end
 				
+				def stop(error)
+					@stream.close
+				end
+				
 				def read
 					if @remaining > 0
 						if chunk = @stream.read_partial(@remaining)
@@ -69,8 +73,12 @@ module Async
 					@stream.closed?
 				end
 				
+				def stop(error)
+					@stream.close
+				end
+				
 				def read
-					@stream.read unless @stream.closed?
+					@stream.read_partial
 				end
 				
 				def join

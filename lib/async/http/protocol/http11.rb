@@ -137,11 +137,12 @@ module Async
 				def read_response
 					version, status, reason = read_line.split(/\s+/, 3)
 					headers = read_headers
+					
+					@persistent = persistent?(headers)
+					
 					body = read_body(headers)
 					
 					@count += 1
-					
-					@persistent = persistent?(headers)
 					
 					return version, Integer(status), reason, headers, body
 				end
@@ -149,6 +150,9 @@ module Async
 				def read_request
 					method, path, version = read_line.split(/\s+/, 3)
 					headers = read_headers
+					
+					@persistent = persistent?(headers)
+					
 					body = read_body(headers)
 					
 					@count += 1
@@ -174,8 +178,6 @@ module Async
 					headers.each do |name, value|
 						@stream.write("#{name}: #{value}\r\n")
 					end
-					
-					write_persistent_header
 				end
 				
 				def read_headers
@@ -192,40 +194,69 @@ module Async
 					return Headers.new(fields)
 				end
 				
-				def write_body(body, chunked = true)
-					if body.nil? or body.empty?
-						@stream.write("Content-Length: 0\r\n\r\n")
-						body.read if body
-					elsif length = body.length
-						@stream.write("Content-Length: #{length}\r\n\r\n")
-						
-						body.each do |chunk|
-							@stream.write(chunk)
-						end
-					elsif chunked
-						@stream.write("Transfer-Encoding: chunked\r\n\r\n")
-						
-						body.each do |chunk|
-							next if chunk.size == 0
-							
-							@stream.write("#{chunk.bytesize.to_s(16).upcase}\r\n")
-							@stream.write(chunk)
-							@stream.write(CRLF)
-							@stream.flush
-						end
-						
-						@stream.write("0\r\n\r\n")
-					else
-						body = Body::Buffered.for(body)
-						
-						@stream.write("Content-Length: #{body.bytesize}\r\n\r\n")
-						
-						body.each do |chunk|
-							@stream.write(chunk)
-						end
+				def write_empty_body(body)
+					# Write empty body:
+					write_persistent_header
+					@stream.write("Content-Length: 0\r\n\r\n")
+					
+					body.read if body
+					
+					@stream.flush
+				end
+				
+				def write_fixed_length_body(body, length)
+					write_persistent_header
+					@stream.write("Content-Length: #{length}\r\n\r\n")
+					
+					body.each do |chunk|
+						@stream.write(chunk)
 					end
 					
 					@stream.flush
+				end
+				
+				def write_chunked_body(body)
+					write_persistent_header
+					@stream.write("Transfer-Encoding: chunked\r\n\r\n")
+					
+					body.each do |chunk|
+						next if chunk.size == 0
+						
+						@stream.write("#{chunk.bytesize.to_s(16).upcase}\r\n")
+						@stream.write(chunk)
+						@stream.write(CRLF)
+						@stream.flush
+					end
+					
+					@stream.write("0\r\n\r\n")
+					@stream.flush
+				end
+				
+				def write_body_and_close(body)
+					# We can't be persistent because we don't know the data length:
+					@persistent = false
+					write_persistent_header
+					
+					@stream.write("\r\n")
+					
+					body.each do |chunk|
+						@stream.write(chunk)
+						@stream.flush
+					end
+					
+					@stream.io.close_write
+				end
+				
+				def write_body(body, chunked = true)
+					if body.nil? or body.empty?
+						write_empty_body(body)
+					elsif length = body.length
+						write_fixed_length_body(body, length)
+					elsif chunked
+						write_chunked_body(body)
+					else
+						write_body_and_close(body)
+					end
 				end
 				
 				TRANSFER_ENCODING = 'transfer-encoding'.freeze

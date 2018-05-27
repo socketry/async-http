@@ -29,6 +29,23 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 	let(:endpoint) {Async::HTTP::URLEndpoint.parse('http://127.0.0.1:9294', reuse_port: true)}
 	let!(:client) {Async::HTTP::Client.new(endpoint, protocol)}
 	
+	let(:server) do
+		Async::HTTP::Server.new(endpoint, protocol) do |request, peer, address|
+			Async::HTTP::Response[200, {}, ["Hello World"]]
+		end
+	end
+	
+	let!(:server_task) do
+		server_task = reactor.async do
+			server.run
+		end
+	end
+	
+	after(:each) do
+		server_task.stop
+		client.close
+	end
+	
 	context 'working server' do
 		let(:server) do
 			Async::HTTP::Server.new(endpoint, protocol) do |request, peer, address|
@@ -39,17 +56,6 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 					Async::HTTP::Response[200, {}, ["#{request.method} #{request.version}"]]
 				end
 			end
-		end
-		
-		let!(:server_task) do
-			server_task = reactor.async do
-				server.run
-			end
-		end
-		
-		after(:each) do
-			server_task.stop
-			client.close
 		end
 		
 		it "can get /" do
@@ -65,14 +71,25 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		end
 	end
 	
+	context 'hijack' do
+		
+	end
+	
 	context 'streaming server' do
+		let!(:sent_chunks) {[]}
+		
 		let(:server) do
+			chunks = sent_chunks
+			
 			Async::HTTP::Server.new(endpoint, protocol) do |request, peer, address|
 				body = Async::HTTP::Body::Writable.new
 				
 				Async::Reactor.run do |task|
 					10.times do |i|
-						body.write "Chunk #{i}"
+						chunk = "Chunk #{i}"
+						chunks << chunk
+						
+						body.write chunk
 						task.sleep 0.25
 					end
 					
@@ -83,17 +100,6 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 			end
 		end
 		
-		let!(:server_task) do
-			server_task = reactor.async do
-				server.run
-			end
-		end
-		
-		after(:each) do
-			server_task.stop
-			client.close
-		end
-		
 		it "can cancel response" do
 			response = client.get("/")
 			
@@ -101,7 +107,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 			
 			response.body.stop(true)
 			
-			
+			expect(sent_chunks).to be == ["Chunk 0"]
 		end
 	end
 	
@@ -110,17 +116,6 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 			Async::HTTP::Server.new(endpoint, protocol) do |request, peer, address|
 				raise RuntimeError.new('simulated failure')
 			end
-		end
-		
-		let!(:server_task) do
-			server_task = reactor.async do
-				server.run
-			end
-		end
-		
-		after(:each) do
-			server_task.stop
-			client.close
 		end
 		
 		it "can't get /" do

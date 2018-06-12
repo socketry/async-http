@@ -29,7 +29,7 @@ require 'etc'
 require 'benchmark'
 
 RSpec.describe Async::HTTP::Server do
-	let(:endpoint) {Async::HTTP::URLEndpoint.parse("http://127.0.0.1:9292", reuse_port: true)}
+	let(:endpoint) {Async::HTTP::URLEndpoint.parse("http://127.0.0.1:9294")}
 	let(:url) {endpoint.url.to_s}
 	
 	let(:protocol) {Async::HTTP::Protocol::HTTP1}

@@ -64,7 +64,11 @@ module Async
 				attr :output_length
 				
 				def ratio
-					@output_length.to_f / @input_length.to_f
+					if @input_length != 0
+						@output_length.to_f / @input_length.to_f
+					else
+						1.0
+					end
 				end
 				
 				def stop(error)

@@ -62,7 +62,7 @@ module Async
 				end
 				
 				def write_persistent_header
-					@stream.write("Connection: keep-alive\r\n") if @persistent
+					@stream.write("connection: keep-alive\r\n") if @persistent
 				end
 				
 				def write_body(body, chunked = false)

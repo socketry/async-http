@@ -92,9 +92,7 @@ module Async
 						response = yield request
 						
 						response.version ||= request.version
-						
 						write_response(response.version, response.status, response.headers, response.body)
-						
 						request.finish
 						
 						# This ensures we yield at least once every iteration of the loop and allow other fibers to execute.
@@ -128,7 +126,7 @@ module Async
 				
 				def write_request(authority, method, path, version, headers)
 					@stream.write("#{method} #{path} #{version}\r\n")
-					@stream.write("Host: #{authority}\r\n")
+					@stream.write("host: #{authority}\r\n")
 					write_headers(headers)
 					
 					@stream.flush
@@ -171,7 +169,7 @@ module Async
 				protected
 				
 				def write_persistent_header
-					@stream.write("Connection: close\r\n") unless @persistent
+					@stream.write("connection: close\r\n") unless @persistent
 				end
 				
 				def write_headers(headers)
@@ -197,7 +195,7 @@ module Async
 				def write_empty_body(body)
 					# Write empty body:
 					write_persistent_header
-					@stream.write("Content-Length: 0\r\n\r\n")
+					@stream.write("content-length: 0\r\n\r\n")
 					
 					body.read if body
 					
@@ -206,7 +204,7 @@ module Async
 				
 				def write_fixed_length_body(body, length)
 					write_persistent_header
-					@stream.write("Content-Length: #{length}\r\n\r\n")
+					@stream.write("content-length: #{length}\r\n\r\n")
 					
 					body.each do |chunk|
 						@stream.write(chunk)
@@ -217,7 +215,7 @@ module Async
 				
 				def write_chunked_body(body)
 					write_persistent_header
-					@stream.write("Transfer-Encoding: chunked\r\n\r\n")
+					@stream.write("transfer-encoding: chunked\r\n\r\n")
 					
 					body.each do |chunk|
 						next if chunk.size == 0

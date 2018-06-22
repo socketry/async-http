@@ -144,7 +144,6 @@ module Async
 						end
 						
 						stream.on(:data) do |chunk|
-							# puts "Got request data: #{chunk.inspect}"
 							body.write(chunk.to_s) unless chunk.empty?
 						end
 						

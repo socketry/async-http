@@ -51,15 +51,20 @@ module Async
 					
 					@stream = stream
 					
-					@input_size = 0
-					@output_size = 0
+					@input_length = 0
+					@output_length = 0
 				end
 				
-				attr :input_size
-				attr :output_size
+				def length
+					# We don't know the length of the output until after it's been compressed.
+					nil
+				end
+				
+				attr :input_length
+				attr :output_length
 				
 				def ratio
-					@output_size.to_f / @input_size.to_f
+					@output_length.to_f / @input_length.to_f
 				end
 				
 				def stop(error)
@@ -83,17 +88,17 @@ module Async
 					return if @stream.closed?
 					
 					if chunk = super
-						@input_size += chunk.bytesize
+						@input_length += chunk.bytesize
 						
 						chunk = @stream.deflate(chunk, Zlib::SYNC_FLUSH)
 						
-						@output_size += chunk.bytesize
+						@output_length += chunk.bytesize
 						
 						return chunk
 					else
 						chunk = @stream.finish
 						
-						@output_size += chunk.bytesize
+						@output_length += chunk.bytesize
 						
 						@stream.close
 						

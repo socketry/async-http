@@ -33,6 +33,10 @@ module Async
 					@body.empty?
 				end
 				
+				def length
+					@body.length
+				end
+				
 				# Buffer any remaining body.
 				def close
 					@body = @body.close

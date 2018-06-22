@@ -48,13 +48,13 @@ module Async
 				
 				def initialize(chunks)
 					@chunks = chunks
-					@bytesize = nil
+					@length = nil
 					
 					@index = 0
 				end
 				
-				def bytesize
-					@bytesize ||= @chunks.inject(0) {|sum, chunk| sum + chunk.bytesize}
+				def length
+					@length ||= @chunks.inject(0) {|sum, chunk| sum + chunk.bytesize}
 				end
 				
 				def empty?

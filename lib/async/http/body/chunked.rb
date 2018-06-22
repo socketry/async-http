@@ -28,7 +28,7 @@ module Async
 					@protocol = protocol
 					@finished = false
 					
-					@bytesize = 0
+					@length = 0
 					@count = 0
 				end
 				
@@ -44,27 +44,26 @@ module Async
 				def read
 					return nil if @finished
 					
-					size = @protocol.read_line.to_i(16)
+					length = @protocol.read_line.to_i(16)
 					
-					if size == 0
-						@protocol.read_line
-						
+					if length == 0
 						@finished = true
+						@protocol.read_line
 						
 						return nil
 					end
 					
-					chunk = @protocol.stream.read(size)
+					chunk = @protocol.stream.read(length)
 					@protocol.read_line # Consume the trailing CRLF
 					
-					@bytesize += size
+					@length += length
 					@count += 1
 					
 					return chunk
 				end
 				
 				def inspect
-					"\#<#{self.class} #{@bytesize} bytes read in #{@count} chunks>"
+					"\#<#{self.class} #{@length} bytes read in #{@count} chunks>"
 				end
 			end
 		end

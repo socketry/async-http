@@ -34,15 +34,15 @@ module Async
 					return if @stream.closed?
 					
 					if chunk = super
-						@input_size += chunk.bytesize
+						@input_length += chunk.bytesize
 						
 						chunk = @stream.inflate(chunk)
 						
-						@output_size += chunk.bytesize
+						@output_length += chunk.bytesize
 					else
 						chunk = @stream.finish
 						
-						@output_size += chunk.bytesize
+						@output_length += chunk.bytesize
 						
 						@stream.close
 					end

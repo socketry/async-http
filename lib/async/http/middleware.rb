@@ -26,8 +26,9 @@ module Async
 		PUT = 'PUT'.freeze
 		PATCH = 'PATCH'.freeze
 		DELETE = 'DELETE'.freeze
+		CONNECT = 'CONNECT'.freeze
 		
-		VERBS = [GET, HEAD, POST, PUT, PATCH, DELETE].freeze
+		VERBS = [GET, HEAD, POST, PUT, PATCH, DELETE, CONNECT].freeze
 		
 		module Verbs
 			VERBS.each do |verb|

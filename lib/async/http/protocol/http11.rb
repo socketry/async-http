@@ -118,7 +118,7 @@ module Async
 					# Once we start writing the body, we can't recover if the request fails. That's because the body might be generated dynamically, streaming, etc.
 					write_body(request.body)
 					
-					return Response.new(*read_response(request.head?))
+					return Response.new(*read_response(request))
 				rescue
 					# This will ensure that #reusable? returns false.
 					@stream.close
@@ -134,7 +134,7 @@ module Async
 					@stream.flush
 				end
 				
-				def read_response(head = false)
+				def read_response(request)
 					version, status, reason = read_line.split(/\s+/, 3)
 					Async.logger.debug(self) {"#{version} #{status} #{reason}"}
 					
@@ -142,12 +142,7 @@ module Async
 					
 					@persistent = persistent?(headers)
 					
-					# Should we expect a body?
-					if status == 204 or head
-						body = nil
-					else
-						body = read_body(headers)
-					end
+					body = read_response_body(request, status, headers)
 					
 					@count += 1
 					
@@ -160,7 +155,7 @@ module Async
 					
 					@persistent = persistent?(headers)
 					
-					body = read_body(headers)
+					body = read_request_body(headers)
 					
 					@count += 1
 					
@@ -270,23 +265,90 @@ module Async
 				CONTENT_LENGTH = 'content-length'.freeze
 				CHUNKED = 'chunked'.freeze
 				
-				def chunked?(headers)
-					if transfer_encoding = headers[TRANSFER_ENCODING]
-						if transfer_encoding.count == 1
-							return transfer_encoding.first == CHUNKED
-						end
+				def read_response_body(request, status, headers)
+					# RFC 7230 3.3.3
+					# 1.  Any response to a HEAD request and any response with a 1xx
+					# (Informational), 204 (No Content), or 304 (Not Modified) status
+					# code is always terminated by the first empty line after the
+					# header fields, regardless of the header fields present in the
+					# message, and thus cannot contain a message body.
+					if request.head? or status == 204 or status == 304
+						return nil
+					end
+					
+					# 2.  Any 2xx (Successful) response to a CONNECT request implies that
+					# the connection will become a tunnel immediately after the empty
+					# line that concludes the header fields.  A client MUST ignore any
+					# Content-Length or Transfer-Encoding header fields received in
+					# such a message.
+					if request.connect? and status == 200
+						return Body::Remainder.new(@stream)
+					end
+					
+					if body = read_body(headers)
+						return body
+					else
+						# 7.  Otherwise, this is a response message without a declared message
+						# body length, so the message body length is determined by the
+						# number of octets received prior to the server closing the
+						# connection.
+						return Body::Remainder.new(@stream)
+					end
+				end
+				
+				def read_request_body(headers)
+					# 6.  If this is a request message and none of the above are true, then
+					# the message body length is zero (no message body is present).
+					if body = read_body(headers)
+						return body
 					end
 				end
 				
 				def read_body(headers)
-					if chunked?(headers)
-						return Body::Chunked.new(self)
-					elsif content_length = headers[CONTENT_LENGTH]
-						if content_length != 0
-							return Body::Fixed.new(@stream, Integer(content_length))
+					# 3.  If a Transfer-Encoding header field is present and the chunked
+					# transfer coding (Section 4.1) is the final encoding, the message
+					# body length is determined by reading and decoding the chunked
+					# data until the transfer coding indicates the data is complete.
+					if transfer_encoding = headers[TRANSFER_ENCODING]
+						# If a message is received with both a Transfer-Encoding and a
+						# Content-Length header field, the Transfer-Encoding overrides the
+						# Content-Length.  Such a message might indicate an attempt to
+						# perform request smuggling (Section 9.5) or response splitting
+						# (Section 9.4) and ought to be handled as an error.  A sender MUST
+						# remove the received Content-Length field prior to forwarding such
+						# a message downstream.
+						if headers[CONTENT_LENGTH]
+							raise BadRequest, "Message contains both transfer encoding and content length!"
 						end
-					elsif !@persistent
-						return Body::Remainder.new(@stream)
+						
+						if transfer_encoding.last == CHUNKED
+							return Body::Chunked.new(self)
+						else
+							# If a Transfer-Encoding header field is present in a response and
+							# the chunked transfer coding is not the final encoding, the
+							# message body length is determined by reading the connection until
+							# it is closed by the server.  If a Transfer-Encoding header field
+							# is present in a request and the chunked transfer coding is not
+							# the final encoding, the message body length cannot be determined
+							# reliably; the server MUST respond with the 400 (Bad Request)
+							# status code and then close the connection.
+							return Body::Remainder.new(@stream)
+						end
+					end
+
+					# 5.  If a valid Content-Length header field is present without
+					# Transfer-Encoding, its decimal value defines the expected message
+					# body length in octets.  If the sender closes the connection or
+					# the recipient times out before the indicated number of octets are
+					# received, the recipient MUST consider the message to be
+					# incomplete and close the connection.
+					if content_length = headers[CONTENT_LENGTH]
+						length = Integer(content_length)
+						if length >= 0
+							return Body::Fixed.new(@stream, length)
+						else
+							raise BadRequest, "Invalid content length: #{content_length}"
+						end
 					end
 				end
 			end

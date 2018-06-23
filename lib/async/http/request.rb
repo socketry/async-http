@@ -19,6 +19,7 @@
 # THE SOFTWARE.
 
 require_relative 'body/buffered'
+require_relative 'middleware'
 
 module Async
 	module HTTP
@@ -27,6 +28,10 @@ module Async
 			
 			def head?
 				self.method == HEAD
+			end
+			
+			def connect?
+				self.method == CONNECT
 			end
 			
 			def self.[](method, path, headers, body)

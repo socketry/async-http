@@ -21,6 +21,7 @@
 require 'async/io/protocol/line'
 
 require_relative 'request_failed'
+require_relative 'bad_request'
 
 require_relative '../request'
 require_relative '../response'

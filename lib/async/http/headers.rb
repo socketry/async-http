@@ -156,6 +156,8 @@ module Async
 						hash[key] = policy.new(value)
 					end
 				else
+					raise ArgumentError, "Header #{key} can only be set once!" if hash.include?(key)
+					
 					# We can't merge these, we only expose the last one set.
 					hash[key] = value
 				end

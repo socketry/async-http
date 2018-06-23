@@ -69,17 +69,6 @@ module Async
 					# We don't support chunked encoding.
 					super(body, chunked)
 				end
-				
-				def read_body(headers)
-					if body = super
-						return body
-					end
-					
-					# Technically, with HTTP/1.0, if no content-length is specified, we just need to read everything until the connection is closed.
-					unless @persistent
-						return Body::Remainder.new(@stream)
-					end
-				end
 			end
 		end
 	end

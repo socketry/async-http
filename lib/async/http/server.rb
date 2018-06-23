@@ -48,18 +48,11 @@ module Async
 				
 				Async.logger.debug(self) {"Incoming connnection from #{address.inspect} to #{protocol}"}
 				
-				hijack = catch(:hijack) do
-					protocol.receive_requests do |request|
-						# Async.logger.debug(self) {"Incoming request from #{address.inspect}: #{request.method} #{request.path}"}
-						handle_request(request, peer, address)
-					end
+				protocol.receive_requests do |request, stream|
+					# Async.logger.debug(self) {"Incoming request from #{address.inspect}: #{request.method} #{request.path}"}
 					
-					# hijack should be false by default.
-					false
-				end
-				
-				if hijack
-					hijack.call(peer)
+					# If this returns nil, we assume that the connection has been hijacked.
+					handle_request(request, stream, address)
 				end
 			rescue EOFError, Errno::ECONNRESET, Errno::EPIPE
 				# Sometimes client will disconnect without completing a result or reading the entire buffer. That means we are done.

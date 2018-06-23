@@ -25,6 +25,10 @@ module Async
 		class Request < Struct.new(:authority, :method, :path, :version, :headers, :body)
 			prepend Body::Buffered::Reader
 			
+			def head?
+				self.method == HEAD
+			end
+			
 			def self.[](method, path, headers, body)
 				body = Body::Buffered.wrap(body)
 				
@@ -32,7 +36,7 @@ module Async
 			end
 			
 			def idempotent?
-				method != 'POST' && (body.nil? || body.empty?)
+				method != POST && (body.nil? || body.empty?)
 			end
 		end
 	end

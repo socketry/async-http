@@ -76,4 +76,27 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 2 do
 			end
 		end
 	end
+	
+	context 'raw response hijack' do
+		include_context Async::HTTP::Server
+		
+		let(:server) do
+			Async::HTTP::Server.new(endpoint, protocol) do |request, peer, address|
+				peer.write_lines(
+					"#{request.version} 200 It worked!",
+					"connection: close",
+					"",
+					"Hello World!"
+				)
+				peer.close
+				
+				nil
+			end
+		end
+		
+		it "reads raw response" do
+			response = client.get("/")
+			expect(response.read).to be == "Hello World!\r\n"
+		end
+	end
 end

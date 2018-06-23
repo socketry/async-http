@@ -161,22 +161,26 @@ module Async
 								body.finish
 								
 								# Generate the response:
-								response = yield request
-								
-								headers = {STATUS => response.status.to_s}
-								headers.update(response.headers)
-								
-								if response.body.nil? or response.body.empty?
-									stream.headers(headers, end_stream: true)
-									response.body.read if response.body
-								else
-									stream.headers(headers, end_stream: false)
+								# TODO consider that this should start as soon as all headers are received,
+								if response = yield(request, stream)
+									headers = Headers::Merged.new({
+										STATUS => response.status,
+									}, response.headers)
 									
-									response.body.each do |chunk|
-										stream.data(chunk, end_stream: false)
+									if response.body.nil? or response.body.empty?
+										stream.headers(headers, end_stream: true)
+										response.body.read if response.body
+									else
+										stream.headers(headers, end_stream: false)
+										
+										response.body.each do |chunk|
+											stream.data(chunk, end_stream: false)
+										end
+										
+										stream.data("", end_stream: true)
 									end
-									
-									stream.data("", end_stream: true)
+								else
+									stream.close(:internal_error) unless stream.state == :closed
 								end
 							rescue
 								Async.logger.error(self) {$!}

@@ -22,6 +22,25 @@ require 'async/rspec/reactor'
 
 # Async.logger.level = Logger::DEBUG
 
+RSpec.shared_context Async::HTTP::Server do
+	include_context Async::RSpec::Reactor
+	
+	let(:protocol) {described_class}
+	let(:endpoint) {Async::HTTP::URLEndpoint.parse('http://127.0.0.1:9294', reuse_port: true)}
+	let!(:client) {Async::HTTP::Client.new(endpoint, protocol)}
+	
+	let!(:server_task) do
+		server_task = reactor.async do
+			server.run
+		end
+	end
+	
+	after(:each) do
+		server_task.stop
+		client.close
+	end
+end
+
 RSpec.configure do |config|
 	# Enable flags like --only-failures and --next-failure
 	config.example_status_persistence_file_path = ".rspec_status"

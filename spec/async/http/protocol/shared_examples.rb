@@ -23,27 +23,12 @@ require 'async/http/server'
 require 'async/http/url_endpoint'
 
 RSpec.shared_examples_for Async::HTTP::Protocol do
-	include_context Async::RSpec::Reactor
-	
-	let(:protocol) {described_class}
-	let(:endpoint) {Async::HTTP::URLEndpoint.parse('http://127.0.0.1:9294', reuse_port: true)}
-	let!(:client) {Async::HTTP::Client.new(endpoint, protocol)}
+	include_context Async::HTTP::Server
 	
 	let(:server) do
 		Async::HTTP::Server.new(endpoint, protocol) do |request, peer, address|
 			Async::HTTP::Response[200, {}, ["Hello World"]]
 		end
-	end
-	
-	let!(:server_task) do
-		server_task = reactor.async do
-			server.run
-		end
-	end
-	
-	after(:each) do
-		server_task.stop
-		client.close
 	end
 	
 	context 'working server' do
@@ -71,8 +56,18 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		end
 	end
 	
-	context 'hijack' do
+	context 'hijack with nil response' do
+		let(:server) do
+			Async::HTTP::Server.new(endpoint, protocol) do |request, peer, address|
+				nil
+			end
+		end
 		
+		it "fails with appropriate error" do
+			expect do
+				response = client.get("/")
+			end.to raise_error(EOFError)
+		end
 	end
 	
 	context 'streaming server' do

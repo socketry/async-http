@@ -20,7 +20,14 @@
 
 module Async
 	module HTTP
-		VERBS = ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE']
+		GET = 'GET'.freeze
+		HEAD = 'HEAD'.freeze
+		POST = 'POST'.freeze
+		PUT = 'PUT'.freeze
+		PATCH = 'PATCH'.freeze
+		DELETE = 'DELETE'.freeze
+		
+		VERBS = [GET, HEAD, POST, PUT, PATCH, DELETE].freeze
 		
 		module Verbs
 			VERBS.each do |verb|

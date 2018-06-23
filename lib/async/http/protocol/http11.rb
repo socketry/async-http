@@ -89,14 +89,16 @@ module Async
 							@persistent = false
 						end
 						
-						response = yield request
-						
-						response.version ||= request.version
-						write_response(response.version, response.status, response.headers, response.body)
-						request.finish
-						
-						# This ensures we yield at least once every iteration of the loop and allow other fibers to execute.
-						task.yield
+						if response = yield(request, self)
+							response.version ||= request.version
+							write_response(response.version, response.status, response.headers, response.body)
+							request.finish
+							
+							# This ensures we yield at least once every iteration of the loop and allow other fibers to execute.
+							task.yield
+						else
+							break
+						end
 					end
 				end
 				
@@ -116,7 +118,7 @@ module Async
 					# Once we start writing the body, we can't recover if the request fails. That's because the body might be generated dynamically, streaming, etc.
 					write_body(request.body)
 					
-					return Response.new(*read_response)
+					return Response.new(*read_response(request.head?))
 				rescue
 					# This will ensure that #reusable? returns false.
 					@stream.close
@@ -132,13 +134,20 @@ module Async
 					@stream.flush
 				end
 				
-				def read_response
+				def read_response(head = false)
 					version, status, reason = read_line.split(/\s+/, 3)
+					Async.logger.debug(self) {"#{version} #{status} #{reason}"}
+					
 					headers = read_headers
 					
 					@persistent = persistent?(headers)
 					
-					body = read_body(headers)
+					# Should we expect a body?
+					if status == 204 or head
+						body = nil
+					else
+						body = read_body(headers)
+					end
 					
 					@count += 1
 					
@@ -276,6 +285,8 @@ module Async
 						if content_length != 0
 							return Body::Fixed.new(@stream, Integer(content_length))
 						end
+					elsif !@persistent
+						return Body::Remainder.new(@stream)
 					end
 				end
 			end

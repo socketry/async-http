@@ -41,26 +41,6 @@ module Async
 					end
 				end
 				
-				# Server loop.
-				def receive_requests(task: Task.current)
-					while @persistent
-						request = Request.new(*self.read_request)
-						
-						unless persistent?(request.headers)
-							@persistent = false
-						end
-						
-						response = yield request
-						
-						response.version ||= request.version
-						
-						write_response(response.version, response.status, response.headers, response.body)
-						
-						# This ensures we yield at least once every iteration of the loop and allow other fibers to execute.
-						task.yield
-					end
-				end
-				
 				def write_persistent_header
 					@stream.write("connection: keep-alive\r\n") if @persistent
 				end

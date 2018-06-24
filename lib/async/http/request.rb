@@ -23,8 +23,24 @@ require_relative 'middleware'
 
 module Async
 	module HTTP
-		class Request < Struct.new(:authority, :method, :path, :version, :headers, :body)
+		class Request
 			prepend Body::Buffered::Reader
+			
+			def initialize(authority = nil, method = nil, path = nil, version = nil, headers = [], body = nil)
+				@authority = authority
+				@method = method
+				@path = path
+				@version = version
+				@headers = headers
+				@body = body
+			end
+			
+			attr_accessor :authority
+			attr_accessor :method
+			attr_accessor :path
+			attr_accessor :version
+			attr_accessor :headers
+			attr_accessor :body
 			
 			def head?
 				self.method == HEAD
@@ -42,6 +58,10 @@ module Async
 			
 			def idempotent?
 				method != POST && (body.nil? || body.empty?)
+			end
+			
+			def to_s
+				"#{@method} #{@path} #{@version}"
 			end
 		end
 	end

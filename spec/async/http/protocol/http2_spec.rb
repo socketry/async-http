@@ -23,4 +23,14 @@ require_relative 'shared_examples'
 
 RSpec.describe Async::HTTP::Protocol::HTTP2, timeout: 2 do
 	it_behaves_like Async::HTTP::Protocol
+	
+	context 'bad requests' do
+		include_context Async::HTTP::Server
+		
+		it "should fail with explicit authority" do
+			response = client.post("/", [[':authority', 'foo']])
+			
+			expect(response).to be_bad_request
+		end
+	end
 end

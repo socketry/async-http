@@ -33,6 +33,10 @@ require_relative '../body/fixed'
 module Async
 	module HTTP
 		module Protocol
+			TRANSFER_ENCODING = 'transfer-encoding'.freeze
+			CONTENT_LENGTH = 'content-length'.freeze
+			CHUNKED = 'chunked'.freeze
+			
 			# Implements basic HTTP/1.1 request/response.
 			class HTTP11 < Async::IO::Protocol::Line
 				CRLF = "\r\n".freeze
@@ -81,18 +85,29 @@ module Async
 					end
 				end
 				
+				def next_request
+					# The default is true.
+					return nil unless @persistent
+					
+					request = Request.new(*read_request)
+					
+					unless persistent?(request.headers)
+						@persistent = false
+					end
+					
+					return request
+				rescue
+					# Bad Request
+					write_response(self.version, 400, {}, nil)
+					
+					raise
+				end
+				
 				# Server loop.
 				def receive_requests(task: Task.current)
-					while @persistent
-						request = Request.new(*read_request)
-						
-						unless persistent?(request.headers)
-							@persistent = false
-						end
-						
+					while request = next_request
 						if response = yield(request, self)
-							response.version ||= request.version
-							write_response(response.version, response.status, response.headers, response.body)
+							write_response(response.version || self.version, response.status, response.headers, response.body)
 							request.finish
 							
 							# This ensures we yield at least once every iteration of the loop and allow other fibers to execute.
@@ -261,10 +276,6 @@ module Async
 						write_body_and_close(body)
 					end
 				end
-				
-				TRANSFER_ENCODING = 'transfer-encoding'.freeze
-				CONTENT_LENGTH = 'content-length'.freeze
-				CHUNKED = 'chunked'.freeze
 				
 				def read_response_body(request, status, headers)
 					# RFC 7230 3.3.3

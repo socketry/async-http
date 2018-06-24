@@ -22,8 +22,22 @@ require_relative 'body/buffered'
 
 module Async
 	module HTTP
-		class Response < Struct.new(:version, :status, :reason, :headers, :body)
+		class Response
 			prepend Body::Buffered::Reader
+			
+			def initialize(version = nil, status = 200, reason = nil, headers = [], body = nil)
+				@version = version
+				@status = status
+				@reason = reason
+				@headers = headers
+				@body = body
+			end
+			
+			attr_accessor :version
+			attr_accessor :status
+			attr_accessor :reason
+			attr_accessor :headers
+			attr_accessor :body
 			
 			def continue?
 				status == 100
@@ -45,6 +59,10 @@ module Async
 				status >= 400 && status < 600
 			end
 			
+			def bad_request?
+				status == 400
+			end
+			
 			def self.[](status, headers = {}, body = [])
 				body = Body::Buffered.wrap(body)
 				
@@ -53,6 +71,10 @@ module Async
 			
 			def self.for_exception(exception)
 				Async::HTTP::Response[500, {'content-type' => 'text/plain'}, ["#{exception.class}: #{exception.message}"]]
+			end
+			
+			def to_s
+				"#{@status} #{@reason} #{@version}"
 			end
 		end
 	end

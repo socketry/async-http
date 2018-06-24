@@ -77,16 +77,6 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 2 do
 		end
 	end
 	
-	context 'invalid content length' do
-		include_context Async::HTTP::Server
-		
-		it "should fail with negative content length" do
-			expect do
-				client.post("/", {'content-length' => '-1'})
-			end.to raise_error(EOFError)
-		end
-	end
-	
 	context 'raw response hijack' do
 		include_context Async::HTTP::Server
 		
@@ -107,6 +97,22 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 2 do
 		it "reads raw response" do
 			response = client.get("/")
 			expect(response.read).to be == "Hello World!\r\n"
+		end
+	end
+	
+	context 'bad requests' do
+		include_context Async::HTTP::Server
+		
+		it "should fail with negative content length" do
+			response = client.post("/", {'content-length' => '-1'})
+			
+			expect(response).to be_bad_request
+		end
+		
+		it "should fail with both transfer encoding and content length" do
+			response = client.post("/", {'transfer-encoding' => 'chunked', 'content-length' => '0'})
+			
+			expect(response).to be_bad_request
 		end
 	end
 end

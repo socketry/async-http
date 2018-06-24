@@ -82,10 +82,10 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 2 do
 		
 		let(:server) do
 			Async::HTTP::Server.new(endpoint, protocol) do |request, peer, address|
-				peer.write_lines(
-					"#{request.version} 200 It worked!",
-					"connection: close",
-					"",
+				peer.write(
+					"#{request.version} 200 It worked!\r\n" +
+					"connection: close\r\n" +
+					"\r\n" +
 					"Hello World!"
 				)
 				peer.close
@@ -96,7 +96,8 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 2 do
 		
 		it "reads raw response" do
 			response = client.get("/")
-			expect(response.read).to be == "Hello World!\r\n"
+			
+			expect(response.read).to be == "Hello World!"
 		end
 	end
 	

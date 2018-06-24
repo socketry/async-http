@@ -48,11 +48,11 @@ module Async
 				
 				Async.logger.debug(self) {"Incoming connnection from #{address.inspect} to #{protocol}"}
 				
-				protocol.receive_requests do |request, stream|
+				protocol.receive_requests do |request|
 					# Async.logger.debug(self) {"Incoming request from #{address.inspect}: #{request.method} #{request.path}"}
 					
 					# If this returns nil, we assume that the connection has been hijacked.
-					handle_request(request, stream, address)
+					handle_request(request, peer, address)
 				end
 			rescue EOFError, Errno::ECONNRESET, Errno::EPIPE
 				# Sometimes client will disconnect without completing a result or reading the entire buffer. That means we are done.

@@ -42,7 +42,6 @@ RSpec.shared_context Async::HTTP::Server do
 	
 	let(:server) do
 		Async::HTTP::Server.new(endpoint, protocol) do |request, peer, address|
-			puts request.headers.inspect
 			Async::HTTP::Response[200, {}, []]
 		end
 	end

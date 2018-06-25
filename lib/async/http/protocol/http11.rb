@@ -85,11 +85,35 @@ module Async
 					end
 				end
 				
+				def hijack
+					@persistent = false
+					
+					return @stream
+				end
+				
+				class Request < HTTP::Request
+					def initialize(protocol)
+						super(*protocol.read_request)
+						
+						@protocol = protocol
+					end
+					
+					attr :protocol
+					
+					def hijack?
+						true
+					end
+					
+					def hijack
+						protocol.hijack
+					end
+				end
+				
 				def next_request
 					# The default is true.
 					return nil unless @persistent
 					
-					request = Request.new(*read_request)
+					request = Request.new(self)
 					
 					unless persistent?(request.headers)
 						@persistent = false

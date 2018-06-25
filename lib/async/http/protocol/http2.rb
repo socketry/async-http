@@ -150,6 +150,10 @@ module Async
 							end
 						end
 					end
+					
+					def hijack?
+						false
+					end
 				end
 				
 				def receive_requests(task: Task.current, &block)

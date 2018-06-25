@@ -77,7 +77,7 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 2 do
 		end
 	end
 	
-	context 'raw response hijack' do
+	context 'raw response' do
 		include_context Async::HTTP::Server
 		
 		let(:server) do

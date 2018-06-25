@@ -106,6 +106,27 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		end
 	end
 	
+	context 'hijack server' do
+		let(:server) do
+			Async::HTTP::Server.new(endpoint, protocol) do |request, peer, address|
+				if request.hijack?
+					io = request.hijack
+					io.write "HTTP/1.1 200 Okay\r\nContent-Length: 16\r\n\r\nHijack Succeeded"
+					io.flush
+					io.close
+				else
+					return Async::HTTP::Response[200, {}, ["Hijack Failed"]]
+				end
+			end
+		end
+		
+		it "will hijack response if possible" do
+			response = client.get("/")
+			
+			expect(response.read).to include("Hijack")
+		end
+	end
+	
 	context 'broken server' do
 		let(:server) do
 			Async::HTTP::Server.new(endpoint, protocol) do |request, peer, address|

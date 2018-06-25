@@ -88,7 +88,9 @@ module Async
 				def hijack
 					@persistent = false
 					
-					return @stream
+					@stream.flush
+					
+					return @stream.io
 				end
 				
 				class Request < HTTP::Request
@@ -105,7 +107,7 @@ module Async
 					end
 					
 					def hijack
-						protocol.hijack
+						@protocol.hijack
 					end
 				end
 				

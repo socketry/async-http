@@ -54,7 +54,6 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 			end
 			
 			it "has remote-address header" do
-				puts response.headers.inspect
 				expect(response.headers['remote-address']).to_not be_nil
 			end
 		end

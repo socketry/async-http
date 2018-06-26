@@ -30,7 +30,7 @@ module Async
 		
 		VERBS = [GET, HEAD, POST, PUT, PATCH, DELETE, CONNECT].freeze
 		
-		module Verbs
+		module Methods
 			VERBS.each do |verb|
 				define_method(verb.downcase) do |location, headers = {}, body = []|
 					self.call(Request[verb, location.to_str, headers, body])
@@ -47,7 +47,7 @@ module Async
 				@app.close
 			end
 			
-			include Verbs
+			include Methods
 			
 			def call(request)
 				@app.call(request)

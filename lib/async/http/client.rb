@@ -57,7 +57,7 @@ module Async
 				@connections.close
 			end
 			
-			include Verbs
+			include Methods
 			
 			def call(request)
 				request.authority ||= @authority

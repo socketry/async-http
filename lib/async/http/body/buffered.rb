@@ -87,7 +87,7 @@ module Async
 				end
 				
 				def inspect
-					"\#<#{self.class} #{@chunks.count} chunks, #{self.bytesize} bytes>"
+					"\#<#{self.class} #{@chunks.count} chunks, #{self.length} bytes>"
 				end
 				
 				module Reader

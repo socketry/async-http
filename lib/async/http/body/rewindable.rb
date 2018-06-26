@@ -1,4 +1,4 @@
-# Copyright, 2017, by Samuel G. D. Williams. <http://www.codeotaku.com>
+# Copyright, 2018, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,8 +18,42 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+require_relative 'wrapper'
+
 module Async
 	module HTTP
-		VERSION = "0.26.0"
+		module Body
+			# A body which buffers all it's contents.
+			class Rewindable < Wrapper
+				def initialize(body)
+					super(body)
+					
+					@chunks = []
+					@index = 0
+				end
+				
+				def read
+					if @index < @chunks.count
+						chunk = @chunks[@index]
+						@index += 1
+					else
+						if chunk = super
+							@chunks << chunk
+							@index += 1
+						end
+					end
+					
+					return chunk
+				end
+				
+				def rewind
+					@index = 0
+				end
+				
+				def inspect
+					"\#<#{self.class} #{@index}/#{@chunks.count} chunks read>"
+				end
+			end
+		end
 	end
 end

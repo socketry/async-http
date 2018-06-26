@@ -1,4 +1,4 @@
-# Copyright, 2017, by Samuel G. D. Williams. <http://www.codeotaku.com>
+# Copyright, 2018, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,8 +18,42 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-module Async
-	module HTTP
-		VERSION = "0.26.0"
+require 'async/http/body/rewindable'
+
+RSpec.describe Async::HTTP::Body::Rewindable do
+	let(:source) {Async::HTTP::Body::Writable.new}
+	subject {described_class.new(source)}
+	
+	it "can write and read data" do
+		3.times do |i|
+			source.write("Hello World #{i}")
+			expect(subject.read).to be == "Hello World #{i}"
+		end
+	end
+	
+	it "can write and read data multiple times" do
+		3.times do |i|
+			source.write("Hello World #{i}")
+		end
+		
+		3.times do
+			subject.rewind
+			
+			expect(subject.read).to be == "Hello World 0"
+		end
+	end
+	
+	it "can buffer data in order" do
+		3.times do |i|
+			source.write("Hello World #{i}")
+		end
+		
+		2.times do
+			subject.rewind
+			
+			3.times do |i|
+				expect(subject.read).to be == "Hello World #{i}"
+			end
+		end
 	end
 end

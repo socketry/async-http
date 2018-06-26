@@ -38,7 +38,7 @@ module Async
 				@wrappers = wrappers
 			end
 			
-			def call(request, *)
+			def call(request)
 				request.headers['accept-encoding'] = @accept_encoding
 				
 				response = super

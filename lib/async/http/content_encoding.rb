@@ -40,7 +40,7 @@ module Async
 				@wrappers = wrappers
 			end
 			
-			def call(request, *)
+			def call(request)
 				response = super
 				
 				# TODO use http-accept and sort by priority

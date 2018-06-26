@@ -43,7 +43,7 @@ RSpec.describe Async::HTTP::RelativeLocation do
 		
 		context '301' do
 			let(:server) do
-				Async::HTTP::Server.new(endpoint) do |request, peer, address|
+				Async::HTTP::Server.for(endpoint) do |request|
 					case request.path
 					when '/'
 						Async::HTTP::Response[301, {'location' => '/index.html'}, []]
@@ -71,7 +71,7 @@ RSpec.describe Async::HTTP::RelativeLocation do
 		
 		context '302' do
 			let(:server) do
-				Async::HTTP::Server.new(endpoint) do |request, peer, address|
+				Async::HTTP::Server.for(endpoint) do |request|
 					case request.path
 					when '/'
 						Async::HTTP::Response[302, {'location' => '/index.html'}, []]
@@ -91,7 +91,7 @@ RSpec.describe Async::HTTP::RelativeLocation do
 		
 		context '307' do
 			let(:server) do
-				Async::HTTP::Server.new(endpoint) do |request, peer, address|
+				Async::HTTP::Server.for(endpoint) do |request|
 					case request.path
 					when '/'
 						Async::HTTP::Response[307, {'location' => '/index.html'}, []]
@@ -111,7 +111,7 @@ RSpec.describe Async::HTTP::RelativeLocation do
 		
 		context '308' do
 			let(:server) do
-				Async::HTTP::Server.new(endpoint) do |request, peer, address|
+				Async::HTTP::Server.for(endpoint) do |request|
 					case request.path
 					when '/'
 						Async::HTTP::Response[308, {'location' => '/index.html'}, []]

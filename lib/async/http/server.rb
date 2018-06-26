@@ -26,18 +26,16 @@ require_relative 'response'
 
 module Async
 	module HTTP
-		class Server
-			def initialize(endpoint, protocol_class = Protocol::HTTP1, &block)
-				@endpoint = endpoint
-				@protocol_class = protocol_class || endpoint.protocol
-				
-				if block_given?
-					define_singleton_method(:handle_request, block)
-				end
+		class Server < Middleware
+			def self.for(*args, &block)
+				self.new(block, *args)
 			end
 			
-			def handle_request(request, peer, address)
-				Response[200, {}, []]
+			def initialize(app, endpoint, protocol_class = Protocol::HTTP1)
+				super(app)
+				
+				@endpoint = endpoint
+				@protocol_class = protocol_class || endpoint.protocol
 			end
 			
 			def accept(peer, address, task: Task.current)
@@ -49,10 +47,11 @@ module Async
 				Async.logger.debug(self) {"Incoming connnection from #{address.inspect} to #{protocol}"}
 				
 				protocol.receive_requests do |request|
+					request.remote_address = address
 					# Async.logger.debug(self) {"Incoming request from #{address.inspect}: #{request.method} #{request.path}"}
 					
 					# If this returns nil, we assume that the connection has been hijacked.
-					handle_request(request, peer, address)
+					self.call(request)
 				end
 			rescue EOFError, Errno::ECONNRESET, Errno::EPIPE
 				# Sometimes client will disconnect without completing a result or reading the entire buffer. That means we are done.

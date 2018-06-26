@@ -38,7 +38,7 @@ RSpec.describe Async::HTTP::ContentEncoding, timeout: 5 do
 	let(:server) do
 		middleware = subject
 		
-		Async::HTTP::Server.new(endpoint) do |request, peer, address|
+		Async::HTTP::Server.for(endpoint) do |request|
 			middleware.call(request)
 		end
 	end

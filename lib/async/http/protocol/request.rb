@@ -1,4 +1,4 @@
-# Copyright, 2018, by Samuel G. D. Williams. <http://www.codeotaku.com>
+# Copyright, 2017, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,11 +18,41 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+require_relative '../request'
+require_relative '../response'
+require_relative '../headers'
+
+require_relative '../body/writable'
+
 module Async
 	module HTTP
 		module Protocol
+			# Failed to send the request. The request body has NOT been consumed (i.e. #read) and you should retry the request.
+			class RequestFailed < StandardError
+			end
+			
 			# The request was invalid/malformed in some way.
 			class BadRequest < StandardError
+			end
+			
+			class Request < HTTP::Request
+				attr :protocol
+				
+				def hijack?
+					false
+				end
+				
+				def peer
+					protocol.peer
+				end
+				
+				def remote_address
+					@remote_address ||= peer.remote_address
+				end
+				
+				def remote_address= value
+					@remote_address = value
+				end
 			end
 		end
 	end

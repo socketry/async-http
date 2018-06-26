@@ -27,28 +27,19 @@ require 'async/http/url_endpoint'
 require 'async/http/accept_encoding'
 
 RSpec.describe Async::HTTP::Client, timeout: 5 do
-	include_context Async::RSpec::Reactor
-	
 	describe Async::HTTP::Protocol::HTTP1 do
-		let(:endpoint) {Async::HTTP::URLEndpoint.parse('http://127.0.0.1:9294', reuse_port: true)}
+		include_context Async::HTTP::Server
 		
 		it "client can get resource" do
-			server = Async::HTTP::Server.new(endpoint)
-			client = Async::HTTP::Client.new(endpoint)
-			
-			server_task = reactor.async do
-				server.run
-			end
-			
 			response = client.get("/")
-			
+			response.read
 			expect(response).to be_success
-			server_task.stop
-			client.close
 		end
 	end
 	
 	describe Async::HTTP::Protocol::HTTPS do
+		include_context Async::RSpec::Reactor
+		
 		let(:endpoint) {Async::HTTP::URLEndpoint.parse('https://www.codeotaku.com')}
 		let(:client) {Async::HTTP::Client.new(endpoint)}
 		

@@ -26,39 +26,52 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 	include_context Async::HTTP::Server
 	
 	let(:server) do
-		Async::HTTP::Server.new(endpoint, protocol) do |request, peer, address|
+		Async::HTTP::Server.for(endpoint, protocol) do |request|
 			Async::HTTP::Response[200, {}, ["Hello World"]]
 		end
 	end
 	
 	context 'working server' do
 		let(:server) do
-			Async::HTTP::Server.new(endpoint, protocol) do |request, peer, address|
+			Async::HTTP::Server.for(endpoint, protocol) do |request|
 				if request.method == 'POST'
 					# We stream the request body directly to the response.
 					Async::HTTP::Response[200, {}, request.body]
 				else
-					Async::HTTP::Response[200, {}, ["#{request.method} #{request.version}"]]
+					Async::HTTP::Response[200, {
+						'remote-address' => request.remote_address
+					}, ["#{request.method} #{request.version}"]]
 				end
 			end
 		end
 		
-		it "can get /" do
-			response = client.get("/")
-			expect(response).to be_success
-			expect(response.read).to be == "GET #{protocol::VERSION}"
+		context 'GET' do
+			let(:response) {client.get("/")}
+			
+			it "is successful" do
+				expect(response).to be_success
+				expect(response.read).to be == "GET #{protocol::VERSION}"
+			end
+			
+			it "has remote-address header" do
+				puts response.headers.inspect
+				expect(response.headers['remote-address']).to_not be_nil
+			end
 		end
 		
-		it "can post body to /" do
-			response = client.post("/", {}, ["Hello", " ", "World"])
-			expect(response).to be_success
-			expect(response.read).to be == "Hello World"
+		context 'POST' do
+			let(:response) {client.post("/", {}, ["Hello", " ", "World"])}
+			
+			it "is successful" do
+				expect(response).to be_success
+				expect(response.read).to be == "Hello World"
+			end
 		end
 	end
 	
 	context 'hijack with nil response' do
 		let(:server) do
-			Async::HTTP::Server.new(endpoint, protocol) do |request, peer, address|
+			Async::HTTP::Server.for(endpoint, protocol) do |request|
 				nil
 			end
 		end
@@ -76,7 +89,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		let(:server) do
 			chunks = sent_chunks
 			
-			Async::HTTP::Server.new(endpoint, protocol) do |request, peer, address|
+			Async::HTTP::Server.for(endpoint, protocol) do |request|
 				body = Async::HTTP::Body::Writable.new
 				
 				Async::Reactor.run do |task|
@@ -108,14 +121,14 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 	
 	context 'hijack server' do
 		let(:server) do
-			Async::HTTP::Server.new(endpoint, protocol) do |request, peer, address|
+			Async::HTTP::Server.for(endpoint, protocol) do |request|
 				if request.hijack?
 					io = request.hijack
 					io.write "HTTP/1.1 200 Okay\r\nContent-Length: 16\r\n\r\nHijack Succeeded"
 					io.flush
 					io.close
 				else
-					return Async::HTTP::Response[200, {}, ["Hijack Failed"]]
+					Async::HTTP::Response[200, {}, ["Hijack Failed"]]
 				end
 			end
 		end
@@ -129,7 +142,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 	
 	context 'broken server' do
 		let(:server) do
-			Async::HTTP::Server.new(endpoint, protocol) do |request, peer, address|
+			Async::HTTP::Server.for(endpoint, protocol) do |request|
 				raise RuntimeError.new('simulated failure')
 			end
 		end

@@ -20,12 +20,7 @@
 
 require 'async/io/protocol/line'
 
-require_relative 'request_failed'
-require_relative 'bad_request'
-
-require_relative '../request'
-require_relative '../response'
-require_relative '../headers'
+require_relative 'request'
 
 require_relative '../body/chunked'
 require_relative '../body/fixed'
@@ -50,6 +45,10 @@ module Async
 					
 					@persistent = true
 					@count = 0
+				end
+				
+				def peer
+					@stream.io
 				end
 				
 				attr :count
@@ -93,14 +92,12 @@ module Async
 					return @stream.io
 				end
 				
-				class Request < HTTP::Request
+				class Request < Protocol::Request
 					def initialize(protocol)
 						super(*protocol.read_request)
 						
 						@protocol = protocol
 					end
-					
-					attr :protocol
 					
 					def hijack?
 						true

@@ -18,11 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative '../request'
-require_relative '../response'
-require_relative '../headers'
-require_relative '../body/writable'
-
+require_relative 'request'
 require_relative 'http11'
 
 require 'async/notification'
@@ -79,6 +75,10 @@ module Async
 					@count = 0
 				end
 				
+				def peer
+					@stream.io
+				end
+				
 				attr :count
 				
 				# Multiple requests can be processed at the same time.
@@ -122,11 +122,16 @@ module Async
 					@stream.close
 				end
 				
-				class Request < HTTP::Request
-					def initialize(stream)
+				class Request < Protocol::Request
+					def initialize(protocol, stream)
 						super(nil, nil, nil, VERSION, Headers.new, Body::Writable.new)
 						
+						@protocol = protocol
 						@stream = stream
+					end
+					
+					def hijack?
+						false
 					end
 					
 					attr :stream
@@ -150,16 +155,12 @@ module Async
 							end
 						end
 					end
-					
-					def hijack?
-						false
-					end
 				end
 				
 				def receive_requests(task: Task.current, &block)
 					# emits new streams opened by the client
 					@controller.on(:stream) do |stream|
-						request = Request.new(stream)
+						request = Request.new(self, stream)
 						body = request.body
 						
 						stream.on(:headers) do |headers|

@@ -33,7 +33,7 @@ RSpec.shared_examples Async::HTTP::Body do
 	let(:client) {Async::HTTP::Client.new(client_endpoint, described_class)}
 	
 	it "can stream requests" do
-		server = Async::HTTP::Server.new(server_endpoint, described_class) do |request, peer, address|
+		server = Async::HTTP::Server.for(server_endpoint, described_class) do |request|
 			input = request.body
 			output = Async::HTTP::Body::Writable.new
 			
@@ -72,7 +72,7 @@ RSpec.shared_examples Async::HTTP::Body do
 	it "can stream response" do
 		notification = Async::Notification.new
 		
-		server = Async::HTTP::Server.new(server_endpoint, described_class) do |request, peer, address|
+		server = Async::HTTP::Server.for(server_endpoint, described_class) do |request|
 			body = Async::HTTP::Body::Writable.new
 			
 			Async::Task.current.async do |task|

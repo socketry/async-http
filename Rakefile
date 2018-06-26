@@ -21,7 +21,7 @@ task :server do
 	require 'async/container/forked'
 	require 'async/http/server'
 	
-	server = Async::HTTP::Server.new(Async::IO::Endpoint.tcp('127.0.0.1', 9294, reuse_port: true), PROTOCOL) do |request, peer, address|
+	server = Async::HTTP::Server.for(Async::IO::Endpoint.tcp('127.0.0.1', 9294, reuse_port: true), PROTOCOL) do |request|
 		return Async::HTTP::Response[200, {'content-type' => 'text/plain'}, ["Hello World"]]
 	end
 	
@@ -58,7 +58,7 @@ task :wrk do
 	require 'async/http/server'
 	require 'async/container/forked'
 
-	server = Async::HTTP::Server.new(Async::IO::Endpoint.tcp('127.0.0.1', 9294, reuse_port: true), PROTOCOL) do |request, peer, address|
+	server = Async::HTTP::Server.for(Async::IO::Endpoint.tcp('127.0.0.1', 9294, reuse_port: true), PROTOCOL) do |request|
 		return Async::HTTP::Response[200, {'content-type' => 'text/plain'}, ["Hello World"]]
 	end
 

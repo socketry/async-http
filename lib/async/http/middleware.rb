@@ -49,15 +49,15 @@ module Async
 			
 			include Verbs
 			
-			def call(*args)
-				@app.call(*args)
+			def call(request)
+				@app.call(request)
 			end
 			
 			module Okay
 				def self.close
 				end
 				
-				def self.call(request, *)
+				def self.call(request)
 					Response[200, {}, []]
 				end
 			end
@@ -66,7 +66,7 @@ module Async
 				def self.close
 				end
 				
-				def self.call(request, *)
+				def self.call(request)
 					Response[200, {'content-type' => 'text/plain'}, ["Hello World!"]]
 				end
 			end

@@ -39,7 +39,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 					Async::HTTP::Response[200, {}, request.body]
 				else
 					Async::HTTP::Response[200, {
-						'remote-address' => request.remote_address
+						'remote-address' => request.remote_address.inspect
 					}, ["#{request.method} #{request.version}"]]
 				end
 			end

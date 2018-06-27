@@ -24,13 +24,19 @@ module Async
 	module HTTP
 		module Body
 			class File < Readable
-				def initialize(path, range = nil, block_size: Async::IO::Stream::BLOCK_SIZE)
-					@path = path
-					@file = File.open(path)
+				BLOCK_SIZE = Async::IO::Stream::BLOCK_SIZE
+				
+				def self.open(path, *args)
+					self.new(::File.open(path), *args)
+				end
+				
+				def initialize(file, range = nil, block_size: BLOCK_SIZE)
+					@file = file
 					
 					@block_size = block_size
 					
 					if range
+						@file.seek(range.min)
 						@offset = range.min
 						@length = @remaining = range.size
 					else
@@ -43,6 +49,11 @@ module Async
 				
 				def empty?
 					@remaining == 0
+				end
+				
+				def close
+					@file.close
+					@remaining = 0
 				end
 				
 				def read
@@ -60,6 +71,8 @@ module Async
 				end
 				
 				def join
+					return "" if @remaining == 0
+					
 					buffer = @file.read(@remaining)
 					
 					@remaining = 0
@@ -68,7 +81,7 @@ module Async
 				end
 				
 				def inspect
-					"\#<#{self.class} path=#{@path} offset=#{@offset} remaining=#{@remaining}>"
+					"\#<#{self.class} file=#{@file.inspect} offset=#{@offset} remaining=#{@remaining}>"
 				end
 			end
 		end

@@ -1,4 +1,4 @@
-# Copyright, 2017, by Samuel G. D. Williams. <http://www.codeotaku.com>
+# Copyright, 2018, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,44 +18,29 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+require 'async/http/middleware/builder'
 
-
-module Async
-	module HTTP
-		class Middleware
-			module NotFound
-				def self.close
-				end
-				
-				def self.call(request)
-					Response[404, {}, []]
-				end
-			end
-			
-			class Builder
-				def initialize(default_app = NotFound, &block)
-					@use = []
-					@app = default_app
-					
-					instance_eval(&block) if block_given?
-				end
-				
-				def use(middleware, *args, &block)
-					@use << proc {|app| middleware.new(app, *args, &block)}
-				end
-				
-				def run(app)
-					@app = app
-				end
-				
-				def to_app
-					@use.reverse.inject(@app) {|app, use| use.call(app).freeze}
-				end
-			end
-			
-			def self.build(&block)
-				Builder.new(&block).to_app
-			end
+RSpec.describe Async::HTTP::Middleware::Builder do
+	it "can make an app" do
+		app = Async::HTTP::Middleware.build do
+			run Async::HTTP::Middleware::HelloWorld
 		end
+		
+		expect(app).to be Async::HTTP::Middleware::HelloWorld
+	end
+	
+	it "defaults to not found" do
+		app = Async::HTTP::Middleware.build do
+		end
+		
+		expect(app).to be Async::HTTP::Middleware::NotFound
+	end
+	
+	it "can instantiate middleware" do
+		app = Async::HTTP::Middleware.build do
+			use Async::HTTP::Middleware
+		end
+		
+		expect(app).to be_kind_of Async::HTTP::Middleware
 	end
 end

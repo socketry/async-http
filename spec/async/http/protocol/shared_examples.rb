@@ -112,7 +112,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 			
 			expect(response.body.read).to be == "Chunk 0"
 			
-			response.body.stop(true)
+			response.stop
 			
 			expect(sent_chunks).to be == ["Chunk 0"]
 		end

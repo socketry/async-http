@@ -36,13 +36,14 @@ module Async
 					@stopped = nil
 				end
 				
+				# Has the producer called #finish and has the reader consumed the nil token?
 				def empty?
 					@finished
 				end
 				
 				# Read the next available chunk.
 				def read
-					# I'm not sure if this is a good idea (*).
+					# I'm not sure if this is a good idea.
 					# if @stopped
 					# 	raise @stopped
 					# end
@@ -56,8 +57,10 @@ module Async
 					return chunk
 				end
 				
-				# Cause the next call to write to fail with the given error.
+				# Stop generating output; cause the next call to write to fail with the given error.
 				def stop(error)
+					raise ArgumentError, "Stream already stopped" if @stopped
+					
 					@stopped = error
 				end
 				
@@ -77,7 +80,7 @@ module Async
 				
 				alias << write
 				
-				# Signal that output has finished.
+				# Signal that output has finished. This must be called at least once.
 				def finish
 					@queue.enqueue(nil)
 				end

@@ -18,12 +18,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'body/buffered'
+require_relative 'body/reader'
 
 module Async
 	module HTTP
 		class Response
-			prepend Body::Buffered::Reader
+			prepend Body::Reader
 			
 			def initialize(version = nil, status = 200, reason = nil, headers = [], body = nil)
 				@version = version

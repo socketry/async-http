@@ -25,7 +25,7 @@ module Async
 		module Body
 			# A generic base class for wrapping body instances. Typically you'd override `#read`.
 			class Readable
-				# Buffer any remaining body.
+				# Read all remaining chunks into a buffered body.
 				def close
 					Buffered.for(self)
 				end

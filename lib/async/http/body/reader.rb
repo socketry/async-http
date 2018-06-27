@@ -18,78 +18,40 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'readable'
-
 module Async
 	module HTTP
 		module Body
-			class Fixed < Readable
-				def initialize(stream, length)
-					@stream = stream
-					@length = length
-					@remaining = length
+			module Reader
+				# Read chunks from the body.
+				def each(&block)
+					self.body.each(&block)
 				end
 				
-				attr :length
-				attr :remaining
-				
-				def empty?
-					@remaining == 0
-				end
-				
-				def stop(error)
-					if @remaining != 0
-						@stream.close
+				# Reads the entire request/response body.
+				def read
+					if self.body
+						self.body.join
 					end
 				end
 				
-				def read
-					if @remaining > 0
-						if chunk = @stream.read_partial(@remaining)
-							@remaining -= chunk.bytesize
-							
-							return chunk
-						end
+				# Immediately stop reading the body. May close the underlying connection. Discards body.
+				def stop(error = EOFError)
+					if self.body
+						self.body.stop(error)
+						self.body = nil
 					end
 				end
 				
-				def join
-					buffer = @stream.read(@remaining)
-					
-					@remaining = 0
-					
-					return buffer
+				# Gracefully finish reading the body. This will buffer the remainder of the body.
+				def finish
+					if self.body
+						self.body = self.body.close
+					end
 				end
 				
-				def inspect
-					"\#<#{self.class} length=#{@length} remaining=#{@remaining}>"
-				end
-			end
-			
-			class Remainder < Readable
-				def initialize(stream)
-					@stream = stream
-				end
-				
-				def empty?
-					@stream.closed?
-				end
-				
-				def stop(error)
-					# We can't really do anything in this case except close the connection.
-					@stream.close
-				end
-				
-				def read
-					@stream.read_partial
-				end
-				
-				def join
-					read
-				end
-				
-				def inspect
-					"\#<#{self.class} #{@stream.closed? ? 'closed' : 'open'}>"
+				# Close the connection as quickly as possible. Discards body.
+				def close
+					self.stop
 				end
 			end
 		end

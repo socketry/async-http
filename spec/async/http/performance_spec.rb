@@ -25,6 +25,8 @@ require 'async/http/url_endpoint'
 require 'async/io/shared_endpoint'
 require 'async/reactor'
 
+require 'async/container/forked'
+
 require 'etc'
 require 'benchmark'
 
@@ -49,14 +51,13 @@ RSpec.describe Async::HTTP::Server do
 				bound_endpoint = Async::IO::SharedEndpoint.bound(endpoint)
 			end
 			
-			server = Async::HTTP::Server.new(bound_endpoint, protocol)
-
-			pids = concurrency.times.collect do
-				fork do
-					Async::Reactor.run do
-						server.run
-					end
-				end
+			server = Async::HTTP::Server.new(
+				Async::HTTP::Middleware::Okay,
+				bound_endpoint, protocol
+			)
+			
+			container = Async::Container::Forked.new(concurrency: concurrency) do
+				server.run
 			end
 			
 			bound_endpoint.close if bound_endpoint
@@ -70,10 +71,7 @@ RSpec.describe Async::HTTP::Server do
 				system(wrk, "-c", concurrency.to_s, "-d", "2", "-t", concurrency.to_s, url)
 			end
 			
-			pids.each do |pid|
-				Process.kill(:KILL, pid)
-				Process.wait pid
-			end
+			container.stop(:KILL)
 		end
 	end
 end

@@ -18,8 +18,29 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-module Async
-	module HTTP
-		VERSION = "0.27.1"
+require 'async/http/statistics'
+
+RSpec.describe Async::HTTP::Statistics, timeout: 5 do
+	include_context Async::HTTP::Server
+	let(:protocol) {Async::HTTP::Protocol::HTTP1}
+	
+	let(:server) do
+		Async::HTTP::Server.for(endpoint, protocol) do |request|
+			statistics = described_class.start
+			
+			response = Async::HTTP::Response[200, {}, ["Hello ", "World!"]]
+			
+			statistics.wrap(response) do |statistics, error|
+				expect(statistics.sent).to be == 12
+				expect(error).to be_nil
+			end
+		end
+	end
+	
+	it "client can get resource" do
+		response = client.get("/")
+		expect(response.read).to be == "Hello World!"
+		
+		expect(response).to be_success
 	end
 end

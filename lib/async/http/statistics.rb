@@ -37,6 +37,8 @@ module Async
 				if response and response.body
 					response.body = Body::Statistics.new(@start_time, response.body, block)
 				end
+				
+				return response
 			end
 		end
 		
@@ -46,7 +48,7 @@ module Async
 				def initialize(start_time, body, callback)
 					super(body)
 					
-					@length = 0
+					@sent = 0
 					
 					@start_time = start_time
 					@first_chunk_time = nil
@@ -59,7 +61,7 @@ module Async
 				attr :first_chunk_time
 				attr :end_time
 				
-				attr :length
+				attr :sent
 				
 				def total_duration
 					if @end_time
@@ -85,7 +87,7 @@ module Async
 					@first_chunk_time ||= Clock.now
 					
 					if chunk
-						@length += chunk.length
+						@sent += chunk.length
 					else
 						complete_statistics
 					end
@@ -94,7 +96,7 @@ module Async
 				end
 				
 				def to_s
-					parts = ["sent #{@length} bytes"]
+					parts = ["sent #{@sent} bytes"]
 					
 					if duration = self.total_duration
 						parts << "took #{format_duration(duration)} in total"

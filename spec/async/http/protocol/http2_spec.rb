@@ -33,4 +33,48 @@ RSpec.describe Async::HTTP::Protocol::HTTP2, timeout: 2 do
 			expect(response).to be_bad_request
 		end
 	end
+	
+	context 'stopping requests' do
+		include_context Async::HTTP::Server
+		
+		let(:notification) {Async::Notification.new}
+		
+		let(:server) do
+			Async::HTTP::Server.for(endpoint, protocol) do |request|
+				body = Async::HTTP::Body::Writable.new
+				
+				reactor.async do |task|
+					begin
+						100.times do |i|
+							body.write("Chunk #{i}")
+							task.sleep (0.01)
+						end
+					rescue
+						# puts "Response generation failed: #{$!}"
+					ensure
+						body.finish
+						notification.signal
+					end
+				end
+				
+				Async::HTTP::Response[200, {}, body]
+			end
+		end
+		
+		let(:pool) {client.pool}
+		
+		it "should stop stream without closing connection" do
+			expect(pool).to be_empty
+			
+			response = client.get("/")
+			
+			expect(pool).to_not be_empty
+			
+			response.stop
+			
+			notification.wait
+			
+			expect(response.protocol).to be_reusable
+		end
+	end
 end

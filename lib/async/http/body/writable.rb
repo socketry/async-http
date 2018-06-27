@@ -59,9 +59,7 @@ module Async
 				
 				# Stop generating output; cause the next call to write to fail with the given error.
 				def stop(error)
-					raise ArgumentError, "Stream already stopped" if @stopped
-					
-					@stopped = error
+					@stopped ||= error
 				end
 				
 				# Write a single chunk to the body. Signal completion by calling `#finish`.

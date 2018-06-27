@@ -45,10 +45,15 @@ module Async
 					end
 				end
 				
+				attr :offset
 				attr :length
 				
 				def empty?
 					@remaining == 0
+				end
+				
+				def rewind
+					@file.seek(@offset)
 				end
 				
 				def close

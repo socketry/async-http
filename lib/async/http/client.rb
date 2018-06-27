@@ -34,12 +34,15 @@ module Async
 				@authority = authority || endpoint.hostname
 				
 				@retries = retries
-				@connections = connect(**options)
+				@pool = connect(**options)
 			end
 			
 			attr :endpoint
 			attr :protocol
 			attr :authority
+			
+			attr :retries
+			attr :pool
 			
 			def self.open(*args, &block)
 				client = self.new(*args)
@@ -54,7 +57,7 @@ module Async
 			end
 			
 			def close
-				@connections.close
+				@pool.close
 			end
 			
 			include Methods
@@ -67,20 +70,20 @@ module Async
 				begin
 					attempt += 1
 					
-					# As we cache connections, it's possible these connections go bad (e.g. closed by remote host). In this case, we need to try again. It's up to the caller to impose a timeout on this. If this is the last attempt, we force a new connection.
-					connection = @connections.acquire
+					# As we cache pool, it's possible these pool go bad (e.g. closed by remote host). In this case, we need to try again. It's up to the caller to impose a timeout on this. If this is the last attempt, we force a new connection.
+					connection = @pool.acquire
 					
 					response = connection.call(request)
 					
 					# The connection won't be released until the body is completely read/released.
 					Body::Streamable.wrap(response) do
-						@connections.release(connection)
+						@pool.release(connection)
 					end
 					
 					return response
 				rescue Protocol::RequestFailed
 					# This is a specific case where the entire request wasn't sent before a failure occurred. So, we can even resend non-idempotent requests.
-					@connections.release(connection)
+					@pool.release(connection)
 					
 					attempt += 1
 					if attempt < @retries
@@ -89,7 +92,7 @@ module Async
 						raise
 					end
 				rescue
-					@connections.release(connection)
+					@pool.release(connection)
 					
 					if request.idempotent? and attempt < @retries
 						retry

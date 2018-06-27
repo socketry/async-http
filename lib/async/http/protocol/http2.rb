@@ -19,6 +19,8 @@
 # THE SOFTWARE.
 
 require_relative 'request'
+require_relative 'response'
+
 require_relative 'http11'
 
 require 'async/notification'
@@ -160,6 +162,8 @@ module Async
 				def receive_requests(task: Task.current, &block)
 					# emits new streams opened by the client
 					@controller.on(:stream) do |stream|
+						@count += 1
+						
 						request = Request.new(self, stream)
 						body = request.body
 						
@@ -189,7 +193,12 @@ module Async
 						end
 						
 						stream.on(:close) do |error|
-							body.stop(EOFError.new(error)) if error
+							if error
+								body.stop(EOFError.new(error))
+							else
+								# In theory, we should have received half_close, so there is no need to:
+								# body.finish
+							end
 						end
 					end
 					
@@ -232,41 +241,50 @@ module Async
 					Async.logger.error(request) {$!}
 				end
 				
-				def call(request)
-					request.version ||= self.version
+				class Response < Protocol::Response
+					def initialize(protocol, stream)
+						super(self.version, nil, nil, Headers.new, Body::Writable.new)
+						
+						@protocol = protocol
+						@stream = stream
+					end
 					
-					stream = @controller.new_stream
-					@count += 1
-					
-					headers = Headers::Merged.new({
-						SCHEME => HTTPS,
-						METHOD => request.method,
-						PATH => request.path,
-						AUTHORITY => request.authority,
-					}, request.headers)
-					
-					finished = Async::Notification.new
-					
-					exception = nil
-					response = Response.new
-					response.version = self.version
-					response.headers = Headers.new
-					body = Body::Writable.new
-					response.body = body
-					
-					stream.on(:headers) do |headers|
+					def assign_headers(headers)
 						headers.each do |key, value|
 							if key == STATUS
-								response.status = value.to_i
+								@status = value.to_i
 							elsif key == REASON
-								response.reason = value
+								@reason = value
 							else
-								response.headers[key] = value
+								@headers[key] = value
 							end
 						end
-						
-						# At this point, we are now expecting two events: data and close.
-						stream.on(:close) do |error|
+					end
+				end
+				
+				# Used by the client to send requests to the remote server.
+				def call(request)
+					@count += 1
+					
+					stream = @controller.new_stream
+					response = Response.new(self, stream)
+					body = response.body
+					
+					exception = nil
+					finished = Async::Notification.new
+					waiting = true
+					
+					stream.on(:close) do |error|
+						if waiting
+							if error
+								# If the stream was closed due to an error, we will raise it rather than returning normally.
+								exception = EOFError.new(error)
+							end
+							
+							waiting = false
+							finished.signal
+						else
+							# At this point, we are now expecting two events: data and close.
 							# If we receive close after this point, it's not a request error, but a failure we need to signal to the body.
 							if error
 								body.stop(EOFError.new(error))
@@ -274,21 +292,51 @@ module Async
 								body.finish
 							end
 						end
+					end
+					
+					stream.on(:headers) do |headers|
+						response.assign_headers(headers)
 						
+						# Once we receive the headers, we can return. The body will be read in the background.
+						waiting = false
 						finished.signal
 					end
 					
+					# This is a little bit tricky due to the event handlers.
+					# 1/ Caller invokes `response.stop` which causes `body.write` below to fail.
+					# 2/ We invoke `stream.close(:internal_error)` which eventually triggers `on(:close)` above.
+					# 3/ Error is set to :internal_error which causes us to call `body.stop` a 2nd time.
+					# So, we guard against that, by ensuring that `Writable#stop` only stores the first exception assigned to it.
 					stream.on(:data) do |chunk|
-						body.write(chunk.to_s) unless chunk.empty?
-					end
-					
-					stream.on(:close) do |error|
-						# The remote server has closed the connection while we were sending the request.
-						if error
-							exception = EOFError.new(error)
-							finished.signal
+						begin
+							# If the body is stopped, write will fail...
+							body.write(chunk.to_s) unless chunk.empty?
+						rescue
+							# ... so, we close the stream:
+							stream.close(:internal_error)
 						end
 					end
+					
+					write_request(request, stream)
+					
+					Async.logger.debug(self) {"Request sent, waiting for signal."}
+					finished.wait
+					
+					if exception
+						raise exception
+					end
+					
+					Async.logger.debug(self) {"Stream finished: #{response.inspect}"}
+					return response
+				end
+				
+				private def write_request(request, stream)
+					headers = Headers::Merged.new({
+						SCHEME => HTTPS,
+						METHOD => request.method,
+						PATH => request.path,
+						AUTHORITY => request.authority,
+					}, request.headers)
 					
 					if request.body.nil? or request.body.empty?
 						stream.headers(headers, end_stream: true)
@@ -309,16 +357,6 @@ module Async
 					
 					start_connection
 					@stream.flush
-					
-					Async.logger.debug(self) {"Stream flushed, waiting for signal."}
-					finished.wait
-					
-					if exception
-						raise exception
-					end
-					
-					Async.logger.debug(self) {"Stream finished: #{response.inspect}"}
-					return response
 				end
 			end
 		end

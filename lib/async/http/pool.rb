@@ -44,6 +44,12 @@ module Async
 				@constructor = block
 			end
 			
+			attr :available
+			
+			def empty?
+				@available.empty?
+			end
+			
 			def acquire
 				resource = wait_for_next_available
 				

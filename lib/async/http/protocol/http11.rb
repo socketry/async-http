@@ -21,6 +21,7 @@
 require 'async/io/protocol/line'
 
 require_relative 'request'
+require_relative 'response'
 
 require_relative '../body/chunked'
 require_relative '../body/fixed'
@@ -130,7 +131,7 @@ module Async
 				def receive_requests(task: Task.current)
 					while request = next_request
 						if response = yield(request, self)
-							write_response(response.version || self.version, response.status, response.headers, response.body)
+							write_response(self.version, response.status, response.headers, response.body)
 							request.finish
 							
 							# This ensures we yield at least once every iteration of the loop and allow other fibers to execute.
@@ -141,14 +142,21 @@ module Async
 					end
 				end
 				
+				class Response < Protocol::Response
+					def initialize(protocol, request)
+						super(*protocol.read_response(request))
+						
+						@protocol = protocol
+					end
+				end
+				
+				# Used by the client to send requests to the remote server.
 				def call(request)
-					request.version ||= self.version
-					
 					Async.logger.debug(self) {"#{request.method} #{request.path} #{request.headers.inspect}"}
 					
 					# We carefully interpret https://tools.ietf.org/html/rfc7230#section-6.3.1 to implement this correctly.
 					begin
-						write_request(request.authority, request.method, request.path, request.version, request.headers)
+						write_request(request.authority, request.method, request.path, self.version, request.headers)
 					rescue
 						# If we fail to fully write the request and body, we can retry this request.
 						raise RequestFailed.new
@@ -157,7 +165,7 @@ module Async
 					# Once we start writing the body, we can't recover if the request fails. That's because the body might be generated dynamically, streaming, etc.
 					write_body(request.body)
 					
-					return Response.new(*read_response(request))
+					return Response.new(self, request)
 				rescue
 					# This will ensure that #reusable? returns false.
 					@stream.close

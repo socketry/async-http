@@ -43,6 +43,9 @@ module Async
 			def call(request)
 				response = super
 				
+				# Early exit if the response has already specified a content-encoding.
+				return response if response.headers['content-encoding']
+				
 				# TODO use http-accept and sort by priority
 				if !response.body.empty? and accept_encoding = request.headers['accept-encoding']
 					if content_type = response.headers['content-type'] and @content_types =~ content_type

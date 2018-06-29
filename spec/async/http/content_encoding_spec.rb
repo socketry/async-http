@@ -28,42 +28,62 @@ require 'async/http/accept_encoding'
 require 'async/http/content_encoding'
 
 RSpec.describe Async::HTTP::ContentEncoding, timeout: 5 do
-	include_context Async::RSpec::Reactor
-	
-	let(:endpoint) {Async::HTTP::URLEndpoint.parse('http://127.0.0.1:9294', reuse_port: true)}
-	let(:client) {Async::HTTP::Client.new(endpoint)}
-	
-	subject {described_class.new(Async::HTTP::Middleware::HelloWorld)}
-	
-	let(:server) do
-		middleware = subject
+	context 'compressed response' do
+		include_context Async::HTTP::Server
 		
-		Async::HTTP::Server.for(endpoint) do |request|
-			middleware.call(request)
+		let(:protocol) {Async::HTTP::Protocol::HTTP1}
+		
+		let(:server) do
+			Async::HTTP::Server.new(
+				described_class.new(Async::HTTP::Middleware::HelloWorld),
+				endpoint, protocol
+			)
+		end
+		
+		it "can request resource with compression" do
+			compressor = Async::HTTP::AcceptEncoding.new(client)
+			
+			response = compressor.get("/index", {'accept-encoding' => 'gzip'})
+			expect(response).to be_success
+			
+			expect(response.headers['content-encoding']).to be == ['gzip']
+			expect(response.read).to be == "Hello World!"
+			
+			response.finish
+			client.close
 		end
 	end
 	
-	let!(:server_task) do
-		reactor.async do
-			server.run
+	context 'existing compression' do
+		include_context Async::HTTP::Server
+		
+		let(:protocol) {Async::HTTP::Protocol::HTTP1}
+		
+		let(:server) do
+			app = ->(request){
+				Async::HTTP::Response[200, {'content-type' => 'text/plain', 'content-encoding' => 'identity'}, ["Hello World!"]]
+			}
+			
+			def app.close
+			end
+			
+			Async::HTTP::Server.new(
+				described_class.new(app),
+				endpoint, protocol
+			)
 		end
-	end
-	
-	after(:each) do
-		server_task.stop
-		subject.close
-	end
-	
-	it "can request resource with compression" do
-		compressor = Async::HTTP::AcceptEncoding.new(client)
 		
-		response = compressor.get("/index", {'accept-encoding' => 'gzip'})
-		expect(response).to be_success
-		
-		expect(response.headers['content-encoding']).to be == ['gzip']
-		expect(response.read).to be == "Hello World!"
-		
-		response.finish
-		client.close
+		it "can request resource with compression" do
+			compressor = Async::HTTP::AcceptEncoding.new(client)
+			
+			response = compressor.get("/index", {'accept-encoding' => 'gzip'})
+			expect(response).to be_success
+			
+			expect(response.headers['content-encoding']).to be == ['identity']
+			expect(response.read).to be == "Hello World!"
+			
+			response.finish
+			client.close
+		end
 	end
 end

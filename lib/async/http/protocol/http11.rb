@@ -241,7 +241,7 @@ module Async
 					fields = []
 					
 					each_line do |line|
-						if line =~ /^([a-zA-Z\-]+):\s*(.+?)\s*$/
+						if line =~ /^([a-zA-Z\-\d]+):\s*(.+?)\s*$/
 							fields << [$1, $2]
 						else
 							break

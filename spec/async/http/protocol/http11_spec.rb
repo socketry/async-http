@@ -29,7 +29,7 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 2 do
 		subject {described_class.new(stream)}
 
 		describe "simple request" do
-			let(:request) {"GET / HTTP/1.1\r\nHost: localhost\r\nAccept: */*\r\n\r\n"}
+			let(:request) {"GET / HTTP/1.1\r\nHost: localhost\r\nAccept: */*\r\nHeader-0: value 1\r\n"}
 			let(:io) {StringIO.new(request)}
 		
 			it "reads request" do
@@ -39,7 +39,7 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 2 do
 				expect(method).to be == 'GET'
 				expect(url).to be == '/'
 				expect(version).to be == 'HTTP/1.1'
-				expect(headers).to be == {'accept' => ['*/*']}
+				expect(headers).to be == {'accept' => ['*/*'], "header-0" => ["value 1"]}
 				expect(body).to be nil
 			end
 		end

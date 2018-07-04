@@ -45,6 +45,7 @@ module Async
 					super(stream, CRLF)
 					
 					@persistent = true
+					@hijacked = false
 					@count = 0
 				end
 				
@@ -85,12 +86,18 @@ module Async
 					end
 				end
 				
+				# @return [Async::Wrapper] the underlying non-blocking IO.
 				def hijack
 					@persistent = false
+					@hijacked = true
 					
 					@stream.flush
 					
 					return @stream.io
+				end
+				
+				def hijacked?
+					@hijacked
 				end
 				
 				class Request < Protocol::Request
@@ -130,15 +137,15 @@ module Async
 				# Server loop.
 				def receive_requests(task: Task.current)
 					while request = next_request
-						if response = yield(request, self)
-							write_response(self.version, response.status, response.headers, response.body)
-							request.finish
-							
-							# This ensures we yield at least once every iteration of the loop and allow other fibers to execute.
-							task.yield
-						else
-							break
-						end
+						response = yield(request, self)
+						
+						return if hijacked?
+						
+						write_response(self.version, response.status, response.headers, response.body)
+						request.finish
+						
+						# This ensures we yield at least once every iteration of the loop and allow other fibers to execute.
+						task.yield
 					end
 				end
 				

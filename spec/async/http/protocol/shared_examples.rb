@@ -76,9 +76,9 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		end
 		
 		it "fails with appropriate error" do
-			expect do
-				response = client.get("/")
-			end.to raise_error(EOFError)
+			response = client.get("/")
+			
+			expect(response).to be_server_failure
 		end
 	end
 	

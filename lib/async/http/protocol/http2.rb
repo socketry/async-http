@@ -235,7 +235,7 @@ module Async
 							stream.data("", end_stream: true)
 						end
 					else
-						stream.close(:internal_error) unless stream.state == :closed
+						stream.headers({':status' => '500'}, end_stream: true)
 					end
 				rescue
 					Async.logger.error(request) {$!}

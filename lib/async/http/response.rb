@@ -64,6 +64,10 @@ module Async
 				status == 400
 			end
 			
+			def server_failure?
+				status == 500
+			end
+			
 			def self.[](status, headers = {}, body = [])
 				body = Body::Buffered.wrap(body)
 				

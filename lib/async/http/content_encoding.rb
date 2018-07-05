@@ -46,6 +46,10 @@ module Async
 				# Early exit if the response has already specified a content-encoding.
 				return response if response.headers['content-encoding']
 				
+				# This is a very tricky issue, so we avoid it entirely.
+				# https://lists.w3.org/Archives/Public/ietf-http-wg/2014JanMar/1179.html
+				return response if response.partial?
+				
 				# TODO use http-accept and sort by priority
 				if !response.body.empty? and accept_encoding = request.headers['accept-encoding']
 					if content_type = response.headers['content-type'] and @content_types =~ content_type

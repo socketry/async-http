@@ -54,6 +54,37 @@ RSpec.describe Async::HTTP::ContentEncoding, timeout: 5 do
 		end
 	end
 	
+	context 'partial response' do
+		include_context Async::HTTP::Server
+		
+		let(:protocol) {Async::HTTP::Protocol::HTTP1}
+		
+		let(:server) do
+			app = ->(request){
+				Async::HTTP::Response[206, {'content-type' => 'text/plain'}, ["Hello World!"]]
+			}
+			
+			def app.close
+			end
+			
+			Async::HTTP::Server.new(
+				described_class.new(app),
+				endpoint, protocol
+			)
+		end
+		
+		it "can request resource with compression" do
+			response = client.get("/index", {'accept-encoding' => 'gzip'})
+			expect(response).to be_success
+			
+			expect(response.headers).to_not include('content-encoding')
+			expect(response.read).to be == "Hello World!"
+			
+			response.finish
+			client.close
+		end
+	end
+	
 	context 'existing compression' do
 		include_context Async::HTTP::Server
 		

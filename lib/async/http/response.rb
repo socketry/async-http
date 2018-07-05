@@ -48,6 +48,10 @@ module Async
 				status >= 200 && status < 300
 			end
 			
+			def partial?
+				status == 206
+			end
+			
 			def redirection?
 				status >= 300 && status < 400
 			end

@@ -19,6 +19,7 @@ end
 require 'bundler/setup'
 require 'async/http'
 require 'async/rspec/reactor'
+require 'async/rspec/memory'
 
 # Async.logger.level = Logger::DEBUG
 

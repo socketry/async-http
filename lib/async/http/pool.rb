@@ -98,6 +98,7 @@ module Async
 			end
 			
 			def wait_for_next_available
+				# If we fail to create a resource (below), we will end up waiting for one to become available.
 				until resource = next_available
 					@waiting << Fiber.current
 					Task.yield
@@ -107,15 +108,10 @@ module Async
 			end
 			
 			def create
-				begin
-					# This might fail, which is okay :)
-					resource = @constructor.call
-				rescue
-					Async.logger.error "#{$!}: #{$!.backtrace}"
-					return nil
+				# This might return nil, which means creating the resource failed.
+				if resource = @constructor.call
+					@available[resource] = 1
 				end
-				
-				@available[resource] = 1
 				
 				return resource
 			end

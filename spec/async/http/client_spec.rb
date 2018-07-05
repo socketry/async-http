@@ -37,6 +37,19 @@ RSpec.describe Async::HTTP::Client, timeout: 5 do
 		end
 	end
 	
+	context 'non-existant host' do
+		include_context Async::RSpec::Reactor
+		
+		let(:endpoint) {Async::HTTP::URLEndpoint.parse('http://the.future')}
+		let(:client) {Async::HTTP::Client.new(endpoint)}
+		
+		it "should fail to connect" do
+			expect do
+				client.get("/")
+			end.to raise_error(SocketError, /Name or service not known/)
+		end
+	end
+	
 	describe Async::HTTP::Protocol::HTTPS do
 		include_context Async::RSpec::Reactor
 		

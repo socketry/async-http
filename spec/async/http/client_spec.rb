@@ -46,7 +46,7 @@ RSpec.describe Async::HTTP::Client, timeout: 5 do
 		it "should fail to connect" do
 			expect do
 				client.get("/")
-			end.to raise_error(SocketError, /Name or service not known/)
+			end.to raise_error(SocketError, /not known/)
 		end
 	end
 	

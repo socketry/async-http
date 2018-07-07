@@ -58,20 +58,11 @@ module Async
 				end
 				
 				def empty?
-					@chunks.empty?
+					@index >= @chunks.length
 				end
 				
 				def close
 					self
-				end
-				
-				def each
-					return to_enum unless block_given?
-					
-					while @index < @chunks.count
-						yield @chunks[@index]
-						@index += 1
-					end
 				end
 				
 				def read

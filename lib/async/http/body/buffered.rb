@@ -70,7 +70,7 @@ module Async
 						@index += 1
 					end
 					
-					return chunk
+					return chunk.dup
 				end
 				
 				def rewind

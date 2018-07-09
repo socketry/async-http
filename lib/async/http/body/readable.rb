@@ -54,6 +54,7 @@ module Async
 					
 					while chunk = self.read
 						yield chunk
+						# chunk.clear
 					end
 				rescue
 					stop($!)
@@ -67,6 +68,7 @@ module Async
 					
 					self.each do |chunk|
 						buffer << chunk
+						chunk.clear
 					end
 					
 					return buffer

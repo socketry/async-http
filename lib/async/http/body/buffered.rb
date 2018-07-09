@@ -68,9 +68,11 @@ module Async
 				def read
 					if chunk = @chunks[@index]
 						@index += 1
+						
+						return chunk.dup
 					end
 					
-					return chunk.dup
+					return nil
 				end
 				
 				def rewind

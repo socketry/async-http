@@ -73,12 +73,12 @@ RSpec.describe Async::HTTP::Body::Fixed do
 		end
 		
 		context "with large stream" do
-			let(:content) { "a" * 5*1024*1024 }
+			let(:content) {"a" * 5*1024*1024}
 			
 			it "allocates expected amount of memory" do
 				expect do
 					subject.read.clear until subject.empty?
-				end.to limit_allocations(size: 100*1024)
+				end.to limit_allocations(size: 0)
 			end
 		end
 	end

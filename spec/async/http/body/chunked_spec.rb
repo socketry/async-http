@@ -61,14 +61,14 @@ RSpec.describe Async::HTTP::Body::Chunked do
 		end
 		
 		context "with large stream" do
-			let!(:content) { "a" * 5*1024*1024 }
+			let!(:content) {"a" * 5*1024*1024}
 			
 			it "allocates expected amount of memory" do
 				expect do
-					while (chunk = subject.read)
+					while chunk = subject.read
 						chunk.clear
 					end
-				end.to limit_allocations(size: 100*1024)
+				end.to limit_allocations.of(String, size: 0)
 			end
 		end
 	end

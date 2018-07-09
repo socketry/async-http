@@ -43,7 +43,8 @@ module Async
 						end
 					end
 					
-					return chunk
+					# We dup them on the way out, so that if someone modifies the string, it won't modify the rewindability.
+					return chunk.dup
 				end
 				
 				def rewind

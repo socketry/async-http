@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'async/io/binary_string'
+require 'async/io/buffer'
 
 module Async
 	module HTTP
@@ -63,7 +63,7 @@ module Async
 				
 				# Read all remaining chunks into a single binary string.
 				def join
-					buffer = IO::BinaryString.new
+					buffer = IO::Buffer.new
 					
 					self.each do |chunk|
 						buffer << chunk

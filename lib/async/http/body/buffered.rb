@@ -26,12 +26,13 @@ module Async
 			# A body which buffers all it's contents.
 			class Buffered < Readable
 				# Wraps an array into a buffered body.
+				# @return [Readable, nil] the wrapped body or nil if nil was given.
 				def self.wrap(body)
 					if body.is_a? Async::HTTP::Body::Readable
 						return body
 					elsif body.is_a? Array
 						return self.new(body)
-					else
+					elsif body
 						return self.for(body)
 					end
 				end

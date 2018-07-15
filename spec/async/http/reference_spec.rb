@@ -23,6 +23,22 @@
 require 'async/http/reference'
 
 RSpec.describe Async::HTTP::Reference do
+	context 'empty query string' do
+		subject {described_class.new('/', '', nil, {})}
+		
+		it 'it should not append query string' do
+			expect(subject.to_s).to_not include('?')
+		end
+	end
+	
+	context 'empty fragment' do
+		subject {described_class.new('/', nil, '', nil)}
+		
+		it 'it should not append query string' do
+			expect(subject.to_s).to_not include('#')
+		end
+	end
+	
 	describe Async::HTTP::Reference.parse('path with spaces/image.jpg') do
 		it "encodes whitespace" do
 			expect(subject.to_s).to be == "path%20with%20spaces/image.jpg"

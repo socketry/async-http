@@ -57,16 +57,28 @@ module Async
 			# User supplied parameters that will be appended to the query part.
 			attr :parameters
 			
+			def parameters?
+				@parameters and !@parameters.empty?
+			end
+			
+			def query_string?
+				@query_string and !@query_string.empty?
+			end
+			
+			def fragment?
+				@fragment and !@fragment.empty?
+			end
+			
 			def append(buffer)
-				if @query_string
-					buffer << escape_path(@path) << '?' << query_string
-					buffer << '&' << encode(@parameters) if @parameters
+				if query_string?
+					buffer << escape_path(@path) << '?' << @query_string
+					buffer << '&' << encode(@parameters) if parameters?
 				else
 					buffer << escape_path(@path)
-					buffer << '?' << encode(@parameters) if @parameters
+					buffer << '?' << encode(@parameters) if parameters?
 				end
 				
-				if @fragment
+				if fragment?
 					buffer << '#' << escape(@fragment)
 				end
 				
@@ -95,10 +107,12 @@ module Async
 			end
 			
 			def dup(path = nil, parameters = nil)
-				if parameters and @parameters
-					parameters = @parameters.merge(parameters)
-				else
-					parameters = @parameters
+				if @parameters
+					if parameters
+						parameters = @parameters.merge(parameters)
+					else
+						parameters = @parameters
+					end
 				end
 				
 				if path
@@ -154,18 +168,19 @@ module Async
 			def encode(value, prefix = nil)
 				case value
 				when Array
-					value.map { |v|
+					return value.map { |v|
 						encode(v, "#{prefix}[]")
 					}.join("&")
 				when Hash
-					value.map { |k, v|
+					return value.map { |k, v|
 						encode(v, prefix ? "#{prefix}[#{escape(k.to_s)}]" : escape(k.to_s))
 					}.reject(&:empty?).join('&')
 				when nil
-					prefix
+					return prefix
 				else
 					raise ArgumentError, "value must be a Hash" if prefix.nil?
-					"#{prefix}=#{escape(value.to_s)}"
+					
+					return "#{prefix}=#{escape(value.to_s)}"
 				end
 			end
 		end

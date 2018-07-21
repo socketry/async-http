@@ -147,11 +147,19 @@ According to these results, the cost of handling connections is quite high, whil
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
 
+## See Also
+
+- [benchmark-http](https://github.com/socketry/benchmark-http) — A benchmarking tool to report on web server concurrency.
+- [falcon](https://github.com/socketry/falcon) — A rack compatible server built on top of `async-http`.
+- [async-websocket](https://github.com/socketry/async-websocket) — Asynchronous client and server websockets.
+- [async-rest](https://github.com/socketry/async-rest) — A RESTful resource layer built on top of `async-http`.
+- [async-http-faraday](https://github.com/socketry/async-http-faraday) — A faraday adapter to use `async-http`.
+
 ## License
 
 Released under the MIT license.
 
-Copyright, 2015, by [Samuel G. D. Williams](http://www.codeotaku.com/samuel-williams).
+Copyright, 2018, by [Samuel G. D. Williams](http://www.codeotaku.com/samuel-williams).
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -56,6 +56,10 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 			it "has remote-address header" do
 				expect(response.headers['remote-address']).to_not be_nil
 			end
+			
+			it "has protocol version" do
+				expect(response.version).to_not be_nil
+			end
 		end
 		
 		context 'POST' do

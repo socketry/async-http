@@ -243,7 +243,7 @@ module Async
 				
 				class Response < Protocol::Response
 					def initialize(protocol, stream)
-						super(self.version, nil, nil, Headers.new, Body::Writable.new)
+						super(protocol.version, nil, nil, Headers.new, Body::Writable.new)
 						
 						@protocol = protocol
 						@stream = stream

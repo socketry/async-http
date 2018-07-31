@@ -25,7 +25,12 @@ module Async
 	module HTTP
 		module Protocol
 			module HTTP2
-				def self.client(stream, settings = [])
+				DEFAULT_SETTINGS = {
+					::HTTP::Protocol::HTTP2::Settings::ENABLE_PUSH => 0,
+					::HTTP::Protocol::HTTP2::Settings::MAXIMUM_CONCURRENT_STREAMS => 256
+				}
+				
+				def self.client(stream, settings = DEFAULT_SETTINGS)
 					client = Client.new(stream)
 					
 					client.send_connection_preface(settings)
@@ -34,7 +39,7 @@ module Async
 					return client
 				end
 				
-				def self.server(stream, settings = [])
+				def self.server(stream, settings = DEFAULT_SETTINGS)
 					server = Server.new(stream)
 					
 					server.read_connection_preface(settings)

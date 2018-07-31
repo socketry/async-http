@@ -28,8 +28,8 @@ RSpec.describe Async::HTTP::Body::Buffered do
 	
 	describe ".wrap" do
 		context "when body is a Body::Readable" do
-			let(:stream) { Async::IO::Stream.new(StringIO.new("content")) }
-			let(:body) { Async::HTTP::Body::Fixed.new(stream, 7) }
+			let(:stream) {Async::IO::Stream.new(StringIO.new("content"))}
+			let(:body) {Async::HTTP::Body::Fixed.new(stream, 7)}
 			
 			it "returns the body" do
 				expect(subject).to be == body
@@ -97,7 +97,7 @@ RSpec.describe Async::HTTP::Body::Buffered do
 		end
 		
 		context "with large content" do
-			let(:content) { Array.new(5) { |i| "#{i}" * (1*1024*1024) } }
+			let(:content) {Array.new(5) {|i| "#{i}" * (1*1024*1024)}}
 			
 			it "allocates expected amount of memory" do
 				expect do

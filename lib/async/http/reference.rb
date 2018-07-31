@@ -168,11 +168,11 @@ module Async
 			def encode(value, prefix = nil)
 				case value
 				when Array
-					return value.map { |v|
+					return value.map {|v|
 						encode(v, "#{prefix}[]")
 					}.join("&")
 				when Hash
-					return value.map { |k, v|
+					return value.map {|k, v|
 						encode(v, prefix ? "#{prefix}[#{escape(k.to_s)}]" : escape(k.to_s))
 					}.reject(&:empty?).join('&')
 				when nil

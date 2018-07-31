@@ -18,29 +18,38 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'http2/client'
-require_relative 'http2/server'
+require_relative 'connection'
+require_relative 'response'
+
+require 'http/protocol/http2/client'
 
 module Async
 	module HTTP
 		module Protocol
 			module HTTP2
-				def self.client(stream, settings = [])
-					client = Client.new(stream)
+				class Client < ::HTTP::Protocol::HTTP2::Client
+					include Connection
 					
-					client.send_connection_preface(settings)
-					client.start_connection
+					def initialize(stream, *args)
+						@stream = stream
+						
+						framer = ::HTTP::Protocol::HTTP2::Framer.new(@stream)
+						
+						super(framer, *args)
+					end
 					
-					return client
-				end
-				
-				def self.server(stream, settings = [])
-					server = Server.new(stream)
-					
-					server.read_connection_preface(settings)
-					server.start_connection
-					
-					return server
+					# Used by the client to send requests to the remote server.
+					def call(request)
+						@count += 1
+						
+						response = Response.new(self, next_stream_id)
+						
+						response.send_request(request)
+						
+						response.wait
+						
+						return response
+					end
 				end
 			end
 		end

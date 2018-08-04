@@ -77,18 +77,21 @@ module Async
 					def receive_reset_stream(stream, error_code)
 					end
 					
-					NO_RESPONSE = [[STATUS, '500'], [REASON, "No response generated"]]
+					NO_RESPONSE = [
+						[STATUS, '500'],
+						[REASON, "No response generated"]
+					]
 					
 					def send_response(response)
 						if response.nil?
 							@stream.send_headers(nil, NO_RESPONSE, ::HTTP::Protocol::HTTP2::END_STREAM)
 						else
-							headers = Headers::Merged.new({
-								STATUS => response.status,
-								REASON => response.reason,
-							}, response.headers)
+							headers = Headers::Merged.new([
+								[STATUS, response.status],
+								[REASON, response.reason],
+							], response.headers)
 							
-							if response.body.nil?
+							if response.body.nil? or response.body.empty?
 								@stream.send_headers(nil, headers, ::HTTP::Protocol::HTTP2::END_STREAM)
 							else
 								@stream.send_headers(nil, headers)

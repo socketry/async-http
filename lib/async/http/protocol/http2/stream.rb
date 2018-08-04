@@ -54,35 +54,37 @@ module Async
 							chunk = @remainder
 							@remainder = nil
 						elsif chunk = @body.read
+							# There was a new chunk of data to send
 						else
 							@body = nil
 							
 							# @body.read above might take a while and a stream reset might be received in the mean time.
-							unless @state == :closed
+							unless closed?
 								send_data(nil, ::HTTP::Protocol::HTTP2::END_STREAM)
 							end
 							
 							return false
 						end
 						
-						return false if @state == :closed
+						return false if closed?
 						
 						if chunk.bytesize <= maximum_size
 							send_data(chunk, maximum_size: maximum_size)
-							
-							return true
 						else
-							send_data(chunk.byteslice(0, maximum_size), padding_size: 0)
-							@remainder = chunk.byteslice(maximum_size, chunk.bytesize - maximum_size)
+							send_data(chunk.byteslice(0, maximum_size), maximum_size: maximum_size)
 							
-							return false
+							@remainder = chunk.byteslice(maximum_size, chunk.bytesize - maximum_size)
 						end
+						
+						return true
 					end
 					
 					def window_updated
 						return unless @body
 						
-						while send_chunk; end
+						while send_chunk
+							# There could be more data to send...
+						end
 					end
 					
 					def receive_headers(frame)
@@ -108,6 +110,7 @@ module Async
 						
 						if @body
 							@body.stop(EOFError.new(error_code))
+							@body = nil
 						end
 						
 						delegate.receive_reset_stream(self, error_code)

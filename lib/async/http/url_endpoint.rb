@@ -71,17 +71,17 @@ module Async
 			end
 			
 			def port
-				@url.port || default_port
+				@options[:port] || @url.port || default_port
 			end
 			
 			def hostname
-				@options.fetch(:hostname, @url.hostname)
+				@options[:hostname] || @url.hostname
 			end
 			
 			DEFAULT_ALPN_PROTOCOLS = ['h2', 'http/1.1'].freeze
 			
 			def alpn_protocols
-				@options.fetch(:alpn_protocols, DEFAULT_ALPN_PROTOCOLS)
+				@options[:alpn_protocols] || DEFAULT_ALPN_PROTOCOLS
 			end
 			
 			def ssl_context
@@ -98,20 +98,22 @@ module Async
 				{reuse_port: @options[:reuse_port] ? true : false}
 			end
 			
-			def endpoint
-				unless @endpoint
-					@endpoint = Async::IO::Endpoint.tcp(hostname, port, tcp_options)
-					
-					if secure?
-						# Wrap it in SSL:
-						@endpoint = Async::IO::SSLEndpoint.new(@endpoint,
-							ssl_context: ssl_context,
-							hostname: self.hostname
-						)
-					end
+			def build_endpoint(endpoint = nil)
+				endpoint ||= Async::IO::Endpoint.tcp(hostname, port, tcp_options)
+				
+				if secure?
+					# Wrap it in SSL:
+					return Async::IO::SSLEndpoint.new(endpoint,
+						ssl_context: self.ssl_context,
+						hostname: self.hostname
+					)
 				end
 				
-				return @endpoint
+				return endpoint
+			end
+			
+			def endpoint
+				@endpoint ||= build_endpoint
 			end
 			
 			def bind(*args, &block)

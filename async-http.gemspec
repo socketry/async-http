@@ -17,7 +17,7 @@ Gem::Specification.new do |spec|
 	spec.require_paths = ["lib"]
 	
 	spec.add_dependency("async", "~> 1.6")
-	spec.add_dependency("async-io", "~> 1.14")
+	spec.add_dependency("async-io", "~> 1.15")
 	
 	spec.add_dependency("http-protocol", "~> 0.2.0")
 	

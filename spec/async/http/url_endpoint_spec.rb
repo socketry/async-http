@@ -26,6 +26,38 @@ RSpec.describe Async::HTTP::URLEndpoint do
 			described_class.parse("/foo/bar")
 		}.to raise_error(ArgumentError, /absolute/)
 	end
+	
+	describe '#port' do
+		let(:url_string) {"https://localhost:9292"}
+		
+		it "extracts port from URL" do
+			endpoint = Async::HTTP::URLEndpoint.parse(url_string)
+			
+			expect(endpoint.port).to eq 9292
+		end
+		
+		it "extracts port from options" do
+			endpoint = Async::HTTP::URLEndpoint.parse(url_string, port: 9000)
+			
+			expect(endpoint.port).to eq 9000
+		end
+	end
+	
+	describe '#hostname' do
+		let(:url_string) {"https://127.0.0.1:9292"}
+		
+		it "extracts hostname from URL" do
+			endpoint = Async::HTTP::URLEndpoint.parse(url_string)
+			
+			expect(endpoint.hostname).to eq '127.0.0.1'
+		end
+		
+		it "extracts hostname from options" do
+			endpoint = Async::HTTP::URLEndpoint.parse(url_string, hostname: 'localhost')
+			
+			expect(endpoint.hostname).to eq 'localhost'
+		end
+	end
 end
 
 RSpec.describe "http://www.google.com/search" do

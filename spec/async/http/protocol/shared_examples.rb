@@ -25,12 +25,6 @@ require 'async/http/url_endpoint'
 RSpec.shared_examples_for Async::HTTP::Protocol do
 	include_context Async::HTTP::Server
 	
-	let(:server) do
-		Async::HTTP::Server.for(endpoint, protocol) do |request|
-			Async::HTTP::Response[200, {}, ["Hello World"]]
-		end
-	end
-	
 	context 'working server' do
 		let(:server) do
 			Async::HTTP::Server.for(endpoint, protocol) do |request|

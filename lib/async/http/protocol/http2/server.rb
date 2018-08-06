@@ -31,8 +31,9 @@ module Async
 					include Connection
 					
 					def initialize(stream, *args)
-						framer = ::HTTP::Protocol::HTTP2::Framer.new(stream)
+						@stream = stream
 						
+						framer = ::HTTP::Protocol::HTTP2::Framer.new(stream)
 						super(framer, *args)
 						
 						@requests = Async::Queue.new

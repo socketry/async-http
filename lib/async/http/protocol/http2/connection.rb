@@ -41,6 +41,8 @@ module Async
 						@reader = nil
 					end
 					
+					attr :stream
+					
 					def start_connection
 						@reader ||= read_in_background
 					end
@@ -49,11 +51,13 @@ module Async
 						task.async do |nested_task|
 							nested_task.annotate("#{version} reading data")
 							
-							while !self.closed?
-								self.read_frame
+							begin
+								while !self.closed?
+									self.read_frame
+								end
+							rescue
+								Async.logger.debug(self) {$!}
 							end
-							
-							Async.logger.debug(self) {"Connection reset by peer!"}
 						end
 					end
 					

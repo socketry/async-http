@@ -69,6 +69,12 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 				expect(response).to be_success
 				expect(response.read).to be == "Hello World"
 			end
+			
+			it "fails gracefully when closing connection" do
+				client.pool.acquire do |connection|
+					connection.stream.close
+				end
+			end
 		end
 	end
 	

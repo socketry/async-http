@@ -39,15 +39,13 @@ require 'async/reactor'
 require 'async/http/url_endpoint'
 require 'async/http/response'
 
-endpoint = Async::HTTP::URLEndpoint.parse('http://127.0.0.1:9294', reuse_port: true)
+endpoint = Async::HTTP::URLEndpoint.parse('http://127.0.0.1:9294')
 
-class Server < Async::HTTP::Server
-	def handle_request(request, peer, address)
-		Async::HTTP::Response[200, {}, ["Hello World"]]
-	end
+app = lambda do |request|
+	Async::HTTP::Response[200, {}, ["Hello World"]]
 end
 
-server = Server.new(endpoint)
+server = Async::HTTP::Server.new(app, endpoint)
 client = Async::HTTP::Client.new(endpoint)
 	
 Async::Reactor.run do |task|
@@ -55,7 +53,9 @@ Async::Reactor.run do |task|
 		server.run
 	end
 	
-	response = client.get("/", {})
+	response = client.get("/")
+	
+	puts response.status
 	puts response.read
 	
 	server_task.stop

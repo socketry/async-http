@@ -270,11 +270,18 @@ module Async
 					write_persistent_header
 					@stream.write("content-length: #{length}\r\n\r\n")
 					
+					written_length = 0
 					body.each do |chunk|
 						@stream.write(chunk)
+						
+						written_length += chunk.bytesize
 					end
 					
 					@stream.flush
+					
+					if written_length != length
+						raise ArgumentError, "Writing fixed length body, content-lenght: #{length}, but wrote #{written_bytes} bytes!"
+					end
 				end
 				
 				def write_chunked_body(body)

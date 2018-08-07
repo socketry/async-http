@@ -88,7 +88,8 @@ module Async
 						else
 							headers = Headers::Merged.new([
 								[STATUS, response.status],
-								[REASON, response.reason],
+								# I'm not sure whether this is a good idea. Maybe it's okay for errors?
+								# [REASON, response.reason],
 							], response.headers)
 							
 							if response.body.nil? or response.body.empty?

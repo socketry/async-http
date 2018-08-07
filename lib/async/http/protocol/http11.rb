@@ -136,7 +136,7 @@ module Async
 						return if @stream.closed?
 						
 						if response
-							write_response(self.version, response.status, response.headers, response.body)
+							write_response(self.version, response.status, response.headers, response.body, request.head?)
 						else
 							# If the request failed to generate a response, it was an internal server error:
 							write_response(self.version, 500, {}, nil)
@@ -217,10 +217,15 @@ module Async
 					return headers.delete(HOST), method, path, version, headers, body
 				end
 				
-				def write_response(version, status, headers, body)
+				def write_response(version, status, headers, body = nil, head = false)
 					@stream.write("#{version} #{status}\r\n")
 					write_headers(headers)
-					write_body(body)
+					
+					if head
+						write_body_head(body)
+					else
+						write_body(body)
+					end
 					
 					@stream.flush
 				end
@@ -313,6 +318,18 @@ module Async
 						write_chunked_body(body)
 					else
 						write_body_and_close(body)
+					end
+				end
+				
+				def write_body_head(body)
+					write_persistent_header
+					
+					if body.nil? or body.empty?
+						@stream.write("content-length: 0\r\n\r\n")
+					elsif length = body.length
+						@stream.write("content-length: #{length}\r\n\r\n")
+					else
+						@stream.write("\r\n")
 					end
 				end
 				

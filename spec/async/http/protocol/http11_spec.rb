@@ -28,7 +28,7 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 2 do
 		let(:stream) {Async::IO::Stream.new(io)}
 		subject {described_class.new(stream)}
 
-		describe "simple request" do
+		describe "request without body" do
 			let(:request) {"GET / HTTP/1.1\r\nHost: localhost\r\nAccept: */*\r\nHeader-0: value 1\r\n"}
 			let(:io) {StringIO.new(request)}
 		
@@ -44,7 +44,7 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 2 do
 			end
 		end
 		
-		describe "simple request with fixed body" do
+		describe "request with fixed body" do
 			let(:request) {"GET / HTTP/1.1\r\nHost: localhost\r\nContent-Length: 11\r\n\r\nHello World"}
 			let(:io) {StringIO.new(request)}
 		
@@ -60,7 +60,7 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 2 do
 			end
 		end
 		
-		describe "simple request with chunked body" do
+		describe "request with chunked body" do
 			let(:request) {"GET / HTTP/1.1\r\nHost: localhost\r\nTransfer-Encoding: chunked\r\n\r\nb\r\nHello World\r\n0\r\n\r\n"}
 			let(:io) {StringIO.new(request)}
 			
@@ -73,6 +73,27 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 2 do
 				expect(version).to be == 'HTTP/1.1'
 				expect(headers).to be == {'transfer-encoding' => ['chunked']}
 				expect(body.read).to be == "Hello World"
+			end
+		end
+	end
+	
+	context 'head request' do
+		include_context Async::HTTP::Server
+		
+		let(:server) do
+			Async::HTTP::Server.for(endpoint, protocol) do |request|
+				Async::HTTP::Response[200, {}, ["Hello", "World"]]
+			end
+		end
+		
+		it "doesn't reply with body" do
+			5.times do
+				response = client.head("/")
+				
+				expect(response).to be_success
+				expect(response.version).to be == "HTTP/1.1"
+				expect(response.body).to be nil
+				response.read
 			end
 		end
 	end

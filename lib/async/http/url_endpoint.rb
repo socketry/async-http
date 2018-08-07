@@ -84,13 +84,27 @@ module Async
 				@options[:alpn_protocols] || DEFAULT_ALPN_PROTOCOLS
 			end
 			
+			LOCALHOST = 'localhost'.freeze
+			
+			# We don't try to validate peer certificates when talking to localhost because they would always be self-signed.
+			def ssl_verify_mode
+				case self.hostname
+				when LOCALHOST
+					OpenSSL::SSL::VERIFY_NONE
+				else
+					OpenSSL::SSL::VERIFY_PEER
+				end
+			end
+			
 			def ssl_context
 				@options[:ssl_context] || ::OpenSSL::SSL::SSLContext.new.tap do |context|
 					if alpn_protocols = self.alpn_protocols
 						context.alpn_protocols = alpn_protocols
 					end
 					
-					context.set_params
+					context.set_params(
+						verify_mode: self.ssl_verify_mode
+					)
 				end
 			end
 			

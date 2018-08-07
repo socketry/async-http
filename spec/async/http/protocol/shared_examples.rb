@@ -86,6 +86,24 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		end
 	end
 	
+	context 'body with incorrect length' do
+		let(:bad_body) {Async::HTTP::Body::Buffered.new(["Borked"], 10)}
+		
+		let(:server) do
+			Async::HTTP::Server.for(endpoint, protocol) do |request|
+				Async::HTTP::Response[200, {}, bad_body]
+			end
+		end
+		
+		it "fails with appropriate error" do
+			response = client.get("/")
+			
+			expect do
+				response.read
+			end.to raise_error(EOFError)
+		end
+	end
+	
 	context 'streaming server' do
 		let!(:sent_chunks) {[]}
 		

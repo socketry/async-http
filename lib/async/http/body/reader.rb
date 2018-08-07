@@ -53,6 +53,11 @@ module Async
 				def close
 					self.stop
 				end
+				
+				# Whether there is a body?
+				def body?
+					@body and !@body.empty?
+				end
 			end
 		end
 	end

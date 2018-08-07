@@ -190,6 +190,10 @@ module Async
 					@all = all
 				end
 				
+				def << headers
+					@all << headers
+				end
+				
 				def each(&block)
 					@all.each do |headers|
 						headers.each do |key, value|

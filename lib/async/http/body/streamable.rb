@@ -27,16 +27,21 @@ module Async
 			class Streamable < Wrapper
 				def self.wrap(message, &block)
 					if message and message.body
-						message.body = self.new(message.body, block)
+						if remaining = message.headers['content-length']
+							remaining = Integer(remaining)
+						end
+						
+						message.body = self.new(message.body, block, remaining)
 					else
 						yield
 					end
 				end
 				
-				def initialize(body, callback)
+				def initialize(body, callback, remaining = nil)
 					super(body)
 					
 					@callback = callback
+					@remaining = remaining
 				end
 				
 				def stop(*)
@@ -46,7 +51,13 @@ module Async
 				end
 				
 				def read
-					unless chunk = super
+					if chunk = super
+						@remaining -= chunk.bytesize if @remaining
+					else
+						if @remaining and @remaining > 0
+							raise EOFError, "Expected #{@remaining} more bytes!"
+						end
+						
 						@callback.call
 					end
 					

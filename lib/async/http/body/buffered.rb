@@ -47,9 +47,9 @@ module Async
 					self.new(chunks)
 				end
 				
-				def initialize(chunks)
+				def initialize(chunks, length = nil)
 					@chunks = chunks
-					@length = nil
+					@length = length
 					
 					@index = 0
 				end

@@ -85,19 +85,25 @@ module Async
 					def send_response(response)
 						if response.nil?
 							@stream.send_headers(nil, NO_RESPONSE, ::HTTP::Protocol::HTTP2::END_STREAM)
+						elsif response.body?
+							headers = Headers::Merged.new([
+								[STATUS, response.status],
+							])
+							
+							if length = response.body.length
+								headers << [[CONTENT_LENGTH, length]]
+							end
+							
+							headers << response.headers
+							
+							@stream.send_headers(nil, headers)
+							@stream.send_body(response.body)
 						else
 							headers = Headers::Merged.new([
 								[STATUS, response.status],
-								# I'm not sure whether this is a good idea. Maybe it's okay for errors?
-								# [REASON, response.reason],
 							], response.headers)
 							
-							if response.body.nil? or response.body.empty?
-								@stream.send_headers(nil, headers, ::HTTP::Protocol::HTTP2::END_STREAM)
-							else
-								@stream.send_headers(nil, headers)
-								@stream.send_body(response.body)
-							end
+							@stream.send_headers(nil, headers, ::HTTP::Protocol::HTTP2::END_STREAM)
 						end
 					end
 				end

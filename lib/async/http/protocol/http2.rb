@@ -27,7 +27,9 @@ module Async
 			module HTTP2
 				DEFAULT_SETTINGS = {
 					::HTTP::Protocol::HTTP2::Settings::ENABLE_PUSH => 0,
-					::HTTP::Protocol::HTTP2::Settings::MAXIMUM_CONCURRENT_STREAMS => 256
+					::HTTP::Protocol::HTTP2::Settings::MAXIMUM_CONCURRENT_STREAMS => 256,
+					::HTTP::Protocol::HTTP2::Settings::MAXIMUM_FRAME_SIZE => 0x100000,
+					::HTTP::Protocol::HTTP2::Settings::INITIAL_WINDOW_SIZE => 0x7FFFFFFF,
 				}
 				
 				def self.client(stream, settings = DEFAULT_SETTINGS)

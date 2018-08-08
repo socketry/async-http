@@ -18,6 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+require 'async/notification'
+
 module Async
 	module HTTP
 		# Pool behaviours
@@ -36,22 +38,23 @@ module Async
 		#
 		class Pool
 			def initialize(limit = nil, &block)
-				@available = {} # resource => count
-				@waiting = []
+				@resources = {} # resource => count
+				@available = Async::Notification.new
 				
 				@limit = limit
+				@active = 0
 				
 				@constructor = block
 			end
 			
-			attr :available
+			attr :resources
 			
 			def empty?
-				@available.empty?
+				@resources.empty?
 			end
 			
 			def acquire
-				resource = wait_for_next_available
+				resource = wait_for_resource
 				
 				return resource unless block_given?
 				
@@ -62,7 +65,7 @@ module Async
 				end
 			end
 			
-			# Make the resource available and let waiting tasks know that there is something available.
+			# Make the resource resources and let waiting tasks know that there is something resources.
 			def release(resource)
 				# A resource that is not good should also not be reusable.
 				if resource.reusable?
@@ -73,36 +76,49 @@ module Async
 			end
 			
 			def close
-				@available.each_key(&:close)
-				@available.clear
+				@resources.each_key(&:close)
+				@resources.clear
+				
+				@active = 0
+			end
+			
+			def to_s
+				"\#<#{self.class} resources=#{availability_string} limit=#{@limit}>"
 			end
 			
 			protected
 			
+			def availability_string
+				@resources.collect{|resource,usage| "#{usage}/#{resource.multiplex}#{resource.good? ? '' : '*'}"}.join(";")
+			end
+			
 			def reuse(resource)
 				Async.logger.debug(self) {"Reuse #{resource}"}
 				
-				@available[resource] -= 1
+				@resources[resource] -= 1
 				
-				if task = @waiting.pop
-					task.resume
-				end
+				@available.signal
 			end
 			
 			def retire(resource)
 				Async.logger.debug(self) {"Retire #{resource}"}
 				
-				@available.delete(resource)
+				@resources.delete(resource)
+				
+				@active -= 1
 				
 				resource.close
+				
+				@available.signal
 			end
 			
-			def wait_for_next_available
-				# If we fail to create a resource (below), we will end up waiting for one to become available.
-				until resource = next_available
-					@waiting << Fiber.current
-					Task.yield
+			def wait_for_resource
+				# If we fail to create a resource (below), we will end up waiting for one to become resources.
+				until resource = available_resource
+					@available.wait
 				end
+				
+				Async.logger.debug(self) {"Wait for resource #{resource}"}
 				
 				return resource
 			end
@@ -110,18 +126,19 @@ module Async
 			def create
 				# This might return nil, which means creating the resource failed.
 				if resource = @constructor.call
-					@available[resource] = 1
+					@resources[resource] = 1
 				end
 				
 				return resource
 			end
 			
-			def next_available
-				@available.each do |resource, count|
+			def available_resource
+				# This is a linear search... not idea, but simple for now.
+				@resources.each do |resource, count|
 					if count < resource.multiplex
 						# We want to use this resource... but is it good?
 						if resource.good?
-							@available[resource] += 1
+							@resources[resource] += 1
 							
 							return resource
 						else
@@ -130,11 +147,15 @@ module Async
 					end
 				end
 				
-				if !@limit or @available.count < @limit
-					Async.logger.debug(self) {"No available resources, allocating new one..."}
+				if !@limit or @active < @limit
+					Async.logger.debug(self) {"No resources resources, allocating new one..."}
+					
+					@active += 1
 					
 					return create
 				end
+				
+				return nil
 			end
 		end
 	end

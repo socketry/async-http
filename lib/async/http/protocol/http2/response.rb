@@ -26,9 +26,9 @@ module Async
 			module HTTP2
 				class Response < Protocol::Response
 					def initialize(protocol, stream_id)
-						@input = Body::Writable.new
+						@input = nil
 						
-						super(protocol.version, nil, nil, Headers.new, @input)
+						super(protocol.version, nil, nil, Headers.new, nil)
 						
 						@protocol = protocol
 						@stream = Stream.new(self, protocol, stream_id)
@@ -56,8 +56,8 @@ module Async
 							end
 						end
 						
-						if end_stream
-							@input.finish
+						unless end_stream
+							@body = @input = Body::Writable.new
 						end
 						
 						# We are ready for processing:

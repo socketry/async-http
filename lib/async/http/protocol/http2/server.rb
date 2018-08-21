@@ -47,7 +47,13 @@ module Async
 						return request.stream
 					end
 					
-					def receive_requests(task: Task.current)
+					def stop_connection
+						super
+						
+						@requests.enqueue nil
+					end
+					
+					def receive_requests
 						while request = @requests.dequeue
 							@count += 1
 							
@@ -56,6 +62,7 @@ module Async
 								response = yield(request)
 							rescue
 								request.stream.send_reset_stream(::HTTP::Protocol::HTTP2::INTERNAL_ERROR)
+								
 								Async.logger.error(request) {$!}
 							else
 								request.send_response(response)

@@ -47,16 +47,23 @@ module Async
 						@reader ||= read_in_background
 					end
 					
+					def stop_connection
+						@reader = nil
+					end
+					
 					def read_in_background(task: Task.current)
 						task.async do |nested_task|
 							nested_task.annotate("#{version} reading data")
 							
 							begin
-								while !self.closed?
+								# Even thought the connection might be logically closed, we are not done until all HTTP/2 streams are closed or the underlying I/O is closed.
+								while !@stream.closed?
 									self.read_frame
 								end
 							rescue
 								Async.logger.debug(self) {$!}
+							ensure
+								stop_connection
 							end
 						end
 					end
@@ -67,7 +74,6 @@ module Async
 					
 					attr :count
 					
-					# Only one simultaneous connection at a time.
 					def multiplex
 						@remote_settings.maximum_concurrent_streams
 					end

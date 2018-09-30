@@ -136,8 +136,8 @@ module Async
 				# This is a linear search... not idea, but simple for now.
 				@resources.each do |resource, count|
 					if count < resource.multiplex
-						# We want to use this resource... but is it good?
-						if resource.good?
+						# We want to use this resource... but is it connected?
+						if resource.connected?
 							@resources[resource] += 1
 							
 							return resource

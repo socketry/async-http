@@ -18,57 +18,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'connection'
-require_relative 'request'
-
-require 'http/protocol/http2/server'
+require_relative '../response'
 
 module Async
 	module HTTP
 		module Protocol
-			module HTTP2
-				class Server < ::HTTP::Protocol::HTTP2::Server
-					include Connection
-					
-					def initialize(stream, *args)
-						@stream = stream
+			module HTTP1
+				class Response < Protocol::Response
+					def initialize(protocol, request)
+						super(*protocol.read_response(request.method))
 						
-						framer = ::HTTP::Protocol::HTTP2::Framer.new(stream)
-						
-						super(framer, *args)
-						
-						@requests = Async::Queue.new
-					end
-					
-					attr :requests
-					
-					def create_stream(stream_id)
-						request = Request.new(self, stream_id)
-						
-						return request.stream
-					end
-					
-					def stop_connection
-						super
-						
-						@requests.enqueue nil
-					end
-					
-					def each
-						while request = @requests.dequeue
-							@count += 1
-							
-							# We need to close the stream if the user code blows up while generating a response:
-							response = begin
-								response = yield(request)
-							rescue
-								request.stream.send_reset_stream(::HTTP::Protocol::HTTP2::INTERNAL_ERROR)
-								
-								Async.logger.error(request) {$!}
-							else
-								request.send_response(response)
-							end
-						end
+						@protocol = protocol
 					end
 				end
 			end

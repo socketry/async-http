@@ -27,37 +27,28 @@ module Async
 	module HTTP
 		module Protocol
 			# A server that supports both HTTP1.0 and HTTP1.1 semantics by detecting the version of the request.
-			class HTTP1 < Async::IO::Protocol::Line
-				HANDLERS = {
-					"HTTP/1.0" => HTTP10,
-					"HTTP/1.1" => HTTP11,
-				}
-				
-				def initialize(stream)
-					super(stream, HTTP11::CRLF)
+			module HTTP1
+				def self.client(*args)
+					HTTP11.client(*args)
 				end
 				
-				class << self
-					def client(*args)
-						HTTP11.new(*args)
-					end
-					
-					alias server new
+				def self.server(*args)
+					HTTP11.server(*args)
 				end
-				
-				def create_handler(version)
-					if klass = HANDLERS[version]
-						klass.server(@stream)
-					else
-						raise RuntimeError, "Unsupported protocol version #{version}"
-					end
-				end
-				
-				def receive_requests(&block)
-					method, path, version = self.peek_line.split(/\s+/, 3)
-					
-					create_handler(version).receive_requests(&block)
-				end
+				# 
+				# def create_handler(version)
+				# 	if klass = HANDLERS[version]
+				# 		klass.server(@stream)
+				# 	else
+				# 		raise RuntimeError, "Unsupported protocol version #{version}"
+				# 	end
+				# end
+				# 
+				# def receive_requests(&block)
+				# 	method, path, version = self.peek_line.split(/\s+/, 3)
+				# 
+				# 	create_handler(version).receive_requests(&block)
+				# end
 			end
 		end
 	end

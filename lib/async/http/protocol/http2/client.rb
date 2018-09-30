@@ -34,6 +34,7 @@ module Async
 						@stream = stream
 						
 						framer = ::HTTP::Protocol::HTTP2::Framer.new(@stream)
+						
 						super(framer, *args)
 					end
 					

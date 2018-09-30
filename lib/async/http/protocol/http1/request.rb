@@ -18,57 +18,25 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'connection'
-require_relative 'request'
-
-require 'http/protocol/http2/server'
+require_relative '../request'
 
 module Async
 	module HTTP
 		module Protocol
-			module HTTP2
-				class Server < ::HTTP::Protocol::HTTP2::Server
-					include Connection
-					
-					def initialize(stream, *args)
-						@stream = stream
+			module HTTP1
+				class Request < Protocol::Request
+					def initialize(protocol)
+						super(*protocol.read_request)
 						
-						framer = ::HTTP::Protocol::HTTP2::Framer.new(stream)
-						
-						super(framer, *args)
-						
-						@requests = Async::Queue.new
+						@protocol = protocol
 					end
 					
-					attr :requests
-					
-					def create_stream(stream_id)
-						request = Request.new(self, stream_id)
-						
-						return request.stream
+					def hijack?
+						true
 					end
 					
-					def stop_connection
-						super
-						
-						@requests.enqueue nil
-					end
-					
-					def each
-						while request = @requests.dequeue
-							@count += 1
-							
-							# We need to close the stream if the user code blows up while generating a response:
-							response = begin
-								response = yield(request)
-							rescue
-								request.stream.send_reset_stream(::HTTP::Protocol::HTTP2::INTERNAL_ERROR)
-								
-								Async.logger.error(request) {$!}
-							else
-								request.send_response(response)
-							end
-						end
+					def hijack
+						@protocol.hijack
 					end
 				end
 			end

@@ -1,4 +1,4 @@
-# Copyright, 2018, by Samuel G. D. Williams. <http://www.codeotaku.com>
+# Copyright, 2017, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,57 +18,74 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'connection'
 require_relative 'request'
+require_relative 'response'
 
-require 'http/protocol/http2/server'
+require_relative '../../body/chunked'
+require_relative '../../body/fixed'
 
 module Async
 	module HTTP
 		module Protocol
-			module HTTP2
-				class Server < ::HTTP::Protocol::HTTP2::Server
-					include Connection
+			module HTTP1
+				module Connection
+					CRLF = "\r\n"
 					
-					def initialize(stream, *args)
-						@stream = stream
-						
-						framer = ::HTTP::Protocol::HTTP2::Framer.new(stream)
-						
-						super(framer, *args)
-						
-						@requests = Async::Queue.new
+					attr :stream
+					
+					def read_line
+						@stream.read_until(CRLF) or raise EOFError
 					end
 					
-					attr :requests
-					
-					def create_stream(stream_id)
-						request = Request.new(self, stream_id)
+					# @return [Async::Wrapper] the underlying non-blocking IO.
+					def hijack
+						@persistent = false
 						
-						return request.stream
+						@stream.flush
+						
+						return @stream.io
 					end
 					
-					def stop_connection
-						super
-						
-						@requests.enqueue nil
+					def peer
+						@stream.io
 					end
 					
-					def each
-						while request = @requests.dequeue
-							@count += 1
-							
-							# We need to close the stream if the user code blows up while generating a response:
-							response = begin
-								response = yield(request)
-							rescue
-								request.stream.send_reset_stream(::HTTP::Protocol::HTTP2::INTERNAL_ERROR)
-								
-								Async.logger.error(request) {$!}
-							else
-								request.send_response(response)
-							end
-						end
+					attr :count
+					
+					def multiplex
+						1
+					end
+					
+					# Can we use this connection to make requests?
+					def connected?
+						@stream.connected?
+					end
+					
+					def reusable?
+						!@stream.closed?
+						# !(self.closed? || @stream.closed?)
+					end
+					
+					def close
+						Async.logger.debug(self) {"Closing connection"}
+						
+						@stream.close
+					end
+					
+					def read_chunked_body
+						Body::Chunked.new(self)
+					end
+					
+					def read_fixed_body(length)
+						Body::Fixed.new(@stream, length)
+					end
+					
+					def read_tunnel_body
+						read_remainder_body
+					end
+					
+					def read_remainder_body
+						Body::Remainder.new(@stream)
 					end
 				end
 			end

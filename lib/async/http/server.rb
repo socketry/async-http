@@ -23,7 +23,6 @@ require 'async/io/endpoint'
 require_relative 'protocol'
 require_relative 'response'
 
-
 module Async
 	module HTTP
 		class Server < Middleware
@@ -46,7 +45,7 @@ module Async
 				
 				Async.logger.debug(self) {"Incoming connnection from #{address.inspect} to #{protocol}"}
 				
-				protocol.receive_requests do |request|
+				protocol.each do |request|
 					request.remote_address = address
 					# Async.logger.debug(self) {"Incoming request from #{address.inspect}: #{request.method} #{request.path}"}
 					

@@ -1,4 +1,4 @@
-# Copyright, 2018, by Samuel G. D. Williams. <http://www.codeotaku.com>
+# Copyright, 2017, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,57 +18,35 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'connection'
-require_relative 'request'
-
-require 'http/protocol/http2/server'
+require 'http/protocol/http11/connection'
+require_relative '../http1/connection'
 
 module Async
 	module HTTP
 		module Protocol
-			module HTTP2
-				class Server < ::HTTP::Protocol::HTTP2::Server
-					include Connection
-					
-					def initialize(stream, *args)
-						@stream = stream
+			module HTTP1
+				module Client
+					# Used by the client to send requests to the remote server.
+					def call(request)
+						Async.logger.debug(self) {"#{request.method} #{request.path} #{request.headers.inspect}"}
 						
-						framer = ::HTTP::Protocol::HTTP2::Framer.new(stream)
-						
-						super(framer, *args)
-						
-						@requests = Async::Queue.new
-					end
-					
-					attr :requests
-					
-					def create_stream(stream_id)
-						request = Request.new(self, stream_id)
-						
-						return request.stream
-					end
-					
-					def stop_connection
-						super
-						
-						@requests.enqueue nil
-					end
-					
-					def each
-						while request = @requests.dequeue
-							@count += 1
-							
-							# We need to close the stream if the user code blows up while generating a response:
-							response = begin
-								response = yield(request)
-							rescue
-								request.stream.send_reset_stream(::HTTP::Protocol::HTTP2::INTERNAL_ERROR)
-								
-								Async.logger.error(request) {$!}
-							else
-								request.send_response(response)
-							end
+						# We carefully interpret https://tools.ietf.org/html/rfc7230#section-6.3.1 to implement this correctly.
+						begin
+							self.write_request(request.authority, request.method, request.path, self.version, request.headers)
+						rescue
+							# If we fail to fully write the request and body, we can retry this request.
+							raise RequestFailed.new
 						end
+						
+						# Once we start writing the body, we can't recover if the request fails. That's because the body might be generated dynamically, streaming, etc.
+						self.write_body(request.body)
+						
+						return Response.new(self, request)
+					rescue
+						# This will ensure that #reusable? returns false.
+						@stream.close
+						
+						raise
 					end
 				end
 			end

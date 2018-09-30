@@ -19,6 +19,7 @@
 # THE SOFTWARE.
 
 require_relative 'readable'
+require 'async/io/stream'
 
 module Async
 	module HTTP

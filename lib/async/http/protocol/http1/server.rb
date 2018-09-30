@@ -1,4 +1,4 @@
-# Copyright, 2018, by Samuel G. D. Williams. <http://www.codeotaku.com>
+# Copyright, 2017, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,56 +18,51 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'connection'
-require_relative 'request'
-
-require 'http/protocol/http2/server'
+require 'http/protocol/http11/connection'
+require_relative '../http1/connection'
 
 module Async
 	module HTTP
 		module Protocol
-			module HTTP2
-				class Server < ::HTTP::Protocol::HTTP2::Server
-					include Connection
-					
-					def initialize(stream, *args)
-						@stream = stream
+			module HTTP1
+				module Server
+					def next_request
+						# The default is true.
+						return nil unless @persistent
 						
-						framer = ::HTTP::Protocol::HTTP2::Framer.new(stream)
+						request = Request.new(self)
 						
-						super(framer, *args)
+						unless persistent?(request.headers)
+							@persistent = false
+						end
 						
-						@requests = Async::Queue.new
+						return request
+					rescue
+						# Bad Request
+						write_response(self.version, 400, {}, nil)
+						
+						raise
 					end
 					
-					attr :requests
-					
-					def create_stream(stream_id)
-						request = Request.new(self, stream_id)
-						
-						return request.stream
-					end
-					
-					def stop_connection
-						super
-						
-						@requests.enqueue nil
-					end
-					
-					def each
-						while request = @requests.dequeue
-							@count += 1
+					# Server loop.
+					def each(task: Task.current)
+						while request = next_request
+							response = yield(request, self)
 							
-							# We need to close the stream if the user code blows up while generating a response:
-							response = begin
-								response = yield(request)
-							rescue
-								request.stream.send_reset_stream(::HTTP::Protocol::HTTP2::INTERNAL_ERROR)
-								
-								Async.logger.error(request) {$!}
+							return if @stream.closed?
+							
+							if response
+								write_response(self.version, response.status, response.headers, response.body, request.head?)
 							else
-								request.send_response(response)
+								# If the request failed to generate a response, it was an internal server error:
+								write_response(self.version, 500, {}, nil)
 							end
+							
+							# Gracefully finish reading the request body if it was not already done so.
+							request.finish
+							
+							# This ensures we yield at least once every iteration of the loop and allow other fibers to execute.
+							task.yield
 						end
 					end
 				end

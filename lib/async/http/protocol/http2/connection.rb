@@ -79,7 +79,7 @@ module Async
 					end
 					
 					# Can we use this connection to make requests?
-					def good?
+					def connected?
 						@stream.connected?
 					end
 					

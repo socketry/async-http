@@ -24,59 +24,6 @@ require_relative 'shared_examples'
 RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 2 do
 	it_behaves_like Async::HTTP::Protocol
 	
-	context '#read_request' do
-		let(:stream) {Async::IO::Stream.new(io)}
-		subject {described_class.new(stream)}
-
-		describe "request without body" do
-			let(:request) {"GET / HTTP/1.1\r\nHost: localhost\r\nAccept: */*\r\nHeader-0: value 1\r\n"}
-			let(:io) {StringIO.new(request)}
-		
-			it "reads request" do
-				authority, method, url, version, headers, body = subject.read_request
-				
-				expect(authority).to be == 'localhost'
-				expect(method).to be == 'GET'
-				expect(url).to be == '/'
-				expect(version).to be == 'HTTP/1.1'
-				expect(headers).to be == {'accept' => ['*/*'], "header-0" => ["value 1"]}
-				expect(body).to be nil
-			end
-		end
-		
-		describe "request with fixed body" do
-			let(:request) {"GET / HTTP/1.1\r\nHost: localhost\r\nContent-Length: 11\r\n\r\nHello World"}
-			let(:io) {StringIO.new(request)}
-		
-			it "reads request" do
-				authority, method, url, version, headers, body = subject.read_request
-				
-				expect(authority).to be == 'localhost'
-				expect(method).to be == 'GET'
-				expect(url).to be == '/'
-				expect(version).to be == 'HTTP/1.1'
-				expect(headers).to be == {'content-length' => "11"}
-				expect(body.read).to be == "Hello World"
-			end
-		end
-		
-		describe "request with chunked body" do
-			let(:request) {"GET / HTTP/1.1\r\nHost: localhost\r\nTransfer-Encoding: chunked\r\n\r\nb\r\nHello World\r\n0\r\n\r\n"}
-			let(:io) {StringIO.new(request)}
-			
-			it "reads request" do
-				authority, method, url, version, headers, body = subject.read_request
-				
-				expect(authority).to be == 'localhost'
-				expect(method).to be == 'GET'
-				expect(url).to be == '/'
-				expect(version).to be == 'HTTP/1.1'
-				expect(headers).to be == {'transfer-encoding' => ['chunked']}
-				expect(body.read).to be == "Hello World"
-			end
-		end
-	end
-	
 	context 'head request' do
 		include_context Async::HTTP::Server
 		

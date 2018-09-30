@@ -19,6 +19,7 @@
 # THE SOFTWARE.
 
 require 'async/http/body/chunked'
+require 'async/io/stream'
 
 RSpec.describe Async::HTTP::Body::Chunked do
 	include_context Async::RSpec::Memory
@@ -26,7 +27,7 @@ RSpec.describe Async::HTTP::Body::Chunked do
 	let(:content) {"Hello World"}
 	let(:io) {StringIO.new("#{content.bytesize.to_s(16)}\r\n#{content}\r\n0\r\n\r\n")}
 	let(:stream) {Async::IO::Stream.new(io)}
-	let(:protocol) {Async::HTTP::Protocol::HTTP11.new(stream)}
+	let(:protocol) {Async::HTTP::Protocol::HTTP11.client(stream)}
 	subject! {described_class.new(protocol)}
 	
 	describe "#empty?" do

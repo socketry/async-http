@@ -1,4 +1,4 @@
-# Copyright, 2018, by Samuel G. D. Williams. <http://www.codeotaku.com>
+# Copyright, 2017, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,21 +18,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'http10/client'
-require_relative 'http10/server'
+require 'http/protocol/http10/connection'
+
+require_relative '../http1/connection'
+require_relative '../http1/client'
 
 module Async
 	module HTTP
 		module Protocol
 			module HTTP10
-				VERSION = "HTTP/1.0"
-				
-				def self.client(stream)
-					Client.new(stream)
-				end
-				
-				def self.server(stream)
-					Server.new(stream)
+				class Client < ::HTTP::Protocol::HTTP10::Connection
+					include HTTP1::Connection, HTTP1::Client
 				end
 			end
 		end

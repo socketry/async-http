@@ -91,7 +91,7 @@ module Async
 							])
 							
 							if length = response.body.length
-								headers << [[CONTENT_LENGTH, length]]
+								headers << [[::HTTP::Protocol::CONTENT_LENGTH, length]]
 							end
 							
 							headers << response.headers

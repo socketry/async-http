@@ -18,21 +18,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'http/protocol/http11/connection'
-require_relative '../http1/connection'
+require_relative 'connection'
 
 module Async
 	module HTTP
 		module Protocol
 			module HTTP1
-				module Server
+				class Server < Connection
 					def next_request
 						# The default is true.
 						return nil unless @persistent
 						
 						request = Request.new(self)
 						
-						unless persistent?(request.headers)
+						unless persistent?(request.version, request.headers)
 							@persistent = false
 						end
 						

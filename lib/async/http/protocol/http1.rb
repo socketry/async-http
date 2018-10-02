@@ -18,10 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'http10'
-require_relative 'http11'
-
-require_relative '../pool'
+require_relative 'http1/client'
+require_relative 'http1/server'
 
 module Async
 	module HTTP
@@ -29,26 +27,12 @@ module Async
 			# A server that supports both HTTP1.0 and HTTP1.1 semantics by detecting the version of the request.
 			module HTTP1
 				def self.client(*args)
-					HTTP11.client(*args)
+					Client.new(*args)
 				end
 				
 				def self.server(*args)
-					HTTP11.server(*args)
+					Server.new(*args)
 				end
-				# 
-				# def create_handler(version)
-				# 	if klass = HANDLERS[version]
-				# 		klass.server(@stream)
-				# 	else
-				# 		raise RuntimeError, "Unsupported protocol version #{version}"
-				# 	end
-				# end
-				# 
-				# def receive_requests(&block)
-				# 	method, path, version = self.peek_line.split(/\s+/, 3)
-				# 
-				# 	create_handler(version).receive_requests(&block)
-				# end
 			end
 		end
 	end

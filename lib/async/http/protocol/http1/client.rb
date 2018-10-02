@@ -18,14 +18,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'http/protocol/http11/connection'
-require_relative '../http1/connection'
+require_relative 'connection'
 
 module Async
 	module HTTP
 		module Protocol
 			module HTTP1
-				module Client
+				class Client < Connection
 					# Used by the client to send requests to the remote server.
 					def call(request)
 						Async.logger.debug(self) {"#{request.method} #{request.path} #{request.headers.inspect}"}

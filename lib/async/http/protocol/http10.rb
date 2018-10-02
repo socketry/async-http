@@ -18,8 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'http10/client'
-require_relative 'http10/server'
+require_relative 'http1'
 
 module Async
 	module HTTP
@@ -28,11 +27,11 @@ module Async
 				VERSION = "HTTP/1.0"
 				
 				def self.client(stream)
-					Client.new(stream)
+					HTTP1::Client.new(stream, VERSION)
 				end
 				
 				def self.server(stream)
-					Server.new(stream)
+					HTTP1::Server.new(stream, VERSION)
 				end
 			end
 		end

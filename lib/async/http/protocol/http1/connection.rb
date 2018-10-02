@@ -18,6 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+require 'http/protocol/http1/connection'
+
 require_relative 'request'
 require_relative 'response'
 
@@ -28,7 +30,7 @@ module Async
 	module HTTP
 		module Protocol
 			module HTTP1
-				module Connection
+				class Connection < ::HTTP::Protocol::HTTP1::Connection
 					CRLF = "\r\n"
 					
 					attr :stream

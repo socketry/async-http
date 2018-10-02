@@ -34,24 +34,19 @@ module Async
 					end
 				end
 				
-				# Immediately stop reading the body. May close the underlying connection. Discards body.
-				def stop(error = EOFError)
-					if self.body
-						self.body.stop(error)
-						self.body = nil
-					end
-				end
-				
 				# Gracefully finish reading the body. This will buffer the remainder of the body.
 				def finish
 					if self.body
-						self.body = self.body.close
+						self.body = self.body.finish
 					end
 				end
 				
-				# Close the connection as quickly as possible. Discards body.
-				def close
-					self.stop
+				# Close the connection as quickly as possible. Discards body. May close the underlying connection if necessary to terminate the stream.
+				def close(error = nil)
+					if self.body
+						self.body.close(error)
+						self.body = nil
+					end
 				end
 				
 				# Whether there is a body?

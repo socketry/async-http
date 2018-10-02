@@ -29,6 +29,20 @@ module Async
 					@body = body
 				end
 				
+				# The wrapped body.
+				attr :body
+				
+				# Buffer any remaining body.
+				def finish
+					@body.finish
+				end
+				
+				def close(error = nil)
+					@body.close(error)
+					
+					super
+				end
+				
 				def empty?
 					@body.empty?
 				end
@@ -37,20 +51,9 @@ module Async
 					@body.length
 				end
 				
-				# Buffer any remaining body.
-				def close
-					@body = @body.close
-					
-					return self
-				end
-				
 				# Read the next available chunk.
 				def read
 					@body.read
-				end
-				
-				def stop(error)
-					@body.stop(error)
 				end
 				
 				def inspect

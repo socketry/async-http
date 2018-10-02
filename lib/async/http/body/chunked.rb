@@ -36,9 +36,14 @@ module Async
 					@finished
 				end
 				
-				def stop(error)
-					@protocol.close
-					@finished = true
+				def close(error = nil)
+					# We only close the connection if we haven't completed reading the entire body:
+					unless @finished
+						@protocol.close
+						@finished = true
+					end
+					
+					super
 				end
 				
 				def read

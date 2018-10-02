@@ -37,10 +37,12 @@ module Async
 					@remaining == 0
 				end
 				
-				def stop(error)
+				def close(error = nil)
 					if @remaining != 0
 						@stream.close
 					end
+					
+					super
 				end
 				
 				def read
@@ -75,9 +77,11 @@ module Async
 					@stream.closed?
 				end
 				
-				def stop(error)
+				def close(error = nil)
 					# We can't really do anything in this case except close the connection.
 					@stream.close
+					
+					super
 				end
 				
 				def read

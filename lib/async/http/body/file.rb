@@ -46,6 +46,13 @@ module Async
 					end
 				end
 				
+				def close(error = nil)
+					@file.close
+					@remaining = 0
+					
+					super
+				end
+				
 				attr :offset
 				attr :length
 				
@@ -57,11 +64,6 @@ module Async
 					@file.seek(@offset)
 				end
 				
-				def close
-					@file.close
-					@remaining = 0
-				end
-				
 				def read
 					if @remaining > 0
 						amount = [@remaining, @block_size].min
@@ -70,8 +72,6 @@ module Async
 							@remaining -= chunk.bytesize
 							
 							return chunk
-						else
-							@file.close
 						end
 					end
 				end

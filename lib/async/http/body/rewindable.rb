@@ -23,7 +23,7 @@ require_relative 'wrapper'
 module Async
 	module HTTP
 		module Body
-			# A body which buffers all it's contents.
+			# A body which buffers all it's contents as it is `#read`.
 			class Rewindable < Wrapper
 				def initialize(body)
 					super(body)

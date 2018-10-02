@@ -25,9 +25,17 @@ module Async
 		module Body
 			# A generic base class for wrapping body instances. Typically you'd override `#read`.
 			class Readable
-				# Read all remaining chunks into a buffered body.
-				def close
-					Buffered.for(self)
+				# Read all remaining chunks into a buffered body and close the underlying input.
+				def finish
+					buffered = Buffered.for(self)
+					
+					self.close
+					
+					return buffered
+				end
+				
+				# The consumer can call stop to signal that the stream output has terminated.
+				def close(error = nil)
 				end
 				
 				# Will read return any data?
@@ -44,11 +52,7 @@ module Async
 					nil
 				end
 				
-				# The consumer can call stop to signal that the stream output has terminated.
-				def stop(error)
-				end
-				
-				# Enumerate all chunks until finished. If an error is thrown, #stop will be invoked.
+				# Enumerate all chunks until finished. Then invoke `#close`.
 				def each
 					return to_enum unless block_given?
 					
@@ -56,10 +60,8 @@ module Async
 						yield chunk
 						# chunk.clear
 					end
-				rescue
-					stop($!)
-					
-					raise
+				ensure
+					self.close($!)
 				end
 				
 				# Read all remaining chunks into a single binary string.

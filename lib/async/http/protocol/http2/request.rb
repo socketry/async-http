@@ -70,7 +70,7 @@ module Async
 						end
 						
 						if end_stream
-							@input.finish
+							@input.close
 						end
 					end
 					

@@ -38,12 +38,12 @@ RSpec.describe Async::HTTP::Body::Chunked do
 	
 	describe "#stop" do
 		it "closes the stream" do
-			subject.stop(:error)
+			subject.close(EOFError)
 			expect(stream).to be_closed
 		end
 		
 		it "marks body as finished" do
-			subject.stop(:error)
+			subject.close(EOFError)
 			expect(subject).to be_empty
 		end
 	end

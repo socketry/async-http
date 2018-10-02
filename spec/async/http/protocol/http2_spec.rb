@@ -52,7 +52,7 @@ RSpec.describe Async::HTTP::Protocol::HTTP2, timeout: 2 do
 					rescue
 						# puts "Response generation failed: #{$!}"
 					ensure
-						body.finish
+						body.close
 						notification.signal
 					end
 				end
@@ -63,14 +63,14 @@ RSpec.describe Async::HTTP::Protocol::HTTP2, timeout: 2 do
 		
 		let(:pool) {client.pool}
 		
-		it "should stop stream without closing connection" do
+		it "should close stream without closing connection" do
 			expect(pool).to be_empty
 			
 			response = client.get("/")
 			
 			expect(pool).to_not be_empty
 			
-			response.stop
+			response.close
 			
 			notification.wait
 			

@@ -75,7 +75,7 @@ module Async
 					end
 				end
 				
-				def stop(error)
+				def close(error = nil)
 					complete_statistics(error)
 					
 					super

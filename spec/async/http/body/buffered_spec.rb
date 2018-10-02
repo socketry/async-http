@@ -83,9 +83,9 @@ RSpec.describe Async::HTTP::Body::Buffered do
 		end
 	end
 	
-	describe "#close" do
+	describe "#finish" do
 		it "returns self" do
-			expect(subject.close).to be == subject
+			expect(subject.finish).to be == subject
 		end
 	end
 	

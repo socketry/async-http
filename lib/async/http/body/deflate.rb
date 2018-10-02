@@ -55,6 +55,12 @@ module Async
 					@output_length = 0
 				end
 				
+				def close(error = nil)
+					@stream.close unless @stream.closed?
+					
+					super
+				end
+				
 				def length
 					# We don't know the length of the output until after it's been compressed.
 					nil
@@ -69,13 +75,6 @@ module Async
 					else
 						1.0
 					end
-				end
-				
-				def stop(error)
-					# There are two ways for the stream to be closed. Either #read returns nil or #stop is called.
-					@stream.close unless @stream.closed?
-					
-					super
 				end
 				
 				def inspect

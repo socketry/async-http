@@ -42,7 +42,7 @@ RSpec.shared_examples Async::HTTP::Body do
 					output.write(chunk.reverse)
 				end
 				
-				output.finish
+				output.close
 			end
 			
 			Async::HTTP::Response[200, {}, output]
@@ -56,7 +56,7 @@ RSpec.shared_examples Async::HTTP::Body do
 		
 		reactor.async do |task|
 			output.write("Hello World!")
-			output.finish
+			output.close
 		end
 		
 		response = client.post("/", {}, output)
@@ -81,7 +81,7 @@ RSpec.shared_examples Async::HTTP::Body do
 					notification.wait
 				end
 				
-				body.finish
+				body.close
 			end
 			
 			Async::HTTP::Response[200, {}, body]

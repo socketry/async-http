@@ -31,7 +31,7 @@ RSpec.describe Async::HTTP::Body::Deflate do
 	
 	it "should round-trip data" do
 		body.write("Hello World!")
-		body.finish
+		body.close
 		
 		expect(decompressed_body.join).to be == "Hello World!"
 	end
@@ -39,7 +39,7 @@ RSpec.describe Async::HTTP::Body::Deflate do
 	it "should read chunks" do
 		body.write("Hello ")
 		body.write("World!")
-		body.finish
+		body.close
 		
 		expect(body.read).to be == "Hello "
 		expect(body.read).to be == "World!"
@@ -49,7 +49,7 @@ RSpec.describe Async::HTTP::Body::Deflate do
 	it "should round-trip chunks" do
 		body.write("Hello ")
 		body.write("World!")
-		body.finish
+		body.close
 		
 		expect(decompressed_body.read).to be == "Hello "
 		expect(decompressed_body.read).to be == "World!"

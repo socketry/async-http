@@ -54,16 +54,16 @@ module Async
 					@index = 0
 				end
 				
+				def finish
+					self
+				end
+				
 				def length
 					@length ||= @chunks.inject(0) {|sum, chunk| sum + chunk.bytesize}
 				end
 				
 				def empty?
 					@index >= @chunks.length
-				end
-				
-				def close
-					self
 				end
 				
 				def read

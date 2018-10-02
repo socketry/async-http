@@ -55,7 +55,7 @@ RSpec.describe Async::HTTP::Body::Writable do
 				subject.write("#{i}")
 			end
 			
-			subject.finish
+			subject.close
 			
 			expect(subject.join).to be == "012"
 		end
@@ -67,7 +67,7 @@ RSpec.describe Async::HTTP::Body::Writable do
 				subject.write("Hello World #{i}")
 			end
 			
-			subject.finish
+			subject.close
 			
 			subject.each.with_index do |chunk, i|
 				expect(chunk).to be == "Hello World #{i}"
@@ -116,7 +116,7 @@ RSpec.describe Async::HTTP::Body::Writable do
 			end
 			
 			subject.write("Hello World!")
-			subject.finish
+			subject.close
 			
 			expect(subject).to_not be_empty
 			

@@ -27,13 +27,30 @@ module Async
 		module Body
 			# A dynamic body which you can write to and read from.
 			class Writable < Readable
+				class Closed < StandardError
+				end
+				
 				def initialize
 					@queue = Async::Queue.new
 					
 					@count = 0
 					
 					@finished = false
-					@stopped = nil
+					
+					@closed = false
+					@error = nil
+				end
+				
+				# Stop generating output; cause the next call to write to fail with the given error.
+				def close(error = nil)
+					unless @closed
+						@queue.enqueue(nil)
+						
+						@closed = true
+						@error = error
+					end
+					
+					super
 				end
 				
 				# Has the producer called #finish and has the reader consumed the nil token?
@@ -43,11 +60,6 @@ module Async
 				
 				# Read the next available chunk.
 				def read
-					# I'm not sure if this is a good idea.
-					# if @stopped
-					# 	raise @stopped
-					# end
-					
 					return if @finished
 					
 					unless chunk = @queue.dequeue
@@ -57,17 +69,12 @@ module Async
 					return chunk
 				end
 				
-				# Stop generating output; cause the next call to write to fail with the given error.
-				def stop(error)
-					@stopped ||= error
-				end
-				
 				# Write a single chunk to the body. Signal completion by calling `#finish`.
 				def write(chunk)
 					# If the reader breaks, the writer will break.
 					# The inverse of this is less obvious (*)
-					if @stopped
-						raise @stopped
+					if @closed
+						raise(@error || Closed)
 					end
 					
 					# TODO should this yield if the queue is full?
@@ -77,11 +84,6 @@ module Async
 				end
 				
 				alias << write
-				
-				# Signal that output has finished. This must be called at least once.
-				def finish
-					@queue.enqueue(nil)
-				end
 				
 				def inspect
 					"\#<#{self.class} #{@count} chunks written#{@finished ? ', finished' : ''}>"

@@ -44,7 +44,7 @@ module Async
 					@remaining = remaining
 				end
 				
-				def stop(*)
+				def close(*)
 					super
 					
 					@callback.call

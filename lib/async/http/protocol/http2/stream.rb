@@ -56,7 +56,10 @@ module Async
 						elsif chunk = @body.read
 							# There was a new chunk of data to send
 						else
-							@body = nil
+							if @body
+								@body.close
+								@body = nil
+							end
 							
 							# @body.read above might take a while and a stream reset might be received in the mean time.
 							unless closed?
@@ -109,7 +112,7 @@ module Async
 						error_code = super
 						
 						if @body
-							@body.stop(EOFError.new(error_code))
+							@body.close(EOFError.new(error_code))
 							@body = nil
 						end
 						

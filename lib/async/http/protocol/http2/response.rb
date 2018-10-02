@@ -70,9 +70,9 @@ module Async
 						end
 						
 						if end_stream
-							@input.finish
+							@input.close
 						end
-					rescue EOFError
+					rescue
 						@stream.send_reset_stream(0)
 					end
 					

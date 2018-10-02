@@ -20,3 +20,22 @@
 
 require_relative 'body/writable'
 require_relative 'body/buffered'
+
+module Async
+	module HTTP
+		# These classes implement a general IO model for streaming HTTP bodies.
+		module Body
+			# The implementation assumes a sequential unbuffered stream of data.
+			# class Body
+			# 	def each -> yield(String | nil)
+			# 	def read -> String | nil
+			# 	def join -> String
+			
+			# Why are there two ways to "close" a body?
+			# - #stop is used to signal an immediate failure, i.e. there was an error, and we don't want
+			# 	def finish(error = nil)
+			# 	def close -> 
+			# end
+		end
+	end
+end

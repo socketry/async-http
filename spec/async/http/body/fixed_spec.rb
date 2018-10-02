@@ -36,13 +36,13 @@ RSpec.describe Async::HTTP::Body::Fixed do
 	
 	describe "#stop" do
 		it "closes the stream" do
-			subject.stop(:error)
+			subject.close(EOFError)
 			expect(stream).to be_closed
 		end
 		
 		it "doesn't close the stream when EOF was reached" do
 			subject.read
-			subject.stop(:error)
+			subject.close(EOFError)
 			expect(stream).not_to be_closed
 		end
 	end

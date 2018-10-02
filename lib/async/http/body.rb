@@ -31,10 +31,8 @@ module Async
 			# 	def read -> String | nil
 			# 	def join -> String
 			
-			# Why are there two ways to "close" a body?
-			# - #stop is used to signal an immediate failure, i.e. there was an error, and we don't want
-			# 	def finish(error = nil)
-			# 	def close -> 
+			# 	def finish -> buffer the stream and close it.
+			# 	def close(error = nil) -> close the stream immediately.
 			# end
 		end
 	end

@@ -52,8 +52,9 @@ module Async
 					# If this returns nil, we assume that the connection has been hijacked.
 					self.call(request)
 				end
-			rescue EOFError, Errno::ECONNRESET, Errno::EPIPE
+			rescue EOFError, Errno::ECONNRESET, Errno::EPIPE, Errno::EPROTOTYPE
 				# Sometimes client will disconnect without completing a result or reading the entire buffer. That means we are done.
+				# Errno::EPROTOTYPE is a bug with Darwin. It happens because the socket is lazily created (in Darwin).
 			end
 			
 			def run

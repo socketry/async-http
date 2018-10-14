@@ -49,7 +49,6 @@ RSpec.describe Async::HTTP::ContentEncoding, timeout: 5 do
 			expect(response.headers['content-encoding']).to be == ['gzip']
 			expect(response.read).to be == "Hello World!"
 			
-			response.finish
 			client.close
 		end
 	end
@@ -80,7 +79,6 @@ RSpec.describe Async::HTTP::ContentEncoding, timeout: 5 do
 			expect(response.headers).to_not include('content-encoding')
 			expect(response.read).to be == "Hello World!"
 			
-			response.finish
 			client.close
 		end
 	end
@@ -113,7 +111,6 @@ RSpec.describe Async::HTTP::ContentEncoding, timeout: 5 do
 			expect(response.headers['content-encoding']).to be == ['identity']
 			expect(response.read).to be == "Hello World!"
 			
-			response.finish
 			client.close
 		end
 	end

@@ -81,7 +81,6 @@ RSpec.describe Async::HTTP::Client, timeout: 5 do
 			expect(response.headers['content-encoding']).to be == ['gzip']
 			expect(response.read).to be_start_with('<!DOCTYPE html>')
 			
-			response.finish
 			client.close
 		end
 	end

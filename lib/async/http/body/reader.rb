@@ -24,23 +24,33 @@ module Async
 			# General operations for interacting with a request or response body.
 			module Reader
 				# Read chunks from the body.
+				# @yield [String] read chunks from the body.
 				def each(&block)
 					if @body
 						@body.each(&block)
+						@body = nil
 					end
 				end
 				
 				# Reads the entire request/response body.
+				# @return [String] the entire body as a string.
 				def read
 					if @body
-						@body.join
+						buffer = @body.join
+						@body = nil
+						
+						return buffer
 					end
 				end
 				
 				# Gracefully finish reading the body. This will buffer the remainder of the body.
+				# @return [Buffered] buffers the entire body.
 				def finish
 					if @body
-						@body = @body.finish
+						body = @body.finish
+						@body = nil
+						
+						return body
 					end
 				end
 				

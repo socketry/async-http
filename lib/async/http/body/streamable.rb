@@ -45,9 +45,13 @@ module Async
 				end
 				
 				def close(*)
-					super
-					
-					@callback.call
+					if @body
+						super
+						
+						@callback.call
+						
+						@body = nil
+					end
 				end
 				
 				def read
@@ -57,8 +61,6 @@ module Async
 						if @remaining and @remaining > 0
 							raise EOFError, "Expected #{@remaining} more bytes!"
 						end
-						
-						@callback.call
 					end
 					
 					return chunk

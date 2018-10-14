@@ -52,7 +52,7 @@ module Async
 					nil
 				end
 				
-				# Enumerate all chunks until finished. Then invoke `#close`.
+				# Enumerate all chunks until finished, then invoke `#close`.
 				def each
 					return to_enum unless block_given?
 					
@@ -64,7 +64,7 @@ module Async
 					self.close($!)
 				end
 				
-				# Read all remaining chunks into a single binary string.
+				# Read all remaining chunks into a single binary string using `#each`.
 				def join
 					buffer = IO::Buffer.new
 					

@@ -93,8 +93,6 @@ module Async
 			end
 			
 			def reuse(resource)
-				Async.logger.debug(self) {"Reuse #{resource}"}
-				
 				@resources[resource] -= 1
 				
 				@available.signal

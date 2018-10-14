@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
-
-$LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
-$LOAD_PATH.unshift(File.expand_path("../../http-protocol/lib", __dir__))
+# 
+# $LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
+# $LOAD_PATH.unshift(File.expand_path("../../http-protocol/lib", __dir__))
 
 require 'async'
 require 'async/logger'

@@ -1,0 +1,54 @@
+GEM
+  specs:
+    async (1.10.3)
+      nio4r (~> 2.3)
+      timers (~> 4.1)
+    async-container (0.6.1)
+      async (~> 1.0)
+      async-io (~> 1.4)
+    async-http (0.33.0)
+      async (~> 1.6)
+      async-io (~> 1.16)
+      http-protocol (~> 0.6.0)
+    async-io (1.16.1)
+      async (~> 1.3)
+    coderay (1.1.2)
+    falcon (0.18.13)
+      async-container (~> 0.6.0)
+      async-http (~> 0.33.0)
+      async-io (~> 1.9)
+      http-protocol (~> 0.6.0)
+      localhost (~> 1.1)
+      rack (>= 1.0)
+      samovar (~> 1.3)
+    hitimes (1.3.0)
+    http-hpack (0.1.1)
+    http-protocol (0.6.0)
+      http-hpack (~> 0.1.0)
+    localhost (1.1.4)
+    mapping (1.1.1)
+    method_source (0.9.0)
+    nio4r (2.3.1)
+    pry (0.11.3)
+      coderay (~> 1.1.0)
+      method_source (~> 0.9.0)
+    rack (2.0.5)
+    rainbow (2.2.2)
+      rake
+    rake (12.3.1)
+    samovar (1.9.0)
+      mapping (~> 1.0)
+      rainbow (~> 2.0)
+    timers (4.1.2)
+      hitimes
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  falcon
+  pry
+  rack
+
+BUNDLED WITH
+   1.16.5

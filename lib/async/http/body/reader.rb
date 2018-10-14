@@ -21,31 +21,34 @@
 module Async
 	module HTTP
 		module Body
+			# General operations for interacting with a request or response body.
 			module Reader
 				# Read chunks from the body.
 				def each(&block)
-					self.body.each(&block)
+					if @body
+						@body.each(&block)
+					end
 				end
 				
 				# Reads the entire request/response body.
 				def read
-					if self.body
-						self.body.join
+					if @body
+						@body.join
 					end
 				end
 				
 				# Gracefully finish reading the body. This will buffer the remainder of the body.
 				def finish
-					if self.body
-						self.body = self.body.finish
+					if @body
+						@body = @body.finish
 					end
 				end
 				
 				# Close the connection as quickly as possible. Discards body. May close the underlying connection if necessary to terminate the stream.
 				def close(error = nil)
-					if self.body
-						self.body.close(error)
-						self.body = nil
+					if @body
+						@body.close(error)
+						@body = nil
 					end
 				end
 				

@@ -21,6 +21,7 @@
 require 'async/http/client'
 require 'async/http/server'
 require 'async/http/url_endpoint'
+require 'tempfile'
 
 RSpec.shared_examples_for Async::HTTP::Protocol do
 	include_context Async::HTTP::Server
@@ -41,10 +42,20 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		
 		context 'GET' do
 			let(:response) {client.get("/")}
+			let(:expected) {"GET #{protocol::VERSION}"}
 			
 			it "is successful" do
 				expect(response).to be_success
-				expect(response.read).to be == "GET #{protocol::VERSION}"
+				expect(response.read).to eq expected
+			end
+			
+			let(:tempfile) {Tempfile.new}
+			
+			it "can save to disk" do
+				response.save(tempfile.path)
+				expect(tempfile.read).to eq expected
+				
+				tempfile.close
 			end
 			
 			it "has remote-address header" do

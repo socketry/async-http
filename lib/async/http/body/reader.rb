@@ -54,6 +54,15 @@ module Async
 					end
 				end
 				
+				# Write the body of the response to the given file path.
+				def save(path, mode = ::File::WRONLY, *args)
+					::File.open(path, mode, *args) do |file|
+						self.each do |chunk|
+							file.write(chunk)
+						end
+					end
+				end
+				
 				# Close the connection as quickly as possible. Discards body. May close the underlying connection if necessary to terminate the stream.
 				def close(error = nil)
 					if @body

@@ -70,12 +70,28 @@ module Async
 				secure? ? 443 : 80
 			end
 			
+			def default_port?
+				port == default_port
+			end
+			
 			def port
 				@options[:port] || @url.port || default_port
 			end
 			
 			def hostname
 				@options[:hostname] || @url.hostname
+			end
+			
+			def authority
+				if default_port?
+					hostname
+				else
+					"#{hostname}:#{port}"
+				end
+			end
+			
+			def path
+				@url.request_uri
 			end
 			
 			DEFAULT_ALPN_PROTOCOLS = ['h2', 'http/1.1'].freeze

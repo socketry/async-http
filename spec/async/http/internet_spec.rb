@@ -1,4 +1,4 @@
-# Copyright, 2017, by Samuel G. D. Williams. <http://www.codeotaku.com>
+# Copyright, 2018, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,58 +18,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-module Async
-	module HTTP
-		GET = 'GET'.freeze
-		HEAD = 'HEAD'.freeze
-		POST = 'POST'.freeze
-		PUT = 'PUT'.freeze
-		PATCH = 'PATCH'.freeze
-		DELETE = 'DELETE'.freeze
-		CONNECT = 'CONNECT'.freeze
+require 'async/http/internet'
+require 'async/reactor'
+
+RSpec.describe Async::HTTP::Internet, timeout: 5 do
+	include_context Async::RSpec::Reactor
+	
+	it "can fetch remote website" do
+		response = subject.get("https://www.codeotaku.com/index")
 		
-		VERBS = [GET, HEAD, POST, PUT, PATCH, DELETE, CONNECT].freeze
+		expect(response).to be_success
 		
-		module Methods
-			VERBS.each do |verb|
-				define_method(verb.downcase) do |location, headers = [], body = []|
-					self.call(Request[verb, location.to_str, headers, body])
-				end
-			end
-		end
-		
-		class Middleware
-			def initialize(app)
-				@app = app
-			end
-			
-			def close
-				@app.close
-			end
-			
-			include Methods
-			
-			def call(request)
-				@app.call(request)
-			end
-			
-			module Okay
-				def self.close
-				end
-				
-				def self.call(request)
-					Response[200, {}, []]
-				end
-			end
-			
-			module HelloWorld
-				def self.close
-				end
-				
-				def self.call(request)
-					Response[200, {'content-type' => 'text/plain'}, ["Hello World!"]]
-				end
-			end
-		end
+		subject.close
 	end
 end

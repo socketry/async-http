@@ -1,4 +1,4 @@
-# Copyright, 2017, by Samuel G. D. Williams. <http://www.codeotaku.com>
+# Copyright, 2018, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,56 +18,36 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+require_relative 'url_endpoint'
+require_relative 'middleware'
+
 module Async
 	module HTTP
-		GET = 'GET'.freeze
-		HEAD = 'HEAD'.freeze
-		POST = 'POST'.freeze
-		PUT = 'PUT'.freeze
-		PATCH = 'PATCH'.freeze
-		DELETE = 'DELETE'.freeze
-		CONNECT = 'CONNECT'.freeze
-		
-		VERBS = [GET, HEAD, POST, PUT, PATCH, DELETE, CONNECT].freeze
-		
-		module Methods
-			VERBS.each do |verb|
-				define_method(verb.downcase) do |location, headers = [], body = []|
-					self.call(Request[verb, location.to_str, headers, body])
-				end
+		class Internet
+			def initialize
+				@clients = {}
 			end
-		end
-		
-		class Middleware
-			def initialize(app)
-				@app = app
+			
+			def call(method, url, headers = [], body = nil)
+				endpoint = URLEndpoint.parse(url)
+				
+				client = @clients.fetch(endpoint) do
+					@clients[endpoint] = Client.new(endpoint)
+				end
+				
+				request = Request.new(endpoint.authority, method, endpoint.path, nil, headers, body)
+				
+				return client.call(request)
 			end
 			
 			def close
-				@app.close
+				@clients.each_value(&:close)
+				@clients.clear
 			end
 			
-			include Methods
-			
-			def call(request)
-				@app.call(request)
-			end
-			
-			module Okay
-				def self.close
-				end
-				
-				def self.call(request)
-					Response[200, {}, []]
-				end
-			end
-			
-			module HelloWorld
-				def self.close
-				end
-				
-				def self.call(request)
-					Response[200, {'content-type' => 'text/plain'}, ["Hello World!"]]
+			VERBS.each do |verb|
+				define_method(verb.downcase) do |url, headers = [], body = nil|
+					self.call(verb, url.to_str, headers, body)
 				end
 			end
 		end

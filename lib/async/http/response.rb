@@ -72,7 +72,7 @@ module Async
 				status == 500
 			end
 			
-			def self.[](status, headers = {}, body = [])
+			def self.[](status, headers = [], body = nil)
 				body = Body::Buffered.wrap(body)
 				
 				self.new(nil, status, nil, headers, body)

@@ -18,8 +18,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+require_relative 'client'
 require_relative 'url_endpoint'
 require_relative 'middleware'
+require_relative 'body/buffered'
 
 module Async
 	module HTTP
@@ -34,6 +36,8 @@ module Async
 				client = @clients.fetch(endpoint) do
 					@clients[endpoint] = Client.new(endpoint)
 				end
+				
+				body = Body::Buffered.wrap(body)
 				
 				request = Request.new(endpoint.authority, method, endpoint.path, nil, headers, body)
 				

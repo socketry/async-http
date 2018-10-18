@@ -55,10 +55,12 @@ module Async
 				end
 				
 				# Write the body of the response to the given file path.
-				def save(path, mode = ::File::WRONLY, *args)
-					::File.open(path, mode, *args) do |file|
-						self.each do |chunk|
-							file.write(chunk)
+				def save(path, mode = ::File::WRONLY|::File::CREAT, *args)
+					if @body
+						::File.open(path, mode, *args) do |file|
+							self.each do |chunk|
+								file.write(chunk)
+							end
 						end
 					end
 				end

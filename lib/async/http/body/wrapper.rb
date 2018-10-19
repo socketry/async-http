@@ -55,10 +55,6 @@ module Async
 				def read
 					@body.read
 				end
-				
-				def inspect
-					return @body.inspect
-				end
 			end
 		end
 	end

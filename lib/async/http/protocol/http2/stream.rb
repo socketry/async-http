@@ -32,15 +32,20 @@ module Async
 						
 						@body = body
 						@remainder = nil
+						
+						@task = nil
 					end
 					
 					attr_accessor :delegate
 					attr :body
 					
-					def send_body(body)
-						@body = body
-						
-						window_updated
+					def send_body(body, task: Async::Task.current)
+						# TODO Might need to stop this task when body is cancelled.
+						@task = task.async do
+							@body = body
+							
+							window_updated
+						end
 					end
 					
 					def send_chunk

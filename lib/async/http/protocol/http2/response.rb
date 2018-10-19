@@ -38,13 +38,17 @@ module Async
 					end
 					
 					def wait
-						@notification.wait
+						# If you call wait after the headers were already received, it should return immediately.
+						if @notification
+							@notification.wait
+						end
 						
 						if @exception
 							raise @exception
 						end
 					end
 					
+					# This should be invoked from the background reader, and notifies the task waiting for the headers that we are done.
 					def receive_headers(stream, headers, end_stream)
 						headers.each do |key, value|
 							if key == STATUS
@@ -61,7 +65,10 @@ module Async
 						end
 						
 						# We are ready for processing:
-						@notification.signal
+						if @notification
+							@notification.signal
+							@notification = nil
+						end
 					end
 					
 					def receive_data(stream, data, end_stream)

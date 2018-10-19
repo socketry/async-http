@@ -19,6 +19,7 @@
 # THE SOFTWARE.
 
 require 'async/io/endpoint'
+require 'async/io/stream'
 
 require_relative 'protocol'
 require_relative 'response'

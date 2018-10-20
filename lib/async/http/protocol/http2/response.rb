@@ -92,12 +92,23 @@ module Async
 					end
 					
 					def send_request(request)
-						headers = Headers::Merged.new({
-							SCHEME => HTTPS,
-							METHOD => request.method,
-							PATH => request.path,
-							AUTHORITY => request.authority,
-						}, request.headers)
+						# https://http2.github.io/http2-spec/#rfc.section.8.1.2.3
+						# All HTTP/2 requests MUST include exactly one valid value for the :method, :scheme, and :path pseudo-header fields, unless it is a CONNECT request (Section 8.3). An HTTP request that omits mandatory pseudo-header fields is malformed (Section 8.1.2.6).
+						pseudo_headers = [
+							[SCHEME, HTTPS],
+							[METHOD, request.method],
+							[PATH, request.path],
+						]
+						
+						# To ensure that the HTTP/1.1 request line can be reproduced accurately, this pseudo-header field MUST be omitted when translating from an HTTP/1.1 request that has a request target in origin or asterisk form (see [RFC7230], Section 5.3). Clients that generate HTTP/2 requests directly SHOULD use the :authority pseudo-header field instead of the Host header field. 
+						if authority = request.authority
+							pseudo_headers << [AUTHORITY, authority]
+						end
+						
+						headers = Headers::Merged.new(
+							pseudo_headers,
+							request.headers
+						)
 						
 						if request.body.nil?
 							@stream.send_headers(nil, headers, ::HTTP::Protocol::HTTP2::END_STREAM)

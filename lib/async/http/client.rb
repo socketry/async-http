@@ -28,11 +28,11 @@ require_relative 'middleware'
 module Async
 	module HTTP
 		class Client
-			def initialize(endpoint, protocol = nil, authority = nil, retries: 3, **options)
+			def initialize(endpoint, protocol = endpoint.protocol, authority = endpoint.hostname, retries: 3, **options)
 				@endpoint = endpoint
 				
-				@protocol = protocol || endpoint.protocol
-				@authority = authority || endpoint.hostname
+				@protocol = protocol
+				@authority = authority
 				
 				@retries = retries
 				@pool = connect(**options)

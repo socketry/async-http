@@ -34,6 +34,29 @@ RSpec.describe Async::HTTP::Protocol::HTTP2, timeout: 2 do
 		end
 	end
 	
+	context 'host header' do
+		include_context Async::HTTP::Server
+		
+		let(:server) do
+			Async::HTTP::Server.for(endpoint, protocol) do |request|
+				Async::HTTP::Response[200, request.headers, ["Authority: #{request.authority.inspect}"]]
+			end
+		end
+		
+		# We specify nil for the authority - it won't be sent.
+		let!(:client) {Async::HTTP::Client.new(endpoint, protocol, nil)}
+		
+		it "should not send :authority header if host header is present" do
+			response = client.post("/", [['host', 'foo']])
+			
+			expect(response.headers).to include('host')
+			expect(response.headers['host']).to be == 'foo'
+			
+			# TODO Should HTTP/2 respect host header?
+			expect(response.read).to be == "Authority: nil"
+		end
+	end
+	
 	# TODO It should be considered a bug that this doens't work for HTTP/1.
 	context 'bi-directional streaming' do
 		include_context Async::HTTP::Server

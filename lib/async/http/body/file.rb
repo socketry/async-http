@@ -28,7 +28,7 @@ module Async
 				BLOCK_SIZE = Async::IO::Stream::BLOCK_SIZE
 				
 				def self.open(path, *args)
-					self.new(::File.open(path), *args)
+					self.new(::File.open(path, "rb"), *args)
 				end
 				
 				def initialize(file, range = nil, block_size: BLOCK_SIZE)

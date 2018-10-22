@@ -22,12 +22,20 @@ require 'async/http/body/file'
 
 RSpec.describe Async::HTTP::Body::File do
 	let(:path) {File.expand_path('file_spec.txt', __dir__)}
-
+	
 	context 'entire file' do
 		subject {described_class.open(path)}
 		
 		it "should read entire file" do
 			expect(subject.read).to be == "Hello World"
+		end
+		
+		it "should use binary encoding" do
+			expect(::File).to receive(:open).with(path, ::File::RDONLY | ::File::BINARY).and_call_original
+			
+			chunk = subject.read
+			
+			expect(chunk.encoding).to be == Encoding::BINARY
 		end
 	end
 	

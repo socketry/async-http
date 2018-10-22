@@ -26,9 +26,10 @@ module Async
 		module Body
 			class File < Readable
 				BLOCK_SIZE = Async::IO::Stream::BLOCK_SIZE
+				MODE = ::File::RDONLY | ::File::BINARY
 				
 				def self.open(path, *args)
-					self.new(::File.open(path, "rb"), *args)
+					self.new(::File.open(path, MODE), *args)
 				end
 				
 				def initialize(file, range = nil, block_size: BLOCK_SIZE)
@@ -52,6 +53,8 @@ module Async
 					
 					super
 				end
+				
+				attr :file
 				
 				attr :offset
 				attr :length

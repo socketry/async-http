@@ -26,8 +26,8 @@ module Async
 			# Invokes a callback once the body has finished reading.
 			class Streamable < Wrapper
 				def self.wrap(message, &block)
-					if message and message.body
-						if remaining = message.headers['content-length']
+					if message and body = message.body
+						if remaining = body.length
 							remaining = Integer(remaining)
 						end
 						

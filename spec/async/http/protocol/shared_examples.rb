@@ -75,6 +75,10 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 				expect(response.read).to be == "Hello World"
 			end
 			
+			it "should not contain content-length response header" do
+				expect(response.headers).to_not include('content-length')
+			end
+			
 			it "fails gracefully when closing connection" do
 				client.pool.acquire do |connection|
 					connection.stream.close

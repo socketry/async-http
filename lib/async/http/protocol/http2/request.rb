@@ -86,15 +86,18 @@ module Async
 						if response.nil?
 							@stream.send_headers(nil, NO_RESPONSE, ::HTTP::Protocol::HTTP2::END_STREAM)
 						elsif response.body?
-							headers = Headers::Merged.new([
+							pseudo_headers = [
 								[STATUS, response.status],
-							])
+							]
 							
 							if length = response.body.length
-								headers << [[::HTTP::Protocol::CONTENT_LENGTH, length]]
+								pseudo_headers << [CONTENT_LENGTH, length]
 							end
 							
-							headers << response.headers
+							headers = Headers::Merged.new(
+								pseudo_headers,
+								response.headers
+							)
 							
 							@stream.send_headers(nil, headers)
 							@stream.send_body(response.body)

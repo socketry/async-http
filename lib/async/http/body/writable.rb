@@ -30,8 +30,10 @@ module Async
 				class Closed < StandardError
 				end
 				
-				def initialize
+				def initialize(length = nil)
 					@queue = Async::Queue.new
+					
+					@length = length
 					
 					@count = 0
 					
@@ -39,6 +41,10 @@ module Async
 					
 					@closed = false
 					@error = nil
+				end
+				
+				def length
+					@length
 				end
 				
 				# Stop generating output; cause the next call to write to fail with the given error.

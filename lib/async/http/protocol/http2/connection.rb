@@ -33,6 +33,8 @@ module Async
 				STATUS = ':status'.freeze
 				VERSION = 'HTTP/2.0'.freeze
 				
+				CONTENT_LENGTH = 'content-length'
+				
 				module Connection
 					def initialize(*)
 						super

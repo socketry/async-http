@@ -27,6 +27,7 @@ module Async
 				class Response < Protocol::Response
 					def initialize(protocol, stream_id)
 						@input = nil
+						@length = nil
 						
 						super(protocol.version, nil, nil, Headers.new, nil)
 						
@@ -52,16 +53,18 @@ module Async
 					def receive_headers(stream, headers, end_stream)
 						headers.each do |key, value|
 							if key == STATUS
-								@status = value.to_i
+								@status = Integer(value)
 							elsif key == REASON
 								@reason = value
+							elsif key == CONTENT_LENGTH
+								@length = Integer(value)
 							else
 								@headers[key] = value
 							end
 						end
 						
 						unless end_stream
-							@body = @input = Body::Writable.new
+							@body = @input = Body::Writable.new(@length)
 						end
 						
 						# We are ready for processing:
@@ -91,6 +94,7 @@ module Async
 						@notification.signal
 					end
 					
+					# Send a request and read it into this response.
 					def send_request(request)
 						# https://http2.github.io/http2-spec/#rfc.section.8.1.2.3
 						# All HTTP/2 requests MUST include exactly one valid value for the :method, :scheme, and :path pseudo-header fields, unless it is a CONNECT request (Section 8.3). An HTTP request that omits mandatory pseudo-header fields is malformed (Section 8.1.2.6).

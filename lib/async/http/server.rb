@@ -31,7 +31,7 @@ module Async
 				self.new(block, *args)
 			end
 			
-			def initialize(app, endpoint, protocol_class = Protocol::HTTP1)
+			def initialize(app, endpoint, protocol_class = nil)
 				super(app)
 				
 				@endpoint = endpoint

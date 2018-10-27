@@ -43,7 +43,15 @@ module Async
 					
 					def receive_headers(stream, headers, end_stream)
 						headers.each do |key, value|
-							if key == METHOD
+							if key == SCHEME
+								return @stream.send_failure(400, "Request scheme already specified") if @scheme
+								
+								@scheme = value
+							elsif key == AUTHORITY
+								return @stream.send_failure(400, "Request authority already specified") if @authority
+								
+								@authority = value
+							elsif key == METHOD
 								return @stream.send_failure(400, "Request method already specified") if @method
 								
 								@method = value
@@ -51,10 +59,6 @@ module Async
 								return @stream.send_failure(400, "Request path already specified") if @path
 								
 								@path = value
-							elsif key == AUTHORITY
-								return @stream.send_failure(400, "Request authority already specified") if @authority
-								
-								@authority = value
 							else
 								@headers[key] = value
 							end

@@ -53,7 +53,7 @@ RSpec.describe Async::HTTP::Server do
 			
 			server = Async::HTTP::Server.new(
 				Async::HTTP::Middleware::Okay,
-				bound_endpoint, protocol
+				bound_endpoint, protocol, endpoint.scheme
 			)
 			
 			container = Async::Container::Forked.new(concurrency: concurrency) do

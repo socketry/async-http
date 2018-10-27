@@ -28,6 +28,7 @@ module Async
 			prepend Body::Reader
 			
 			def initialize(authority = nil, method = nil, path = nil, version = nil, headers = [], body = nil)
+				@scheme = nil
 				@authority = authority
 				@method = method
 				@path = path
@@ -36,6 +37,7 @@ module Async
 				@body = body
 			end
 			
+			attr_accessor :scheme
 			attr_accessor :authority
 			attr_accessor :method
 			attr_accessor :path

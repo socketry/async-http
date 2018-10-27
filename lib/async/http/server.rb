@@ -31,23 +31,28 @@ module Async
 				self.new(block, *args)
 			end
 			
-			def initialize(app, endpoint, protocol_class = nil)
+			def initialize(app, endpoint, protocol = endpoint.protocol, scheme = endpoint.scheme)
 				super(app)
 				
 				@endpoint = endpoint
-				@protocol_class = protocol_class || endpoint.protocol
+				@protocol = protocol
+				@scheme = scheme
 			end
+			
+			attr :scheme
 			
 			def accept(peer, address, task: Task.current)
 				peer.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
 				
 				stream = Async::IO::Stream.new(peer)
-				protocol = @protocol_class.server(stream)
+				protocol = @protocol.server(stream)
 				
 				Async.logger.debug(self) {"Incoming connnection from #{address.inspect} to #{protocol}"}
 				
 				protocol.each do |request|
+					request.scheme ||= @scheme
 					request.remote_address = address
+					
 					# Async.logger.debug(self) {"Incoming request from #{address.inspect}: #{request.method} #{request.path}"}
 					
 					# If this returns nil, we assume that the connection has been hijacked.

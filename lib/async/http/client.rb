@@ -28,11 +28,12 @@ require_relative 'middleware'
 module Async
 	module HTTP
 		class Client
-			def initialize(endpoint, protocol = endpoint.protocol, authority = endpoint.hostname, retries: 3, **options)
+			def initialize(endpoint, protocol = endpoint.protocol, authority = endpoint.hostname, scheme = endpoint.scheme, retries: 3, **options)
 				@endpoint = endpoint
 				
 				@protocol = protocol
 				@authority = authority
+				@scheme = scheme
 				
 				@retries = retries
 				@pool = connect(**options)
@@ -41,6 +42,7 @@ module Async
 			attr :endpoint
 			attr :protocol
 			attr :authority
+			attr :scheme
 			
 			attr :retries
 			attr :pool
@@ -64,7 +66,10 @@ module Async
 			include Methods
 			
 			def call(request)
+				# We set some defaults here - maybe we should dup the request?
+				request.scheme ||= @scheme
 				request.authority ||= @authority
+				
 				attempt = 0
 				
 				# We may retry the request if it is possible to do so. https://tools.ietf.org/html/draft-nottingham-httpbis-retry-01 is a good guide for how retrying requests should work.

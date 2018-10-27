@@ -99,7 +99,7 @@ module Async
 						# https://http2.github.io/http2-spec/#rfc.section.8.1.2.3
 						# All HTTP/2 requests MUST include exactly one valid value for the :method, :scheme, and :path pseudo-header fields, unless it is a CONNECT request (Section 8.3). An HTTP request that omits mandatory pseudo-header fields is malformed (Section 8.1.2.6).
 						pseudo_headers = [
-							[SCHEME, HTTPS],
+							[SCHEME, request.scheme],
 							[METHOD, request.method],
 							[PATH, request.path],
 						]

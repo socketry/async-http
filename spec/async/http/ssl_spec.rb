@@ -36,8 +36,7 @@ RSpec.describe Async::HTTP::Server, timeout: 5 do
 		end
 		
 		# Shared port for localhost network tests.
-		let(:endpoint) {Async::IO::Endpoint.tcp("localhost", 6779, reuse_port: true)}
-		let(:server_endpoint) {Async::IO::SecureEndpoint.new(endpoint, ssl_context: server_context)}
+		let(:server_endpoint) {Async::HTTP::URLEndpoint.parse("https://localhost:6779", ssl_context: server_context)}
 		let(:client_endpoint) {Async::HTTP::URLEndpoint.parse("https://localhost:6779", ssl_context: client_context)}
 		
 		it "client can get a resource via https" do

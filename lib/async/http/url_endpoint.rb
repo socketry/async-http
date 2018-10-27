@@ -82,6 +82,10 @@ module Async
 				@options[:hostname] || @url.hostname
 			end
 			
+			def scheme
+				@options[:scheme] || @url.scheme
+			end
+			
 			def authority
 				if default_port?
 					hostname

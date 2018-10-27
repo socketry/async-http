@@ -146,8 +146,7 @@ RSpec.describe Async::HTTP::Protocol::HTTPS, timeout: 2 do
 	end
 	
 	# Shared port for localhost network tests.
-	let(:endpoint) {Async::IO::Endpoint.tcp("localhost", 9296, reuse_port: true)}
-	let(:server_endpoint) {Async::IO::SecureEndpoint.new(endpoint, ssl_context: server_context)}
+	let(:server_endpoint) {Async::HTTP::URLEndpoint.parse("https://localhost:9296", ssl_context: server_context)}
 	let(:client_endpoint) {Async::HTTP::URLEndpoint.parse("https://localhost:9296", ssl_context: client_context)}
 	
 	it_should_behave_like Async::HTTP::Body

@@ -76,6 +76,7 @@ RSpec.describe Async::HTTP::Client, timeout: 5 do
 			compressor = Async::HTTP::AcceptEncoding.new(client)
 			
 			response = compressor.get("/index", {'accept-encoding' => 'gzip'})
+			
 			expect(response).to be_success
 			
 			expect(response.headers['content-encoding']).to be == ['gzip']

@@ -92,7 +92,7 @@ module Async
 				alias << write
 				
 				def inspect
-					"\#<#{self.class} #{@count} chunks written#{@finished ? ', finished' : ''}>"
+					"\#<#{self.class} #{@count} chunks written#{@finished ? ', finished' : ', waiting'}>"
 				end
 			end
 		end

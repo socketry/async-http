@@ -36,6 +36,7 @@ module Async
 					if chunk = super
 						@input_length += chunk.bytesize
 						
+						# It's possible this triggers the stream to finish.
 						chunk = @stream.inflate(chunk)
 						
 						@output_length += chunk.bytesize
@@ -47,7 +48,11 @@ module Async
 						@stream.close
 					end
 					
-					return chunk.empty? ? nil : chunk
+					if @stream.finished? and chunk.empty?
+						return nil
+					end
+					
+					return chunk
 				end
 			end
 		end

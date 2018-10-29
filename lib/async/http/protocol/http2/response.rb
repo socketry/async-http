@@ -38,6 +38,15 @@ module Async
 						@exception = nil
 					end
 					
+					# Notify anyone waiting on the response headers to be received (or failure).
+					protected def notify!
+						if @notification
+							@notification.signal
+							@notification = nil
+						end
+					end
+					
+					# Wait for the headers to be received or for stream reset.
 					def wait
 						# If you call wait after the headers were already received, it should return immediately.
 						if @notification
@@ -67,11 +76,7 @@ module Async
 							@body = @input = Body::Writable.new(@length)
 						end
 						
-						# We are ready for processing:
-						if @notification
-							@notification.signal
-							@notification = nil
-						end
+						notify!
 					end
 					
 					def receive_data(stream, data, end_stream)
@@ -88,10 +93,10 @@ module Async
 					
 					def receive_reset_stream(stream, error_code)
 						if error_code > 0
-							@exception = EOFError.new(error_code)
+							@exception = EOFError.new("Stream reset: error_code=#{error_code}")
 						end
 						
-						@notification.signal
+						notify!
 					end
 					
 					# Send a request and read it into this response.

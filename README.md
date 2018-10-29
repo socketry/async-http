@@ -139,6 +139,20 @@ Transfer/sec:      5.98MB
 
 According to these results, the cost of handling connections is quite high, while general throughput seems pretty decent.
 
+## Semantic Model
+
+### Scheme
+
+HTTP/1 has an implicit scheme determined by the kind of connection made to the server (either `http` or `https`), while HTTP/2 models this explicitly and the client indicates this in the request using the `:scheme` pseudo-header (typically `https`). To normalize this, `Async::HTTP::Client` and `Async::HTTP::Server` have a default scheme which is used if none is supplied.
+
+### Version
+
+HTTP/1 has an explicit version while HTTP/2 does not expose the version in any way.
+
+### Reason
+
+HTTP/1 responses contain a reason field which is largely irrelevant. HTTP/2 does not support this field.
+
 ## Contributing
 
 1. Fork it

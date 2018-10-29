@@ -27,10 +27,9 @@ module Async
 			module HTTP2
 				class Request < Protocol::Request
 					def initialize(protocol, stream_id)
-						@input = Body::Writable.new
+						super(nil, nil, nil, nil, VERSION, Headers.new)
 						
-						super(nil, nil, nil, nil, VERSION, Headers.new, @input)
-						
+						@input = nil
 						@protocol = protocol
 						@stream = Stream.new(self, protocol, stream_id)
 					end
@@ -62,6 +61,11 @@ module Async
 							else
 								@headers[key] = value
 							end
+						end
+						
+						# We only construct the input/body if data is coming.
+						unless end_stream
+							@body = @input = Body::Writable.new
 						end
 						
 						# We are ready for processing:

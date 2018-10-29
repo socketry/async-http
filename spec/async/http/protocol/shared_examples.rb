@@ -36,7 +36,9 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 				if request.method == 'POST'
 					# We stream the request body directly to the response.
 					Async::HTTP::Response[200, {}, request.body]
-				else
+				elsif request.method == 'GET'
+					expect(request.body).to be nil
+					
 					Async::HTTP::Response[200, {
 						'remote-address' => request.remote_address.inspect
 					}, ["#{request.method} #{request.version}"]]

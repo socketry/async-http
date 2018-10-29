@@ -27,8 +27,12 @@ module Async
 	module HTTP
 		# Set a valid accept-encoding header and decode the response.
 		class AcceptEncoding < Middleware
+			ACCEPT_ENCODING = 'accept-encoding'.freeze
+			CONTENT_ENCODING = 'content-encoding'.freeze
+			
 			DEFAULT_WRAPPERS = {
-				'gzip' => Body::Inflate.method(:for)
+				'gzip' => Body::Inflate.method(:for),
+				'identity' => ->(body){body},
 			}
 			
 			def initialize(app, wrappers = DEFAULT_WRAPPERS)
@@ -39,11 +43,11 @@ module Async
 			end
 			
 			def call(request)
-				request.headers['accept-encoding'] = @accept_encoding
+				request.headers[ACCEPT_ENCODING] = @accept_encoding
 				
 				response = super
 				
-				if !response.body.empty? and content_encoding = response.headers['content-encoding']
+				if !response.body.empty? and content_encoding = response.headers.delete(CONTENT_ENCODING)
 					body = response.body
 					
 					# We want to unwrap all encodings

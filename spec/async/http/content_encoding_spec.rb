@@ -28,7 +28,7 @@ require 'async/http/accept_encoding'
 require 'async/http/content_encoding'
 
 RSpec.describe Async::HTTP::ContentEncoding, timeout: 5 do
-	context 'compressed response' do
+	context 'with complete text/plain response' do
 		include_context Async::HTTP::Server
 		
 		let(:protocol) {Async::HTTP::Protocol::HTTP1}
@@ -46,14 +46,25 @@ RSpec.describe Async::HTTP::ContentEncoding, timeout: 5 do
 			response = compressor.get("/index", {'accept-encoding' => 'gzip'})
 			expect(response).to be_success
 			
-			expect(response.headers['content-encoding']).to be == ['gzip']
+			expect(response.body).to be_kind_of Async::HTTP::Body::Inflate
+			expect(response.read).to be == "Hello World!"
+			
+			client.close
+		end
+		
+		it "can request resource without compression" do
+			response = client.get("/index")
+			
+			expect(response).to be_success
+			expect(response.headers).to_not include('content-encoding')
+			
 			expect(response.read).to be == "Hello World!"
 			
 			client.close
 		end
 	end
 	
-	context 'partial response' do
+	context 'with partial response' do
 		include_context Async::HTTP::Server
 		
 		let(:protocol) {Async::HTTP::Protocol::HTTP1}
@@ -83,7 +94,7 @@ RSpec.describe Async::HTTP::ContentEncoding, timeout: 5 do
 		end
 	end
 	
-	context 'existing compression' do
+	context 'with existing content encoding' do
 		include_context Async::HTTP::Server
 		
 		let(:protocol) {Async::HTTP::Protocol::HTTP1}
@@ -102,13 +113,13 @@ RSpec.describe Async::HTTP::ContentEncoding, timeout: 5 do
 			)
 		end
 		
-		it "can request resource with compression" do
-			compressor = Async::HTTP::AcceptEncoding.new(client)
+		it "does not compress response" do
+			response = client.get("/index", {'accept-encoding' => 'gzip'})
 			
-			response = compressor.get("/index", {'accept-encoding' => 'gzip'})
 			expect(response).to be_success
-			
+			expect(response.headers).to include('content-encoding')
 			expect(response.headers['content-encoding']).to be == ['identity']
+			
 			expect(response.read).to be == "Hello World!"
 			
 			client.close

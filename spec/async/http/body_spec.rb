@@ -45,7 +45,7 @@ RSpec.shared_examples Async::HTTP::Body do
 				output.close
 			end
 			
-			Async::HTTP::Response[200, {}, output]
+			Async::HTTP::Response[200, [], output]
 		end
 		
 		server_task = reactor.async do
@@ -60,6 +60,7 @@ RSpec.shared_examples Async::HTTP::Body do
 		end
 		
 		response = client.post("/", {}, output)
+		
 		expect(response).to be_success
 		
 		input = response.body

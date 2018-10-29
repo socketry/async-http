@@ -29,7 +29,7 @@ module Async
 					def initialize(protocol, stream_id)
 						@input = Body::Writable.new
 						
-						super(nil, nil, nil, VERSION, Headers.new, @input)
+						super(nil, nil, nil, nil, VERSION, Headers.new, @input)
 						
 						@protocol = protocol
 						@stream = Stream.new(self, protocol, stream_id)

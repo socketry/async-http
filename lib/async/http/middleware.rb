@@ -32,8 +32,10 @@ module Async
 		
 		module Methods
 			VERBS.each do |verb|
-				define_method(verb.downcase) do |location, headers = [], body = []|
-					self.call(Request[verb, location.to_str, headers, body])
+				define_method(verb.downcase) do |location, headers = [], body = nil|
+					self.call(
+						Request[verb, location.to_str, headers, body]
+					)
 				end
 			end
 		end

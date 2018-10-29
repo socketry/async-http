@@ -39,7 +39,7 @@ module Async
 				
 				body = Body::Buffered.wrap(body)
 				
-				request = Request.new(endpoint.authority, method, endpoint.path, nil, headers, body)
+				request = Request.new(client.scheme, endpoint.authority, method, endpoint.path, nil, headers, body)
 				
 				return client.call(request)
 			end

@@ -44,7 +44,7 @@ RSpec.describe Async::HTTP::Protocol::HTTP2, timeout: 2 do
 		end
 		
 		# We specify nil for the authority - it won't be sent.
-		let!(:client) {Async::HTTP::Client.new(endpoint, protocol, nil)}
+		let!(:client) {Async::HTTP::Client.new(endpoint, protocol, endpoint.scheme, nil)}
 		
 		it "should not send :authority header if host header is present" do
 			response = client.post("/", [['host', 'foo']])

@@ -28,24 +28,25 @@ require_relative 'middleware'
 module Async
 	module HTTP
 		class Client
-			def initialize(endpoint, protocol = endpoint.protocol, authority = endpoint.hostname, scheme = endpoint.scheme, retries: 3, **options)
+			def initialize(endpoint, protocol = endpoint.protocol, scheme = endpoint.scheme, authority = endpoint.authority, retries: 3, connection_limit: nil)
 				@endpoint = endpoint
-				
 				@protocol = protocol
-				@authority = authority
-				@scheme = scheme
 				
 				@retries = retries
-				@pool = connect(**options)
+				@pool = make_pool(connection_limit)
+				
+				@scheme = scheme
+				@authority = authority
 			end
 			
 			attr :endpoint
 			attr :protocol
-			attr :authority
-			attr :scheme
 			
 			attr :retries
 			attr :pool
+			
+			attr :scheme
+			attr :authority
 			
 			def self.open(*args, &block)
 				client = self.new(*args)
@@ -66,9 +67,8 @@ module Async
 			include Methods
 			
 			def call(request)
-				# We set some defaults here - maybe we should dup the request?
-				request.scheme ||= @scheme
-				request.authority ||= @authority
+				request.scheme ||= self.scheme
+				request.authority ||= self.authority
 				
 				attempt = 0
 				
@@ -110,7 +110,7 @@ module Async
 			
 			protected
 			
-			def connect(connection_limit: nil)
+			def make_pool(connection_limit = nil)
 				Pool.new(connection_limit) do
 					Async.logger.debug(self) {"Making connection to #{@endpoint.inspect}"}
 					

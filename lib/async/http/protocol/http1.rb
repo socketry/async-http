@@ -24,14 +24,17 @@ require_relative 'http1/server'
 module Async
 	module HTTP
 		module Protocol
-			# A server that supports both HTTP1.0 and HTTP1.1 semantics by detecting the version of the request.
 			module HTTP1
-				def self.client(*args)
-					Client.new(*args)
+				VERSION = "HTTP/1.1"
+				
+				def self.client(stream)
+					Client.new(stream, VERSION)
 				end
 				
-				def self.server(*args)
-					Server.new(*args)
+				# A server that supports both HTTP1.0 and HTTP1.1 semantics by detecting the version of the request.
+				# TODO Verify correct behaviour.
+				def self.server(stream)
+					Server.new(stream, VERSION)
 				end
 			end
 		end

@@ -27,8 +27,8 @@ module Async
 		class Request
 			prepend Body::Reader
 			
-			def initialize(authority = nil, method = nil, path = nil, version = nil, headers = [], body = nil)
-				@scheme = nil
+			def initialize(scheme = nil, authority = nil, method = nil, path = nil, version = nil, headers = [], body = nil)
+				@scheme = scheme
 				@authority = authority
 				@method = method
 				@path = path
@@ -56,7 +56,7 @@ module Async
 			def self.[](method, path, headers, body)
 				body = Body::Buffered.wrap(body)
 				
-				self.new(nil, method, path, nil, headers, body)
+				self.new(nil, nil, method, path, nil, headers, body)
 			end
 			
 			def idempotent?
@@ -65,6 +65,10 @@ module Async
 			
 			def to_s
 				"#{@method} #{@path} #{@version}"
+			end
+			
+			def inspect
+				"\#<#{self.class} #{self.to_s} scheme=#{@scheme.inspect} authority=#{@authority.inspect} headers=#{@headers.to_h.inspect} body=#{@body.inspect}>"
 			end
 		end
 	end

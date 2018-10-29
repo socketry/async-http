@@ -50,7 +50,11 @@ module Async
 				Async.logger.debug(self) {"Incoming connnection from #{address.inspect} to #{protocol}"}
 				
 				protocol.each do |request|
-					request.scheme ||= @scheme
+					# We set the default scheme unless it was otherwise specified.
+					# https://tools.ietf.org/html/rfc7230#section-5.5
+					request.scheme ||= self.scheme
+					
+					# This is a slight optimization to avoid having to get the address from the socket.
 					request.remote_address = address
 					
 					# Async.logger.debug(self) {"Incoming request from #{address.inspect}: #{request.method} #{request.path}"}

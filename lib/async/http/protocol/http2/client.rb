@@ -30,12 +30,12 @@ module Async
 				class Client < ::HTTP::Protocol::HTTP2::Client
 					include Connection
 					
-					def initialize(stream, *args)
+					def initialize(stream)
 						@stream = stream
 						
 						framer = ::HTTP::Protocol::HTTP2::Framer.new(@stream)
 						
-						super(framer, *args)
+						super(framer)
 					end
 					
 					# Used by the client to send requests to the remote server.

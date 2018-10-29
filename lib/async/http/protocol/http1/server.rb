@@ -38,7 +38,7 @@ module Async
 						return request
 					rescue
 						# Bad Request
-						write_response(self.version, 400, {}, nil)
+						write_response(@version, 400, {}, nil)
 						
 						raise
 					end
@@ -51,10 +51,10 @@ module Async
 							return if @stream.closed?
 							
 							if response
-								write_response(self.version, response.status, response.headers, response.body, request.head?)
+								write_response(@version, response.status, response.headers, response.body, request.head?)
 							else
 								# If the request failed to generate a response, it was an internal server error:
-								write_response(self.version, 500, {}, nil)
+								write_response(@version, 500, {}, nil)
 							end
 							
 							# Gracefully finish reading the request body if it was not already done so.

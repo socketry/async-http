@@ -31,6 +31,14 @@ module Async
 		module Protocol
 			module HTTP1
 				class Connection < ::HTTP::Protocol::HTTP1::Connection
+					def initialize(stream, version)
+						super(stream)
+						
+						@version = version
+					end
+					
+					attr :version
+					
 					CRLF = "\r\n"
 					
 					attr :stream

@@ -30,12 +30,12 @@ module Async
 				class Server < ::HTTP::Protocol::HTTP2::Server
 					include Connection
 					
-					def initialize(stream, *args)
+					def initialize(stream)
 						@stream = stream
 						
 						framer = ::HTTP::Protocol::HTTP2::Framer.new(stream)
 						
-						super(framer, *args)
+						super(framer)
 						
 						@requests = Async::Queue.new
 					end

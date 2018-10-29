@@ -26,6 +26,10 @@ require 'tempfile'
 RSpec.shared_examples_for Async::HTTP::Protocol do
 	include_context Async::HTTP::Server
 	
+	it "should have valid scheme" do
+		expect(client.scheme).to be == "http"
+	end
+	
 	context 'working server' do
 		let(:server) do
 			Async::HTTP::Server.for(endpoint, protocol) do |request|
@@ -38,6 +42,10 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 					}, ["#{request.method} #{request.version}"]]
 				end
 			end
+		end
+		
+		it "should have valid scheme" do
+			expect(server.scheme).to be == "http"
 		end
 		
 		context 'GET' do

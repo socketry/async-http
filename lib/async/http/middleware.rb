@@ -41,18 +41,20 @@ module Async
 		end
 		
 		class Middleware
-			def initialize(app)
-				@app = app
+			def initialize(delegate)
+				@delegate = delegate
 			end
 			
+			attr :delegate
+			
 			def close
-				@app.close
+				@delegate.close
 			end
 			
 			include Methods
 			
 			def call(request)
-				@app.call(request)
+				@delegate.call(request)
 			end
 			
 			module Okay

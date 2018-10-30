@@ -123,7 +123,6 @@ module Async
 				
 				def format_duration(seconds)
 					if seconds < 1.0
-						seconds * 1000.0
 						return "#{(seconds * 1000.0).round(2)}ms"
 					else
 						return "#{seconds.round(1)}s"

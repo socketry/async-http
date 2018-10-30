@@ -31,7 +31,7 @@ module Async
 				end
 				
 				def read
-					return if @stream.closed?
+					return if @stream.finished?
 					
 					if chunk = super
 						@input_length += chunk.bytesize
@@ -44,11 +44,9 @@ module Async
 						chunk = @stream.finish
 						
 						@output_length += chunk.bytesize
-						
-						@stream.close
 					end
 					
-					if @stream.finished? and chunk.empty?
+					if chunk.empty? and @stream.finished?
 						return nil
 					end
 					

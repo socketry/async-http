@@ -70,20 +70,4 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 2 do
 			expect(response.read).to be == "Hello World!"
 		end
 	end
-	
-	context 'bad requests' do
-		include_context Async::HTTP::Server
-		
-		it "should fail with negative content length" do
-			response = client.post("/", {'content-length' => '-1'})
-			
-			expect(response).to be_bad_request
-		end
-		
-		it "should fail with both transfer encoding and content length" do
-			response = client.post("/", {'transfer-encoding' => 'chunked', 'content-length' => '0'})
-			
-			expect(response).to be_bad_request
-		end
-	end
 end

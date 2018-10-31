@@ -47,9 +47,7 @@ module Async
 				
 				response = super
 				
-				if !response.body.empty? and content_encoding = response.headers.delete(CONTENT_ENCODING)
-					body = response.body
-					
+				if body = response.body and !body.empty? and content_encoding = response.headers.delete(CONTENT_ENCODING)
 					# We want to unwrap all encodings
 					content_encoding.reverse_each do |name|
 						if wrapper = @wrappers[name]

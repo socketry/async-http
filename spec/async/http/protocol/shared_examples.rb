@@ -30,6 +30,24 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		expect(client.scheme).to be == "http"
 	end
 	
+	context 'buffered body' do
+		let(:body) {Async::HTTP::Body::Buffered.new(["Hello World"])}
+		let(:response) {Async::HTTP::Response[200, {}, body]}
+		
+		let(:server) do
+			Async::HTTP::Server.for(endpoint, protocol) do |request|
+				response
+			end
+		end
+		
+		it "response should be closed" do
+			expect(body).to receive(:close).and_call_original
+			# expect(response).to receive(:close).and_call_original
+			
+			expect(client.get("/", {}).read).to be == "Hello World"
+		end
+	end
+	
 	context 'working server' do
 		let(:server) do
 			Async::HTTP::Server.for(endpoint, protocol) do |request|

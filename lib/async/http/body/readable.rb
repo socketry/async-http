@@ -25,15 +25,6 @@ module Async
 		module Body
 			# A generic base class for wrapping body instances. Typically you'd override `#read`.
 			class Readable
-				# Read all remaining chunks into a buffered body and close the underlying input.
-				def finish
-					buffered = Buffered.for(self)
-					
-					self.close
-					
-					return buffered
-				end
-				
 				# The consumer can call stop to signal that the stream output has terminated.
 				def close(error = nil)
 				end
@@ -50,6 +41,15 @@ module Async
 				# Read the next available chunk.
 				def read
 					nil
+				end
+				
+				# Read all remaining chunks into a buffered body and close the underlying input.
+				def finish
+					buffered = Buffered.for(self)
+					
+					self.close
+					
+					return buffered
 				end
 				
 				# Enumerate all chunks until finished, then invoke `#close`.

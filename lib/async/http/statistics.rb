@@ -88,8 +88,6 @@ module Async
 					
 					if chunk
 						@sent += chunk.length
-					else
-						complete_statistics
 					end
 					
 					return chunk

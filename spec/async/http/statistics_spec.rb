@@ -33,6 +33,8 @@ RSpec.describe Async::HTTP::Statistics, timeout: 5 do
 			statistics.wrap(response) do |statistics, error|
 				expect(statistics.sent).to be == 12
 				expect(error).to be_nil
+			end.tap do |response|
+				expect(response.body).to receive(:complete_statistics).and_call_original
 			end
 		end
 	end

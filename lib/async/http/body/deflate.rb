@@ -90,6 +90,7 @@ module Async
 				def read
 					return if @stream.finished?
 					
+					# The stream might have been closed while waiting for the chunk to come in.
 					if chunk = super
 						@input_length += chunk.bytesize
 						
@@ -98,7 +99,7 @@ module Async
 						@output_length += chunk.bytesize
 						
 						return chunk
-					else
+					elsif !@stream.closed?
 						chunk = @stream.finish
 						
 						@output_length += chunk.bytesize

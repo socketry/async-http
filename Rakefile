@@ -29,7 +29,7 @@ task :google do
 		framer = ::HTTP::Protocol::HTTP2::Framer.new(stream)
 		client = ::HTTP::Protocol::HTTP2::Client.new(framer)
 		
-		client.send_connection_preface([])
+		client.send_connection_preface
 		
 		stream = ::HTTP::Protocol::HTTP2::Stream.new(client)
 		

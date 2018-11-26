@@ -41,7 +41,9 @@ module Async
 					
 					def send_body(body, task: Async::Task.current)
 						# TODO Might need to stop this task when body is cancelled.
-						@task = task.async do
+						@task = task.async do |subtask|
+							subtask.annotate "Sending body: #{body.class}"
+							
 							@body = body
 							
 							window_updated

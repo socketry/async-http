@@ -42,8 +42,6 @@ module Async
 			attr :scheme
 			
 			def accept(peer, address, task: Task.current)
-				peer.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
-				
 				stream = Async::IO::Stream.new(peer)
 				protocol = @protocol.server(stream)
 				

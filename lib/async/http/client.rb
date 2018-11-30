@@ -115,7 +115,6 @@ module Async
 					Async.logger.debug(self) {"Making connection to #{@endpoint.inspect}"}
 					
 					peer = @endpoint.connect
-					peer.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
 					
 					@protocol.client(IO::Stream.new(peer))
 				end

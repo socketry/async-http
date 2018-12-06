@@ -43,8 +43,22 @@ module Async
 				@endpoint = endpoint
 			end
 			
+			def to_url
+				url = @url.dup
+				
+				unless default_port?
+					url.port = self.port
+				end
+				
+				return url
+			end
+			
 			def to_s
-				"\#<#{self.class} #{@url} #{@options.inspect}>"
+				"\#<#{self.class} #{self.to_url}>"
+			end
+			
+			def inspect
+				"\#<#{self.class} #{self.to_url} #{@options.inspect}>"
 			end
 			
 			attr :url

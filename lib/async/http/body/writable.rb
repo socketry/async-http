@@ -30,7 +30,9 @@ module Async
 				class Closed < StandardError
 				end
 				
-				def initialize(length = nil, queue = Async::Queue.new)
+				# @param [Integer] length The length of the response body if known.
+				# @param [Async::Queue] queue Specify a different queue implementation, e.g. `Async::LimitedQueue.new(8)` to enable back-pressure streaming.
+				def initialize(length = nil, queue: Async::Queue.new)
 					@queue = queue
 					
 					@length = length

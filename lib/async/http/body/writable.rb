@@ -30,13 +30,8 @@ module Async
 				class Closed < StandardError
 				end
 				
-				DEFAULT_SIZE = 8
-				
-				def initialize(length = nil, size = DEFAULT_SIZE)
-					@queue = Async::Queue.new
-					
-					@size = size
-					@full = Async::Condition.new
+				def initialize(length = nil, queue = Async::Queue.new)
+					@queue = queue
 					
 					@length = length
 					
@@ -77,8 +72,6 @@ module Async
 						@finished = true
 					end
 					
-					@full.signal unless @full.empty?
-					
 					return chunk
 				end
 				
@@ -88,10 +81,6 @@ module Async
 					# The inverse of this is less obvious (*)
 					if @closed
 						raise(@error || Closed)
-					end
-					
-					while @queue.items.count > @size
-						@full.wait
 					end
 					
 					@count += 1

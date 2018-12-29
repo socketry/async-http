@@ -25,7 +25,15 @@ RSpec.describe Async::HTTP::Internet, timeout: 5 do
 	include_context Async::RSpec::Reactor
 	
 	it "can fetch remote website" do
-		response = subject.get("https://www.codeotaku.com/index")
+		response = subject.get("https://www.codeotaku.com/index", [['accept', '*/*']])
+		
+		expect(response).to be_success
+		
+		subject.close
+	end
+	
+	it "can fetch remote json" do
+		response = subject.get("https://api.github.com/repos/socketry/async-http", [['accept', '*/*'], ['user-agent', 'async-http']])
 		
 		expect(response).to be_success
 		

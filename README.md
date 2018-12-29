@@ -28,6 +28,33 @@ Or install it yourself as:
 
 ## Usage
 
+### Downloading a File
+
+Here is an example showing how to download a file and save it to a local path:
+
+```ruby
+#!/usr/bin/env ruby
+
+require 'async'
+require 'async/http/internet'
+
+Async.run do
+	# Make a new internet:
+	internet = Async::HTTP::Internet.new
+	
+	# Issues a GET request to Google:
+	response = internet.get("https://www.google.com/search?q=kittens")
+	
+	# Save the response body to a local file:
+	response.save("/tmp/search.html")
+ensure
+	# The internet is closed for business:
+	internet.close
+end
+```
+
+### Basic Client/Server
+
 Here is a basic example of a client/server running in the same reactor:
 
 ```ruby

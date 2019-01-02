@@ -28,6 +28,40 @@ Or install it yourself as:
 
 ## Usage
 
+### Post JSON data
+
+Here is an example showing how to post a data structure as JSON to a remote resource:
+
+```ruby
+#!/usr/bin/env ruby
+
+require 'json'
+require 'async'
+require 'async/http/internet'
+
+data = {'life' => 42}
+
+Async.run do
+	# Make a new internet:
+	internet = Async::HTTP::Internet.new
+	
+	# Prepare the request:
+	headers = [['accept', 'application/json']]
+	body = [JSON.dump(data)]
+	
+	# Issues a POST request:
+	response = internet.post("https://httpbin.org/anything", headers, body)
+	
+	# Save the response body to a local file:
+	pp JSON.parse(response.read)
+ensure
+	# The internet is closed for business:
+	internet.close
+end
+```
+
+Consider using [async-rest](https://github.com/socketry/async-rest) instead.
+
 ### Downloading a File
 
 Here is an example showing how to download a file and save it to a local path:

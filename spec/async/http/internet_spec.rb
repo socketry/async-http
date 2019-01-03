@@ -21,22 +21,29 @@
 require 'async/http/internet'
 require 'async/reactor'
 
+require 'json'
+
 RSpec.describe Async::HTTP::Internet, timeout: 5 do
 	include_context Async::RSpec::Reactor
 	
+	let(:headers) {[['accept', '*/*'], ['user-agent', 'async-http']]}
+	
 	it "can fetch remote website" do
-		response = subject.get("https://www.codeotaku.com/index", [['accept', '*/*']])
+		response = subject.get("https://www.codeotaku.com/index", headers)
 		
 		expect(response).to be_success
 		
 		subject.close
 	end
 	
+	let(:sample) {{"hello" => "world"}}
+	let(:body) {[JSON.dump(sample)]}
+	
 	it "can fetch remote json" do
-		response = subject.get("https://api.github.com/repos/socketry/async-http", [['accept', '*/*'], ['user-agent', 'async-http']])
+		response = subject.post("https://httpbin.org/anything", headers, body)
 		
-		puts response.read
 		expect(response).to be_success
+		expect{JSON.parse(response.read)}.to_not raise_error
 		
 		subject.close
 	end

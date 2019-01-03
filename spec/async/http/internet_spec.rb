@@ -35,6 +35,7 @@ RSpec.describe Async::HTTP::Internet, timeout: 5 do
 	it "can fetch remote json" do
 		response = subject.get("https://api.github.com/repos/socketry/async-http", [['accept', '*/*'], ['user-agent', 'async-http']])
 		
+		puts response.read
 		expect(response).to be_success
 		
 		subject.close

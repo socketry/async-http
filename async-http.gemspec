@@ -26,7 +26,7 @@ Gem::Specification.new do |spec|
 	spec.add_development_dependency "async-rspec", "~> 1.10"
 	spec.add_development_dependency "async-container", "~> 0.5.0"
 	
-	spec.add_development_dependency "bundler", "~> 1.3"
+	spec.add_development_dependency "bundler"
 	spec.add_development_dependency "rspec", "~> 3.6"
 	spec.add_development_dependency "rake"
 end

@@ -25,6 +25,11 @@ module Async
 		module Protocol
 			module HTTP1
 				class Server < Connection
+					def fail_request(status)
+						@persistent = false
+						write_response(@version, status, {}, nil)
+					end
+					
 					def next_request
 						# The default is true.
 						return nil unless @persistent
@@ -36,10 +41,11 @@ module Async
 						end
 						
 						return request
+					rescue Async::TimeoutError
+						fail_request(408)
+						raise
 					rescue
-						# Bad Request
-						write_response(@version, 400, {}, nil)
-						
+						fail_request(400)
 						raise
 					end
 					

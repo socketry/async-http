@@ -143,7 +143,10 @@ module Async
 			end
 			
 			def tcp_options
-				{reuse_port: @options[:reuse_port] ? true : false}
+				{
+					reuse_port: @options[:reuse_port],
+					timeout_duration: @options[:timeout_duration],
+				}
 			end
 			
 			def build_endpoint(endpoint = nil)

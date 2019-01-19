@@ -38,6 +38,14 @@ module Async
 						super(framer)
 					end
 					
+					def stop_connection(error)
+						super
+						
+						@streams.each do |id, stream|
+							stream.stop_connection(error)
+						end
+					end
+					
 					# Used by the client to send requests to the remote server.
 					def call(request)
 						@count += 1

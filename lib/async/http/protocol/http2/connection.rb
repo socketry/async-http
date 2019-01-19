@@ -49,23 +49,21 @@ module Async
 						@reader ||= read_in_background
 					end
 					
-					def stop_connection
+					def stop_connection(error)
 						@reader = nil
 					end
 					
 					def read_in_background(task: Task.current)
 						task.async do |nested_task|
-							nested_task.annotate("#{version} reading data")
+							nested_task.annotate("#{version} reading data for #{self.class}")
 							
 							begin
 								# Even thought the connection might be logically closed, we are not done until all HTTP/2 streams are closed or the underlying I/O is closed.
 								while !@stream.closed?
 									self.read_frame
 								end
-							rescue
-								Async.logger.debug(self) {$!}
 							ensure
-								stop_connection
+								stop_connection($!)
 							end
 						end
 					end

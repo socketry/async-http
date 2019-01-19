@@ -99,6 +99,12 @@ module Async
 						notify!
 					end
 					
+					def stop_connection(error)
+						@exception = error
+						
+						notify!
+					end
+					
 					# Send a request and read it into this response.
 					def send_request(request)
 						# https://http2.github.io/http2-spec/#rfc.section.8.1.2.3

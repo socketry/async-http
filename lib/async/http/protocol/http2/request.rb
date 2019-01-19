@@ -85,6 +85,9 @@ module Async
 					def receive_reset_stream(stream, error_code)
 					end
 					
+					def stop_connection(error)
+					end
+					
 					NO_RESPONSE = [
 						[STATUS, '500'],
 						[REASON, "No response generated"]

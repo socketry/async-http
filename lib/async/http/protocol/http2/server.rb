@@ -48,7 +48,7 @@ module Async
 						return request.stream
 					end
 					
-					def stop_connection
+					def stop_connection(error)
 						super
 						
 						@requests.enqueue nil

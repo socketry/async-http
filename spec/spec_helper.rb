@@ -28,7 +28,9 @@ RSpec.shared_context Async::HTTP::Server do
 	
 	let(:protocol) {described_class}
 	let(:endpoint) {Async::HTTP::URLEndpoint.parse('http://127.0.0.1:9294', reuse_port: true)}
-	let!(:client) {Async::HTTP::Client.new(endpoint, protocol)}
+	
+	let(:retries) {1}
+	let!(:client) {Async::HTTP::Client.new(endpoint, protocol, retries: retries)}
 	
 	let!(:server_task) do
 		server_task = reactor.async do

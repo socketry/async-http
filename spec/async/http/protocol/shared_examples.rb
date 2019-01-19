@@ -217,4 +217,21 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 			end.to raise_error(EOFError)
 		end
 	end
+	
+	context 'slow server' do
+		let(:endpoint) {Async::HTTP::URLEndpoint.parse('http://127.0.0.1:9294', reuse_port: true, timeout: 0.1)}
+		
+		let(:server) do
+			Async::HTTP::Server.for(endpoint, protocol) do |request|
+				Async::Task.current.sleep(endpoint.timeout * 2)
+				Async::HTTP::Response[200, {}, []]
+			end
+		end
+		
+		it "can't get /" do
+			expect do
+				client.get("/")
+			end.to raise_error(Async::TimeoutError)
+		end
+	end
 end

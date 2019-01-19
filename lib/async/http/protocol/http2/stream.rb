@@ -127,6 +127,15 @@ module Async
 						
 						return error_code
 					end
+					
+					def stop_connection(error)
+						if @body
+							@body.close(error)
+							@body = nil
+						end
+						
+						delegate.stop_connection(error)
+					end
 				end
 			end
 		end

@@ -145,7 +145,7 @@ module Async
 			def tcp_options
 				{
 					reuse_port: self.reuse_port,
-					timeout_duration: self.timeout_duration,
+					timeout: self.timeout,
 				}
 			end
 			
@@ -157,7 +157,7 @@ module Async
 					return Async::IO::SSLEndpoint.new(endpoint,
 						ssl_context: self.ssl_context,
 						hostname: self.hostname,
-						timeout_duration: self.timeout_duration,
+						timeout: self.timeout,
 					)
 				end
 				

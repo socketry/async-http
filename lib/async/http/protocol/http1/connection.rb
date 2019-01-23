@@ -78,18 +78,6 @@ module Async
 						@stream.close
 					end
 					
-					def write_empty_body(body)
-						super(body)
-						
-						body.close if body
-					end
-					
-					def write_body_head(body)
-						super(body)
-						
-						body.close if body
-					end
-					
 					def read_chunked_body
 						Body::Chunked.new(self)
 					end

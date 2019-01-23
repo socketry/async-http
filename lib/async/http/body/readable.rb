@@ -54,8 +54,6 @@ module Async
 				
 				# Enumerate all chunks until finished, then invoke `#close`.
 				def each
-					return to_enum unless block_given?
-					
 					while chunk = self.read
 						yield chunk
 						# chunk.clear

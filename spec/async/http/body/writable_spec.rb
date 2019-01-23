@@ -69,7 +69,8 @@ RSpec.describe Async::HTTP::Body::Writable do
 			
 			subject.close
 			
-			subject.each.with_index do |chunk, i|
+			3.times do |i|
+				chunk = subject.read
 				expect(chunk).to be == "Hello World #{i}"
 			end
 		end

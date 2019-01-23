@@ -26,7 +26,7 @@ module Async
 			module HTTP1
 				class Client < Connection
 					# Used by the client to send requests to the remote server.
-					def call(request)
+					def call(request, task: Task.current)
 						Async.logger.debug(self) {"#{request.method} #{request.path} #{request.headers.inspect}"}
 						
 						# We carefully interpret https://tools.ietf.org/html/rfc7230#section-6.3.1 to implement this correctly.
@@ -37,8 +37,14 @@ module Async
 							raise RequestFailed.new
 						end
 						
-						# Once we start writing the body, we can't recover if the request fails. That's because the body might be generated dynamically, streaming, etc.
-						self.write_body(request.body)
+						if request.body?
+							task.async do
+								# Once we start writing the body, we can't recover if the request fails. That's because the body might be generated dynamically, streaming, etc.
+								self.write_body(request.body)
+							end
+						else
+							self.write_empty_body(request.body)
+						end
 						
 						# This won't return the response until the entire body is written.
 						return Response.new(self, request)

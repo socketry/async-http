@@ -57,43 +57,6 @@ RSpec.describe Async::HTTP::Protocol::HTTP2, timeout: 2 do
 		end
 	end
 	
-	# TODO It should be considered a bug that this doens't work for HTTP/1.
-	context 'bi-directional streaming' do
-		include_context Async::HTTP::Server
-		
-		let(:server) do
-			Async::HTTP::Server.for(endpoint, protocol) do |request|
-				# Echo the request body back to the client.
-				Async::HTTP::Response[200, {}, request.body]
-			end
-		end
-		
-		it "can stream a slow request body" do
-			body = Async::HTTP::Body::Writable.new
-			
-			# Ideally, the flow here is as follows:
-			# 1/ Client writes headers to server.
-			# 2/ Client starts writing data to server (in async task).
-			# 3/ Client reads headers from server.
-			# 4a/ Client reads data from server.
-			# 4b/ Client finishes sending data to server.
-			response = client.post(endpoint.path, [], body)
-			
-			expect(response).to be_success
-			
-			body.write "."
-			
-			response.each do |chunk|
-				if chunk.bytesize > 32
-					body.close
-				else
-					body.write chunk*2
-					Async::Task.current.sleep(0.2)
-				end
-			end
-		end
-	end
-	
 	context 'stopping requests' do
 		include_context Async::HTTP::Server
 		

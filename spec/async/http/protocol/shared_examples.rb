@@ -23,6 +23,8 @@ require 'async/http/server'
 require 'async/http/url_endpoint'
 require 'tempfile'
 
+require 'pry'
+
 RSpec.shared_examples_for Async::HTTP::Protocol do
 	include_context Async::HTTP::Server
 	
@@ -101,6 +103,16 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 			it "is successful" do
 				expect(response).to be_success
 				expect(response.read).to be == "Hello World"
+				
+				expect(client.pool).to_not be_busy
+			end
+			
+			it "can buffer response" do
+				buffer = response.finish
+				
+				expect(buffer.join).to be == "Hello World"
+				
+				expect(client.pool).to_not be_busy
 			end
 			
 			it "should not contain content-length response header" do

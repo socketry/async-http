@@ -48,6 +48,19 @@ module Async
 				@constructor = block
 			end
 			
+			# The number of allocated resources.
+			attr :active
+			
+			# Whether there are resources which are currently in use.
+			def busy?
+				@resources.collect do |_,usage|
+					return true if usage > 0
+				end
+				
+				return false
+			end
+			
+			# All allocated resources.
 			attr :resources
 			
 			def empty?
@@ -94,6 +107,8 @@ module Async
 			end
 			
 			def reuse(resource)
+				Async.logger.debug(self) {"Reuse #{resource}"}
+				
 				@resources[resource] -= 1
 				
 				@available.signal

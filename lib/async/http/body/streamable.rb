@@ -44,6 +44,18 @@ module Async
 					@remaining = remaining
 				end
 				
+				def finish
+					if @body
+						result = super
+						
+						@callback.call
+						
+						@body = nil
+						
+						return result
+					end
+				end
+				
 				def close(*)
 					if @body
 						super

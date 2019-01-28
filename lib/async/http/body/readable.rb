@@ -45,11 +45,8 @@ module Async
 				
 				# Read all remaining chunks into a buffered body and close the underlying input.
 				def finish
-					buffered = Buffered.for(self)
-					
-					self.close
-					
-					return buffered
+					# Internally, this invokes `self.each` which then invokes `self.close`.
+					Buffered.for(self)
 				end
 				
 				# Enumerate all chunks until finished, then invoke `#close`.

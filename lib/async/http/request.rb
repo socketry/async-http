@@ -64,11 +64,7 @@ module Async
 			end
 			
 			def to_s
-				"#{@method} #{@path} #{@version}"
-			end
-			
-			def inspect
-				"\#<#{self.class} #{self.to_s} scheme=#{@scheme.inspect} authority=#{@authority.inspect} headers=#{@headers.to_h.inspect} body=#{@body.inspect}>"
+				"#{@scheme}://#{@authority}: #{@method} #{@path} #{@version}"
 			end
 		end
 	end

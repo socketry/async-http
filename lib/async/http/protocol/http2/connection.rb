@@ -41,6 +41,8 @@ module Async
 						
 						@count = 0
 						@reader = nil
+						
+						@promises = Async::Queue.new
 					end
 					
 					attr :stream
@@ -67,6 +69,12 @@ module Async
 							end
 						end
 					end
+					
+					def receive_push_promise(*)
+						@promises.enqueue(super)
+					end
+					
+					attr :promises
 					
 					def peer
 						@stream.io

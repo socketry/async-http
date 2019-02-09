@@ -100,4 +100,31 @@ RSpec.describe Async::HTTP::Protocol::HTTP2, timeout: 2 do
 			expect(response.protocol).to be_reusable
 		end
 	end
+	
+	context 'push promises' do
+		include_context Async::HTTP::Server
+		
+		let(:server) do
+			Async::HTTP::Server.for(endpoint, protocol) do |request|
+				if request.path == "/index.html"
+					request.push('/index.css')
+				end
+				
+				Async::HTTP::Response[200, {}, ["Path: #{request.path}"]]
+			end
+		end
+		
+		it "can send push promises" do
+			response = client.get("/index.html")
+			expect(response).to be_success
+			expect(response.read).to be == "Path: /index.html"
+			
+			promise = response.promises.dequeue
+			expect(promise.request.path).to be == '/index.css'
+			
+			promise.wait # Wait for the promise to complete
+			expect(promise).to be_success
+			expect(promise.read).to be == "Path: /index.css"
+		end
+	end
 end

@@ -40,6 +40,36 @@ module Async
 						false
 					end
 					
+					def push?
+						@protocol.enable_push?
+					end
+					
+					def create_promise_stream(headers, stream_id)
+						request = self.class.new(@protocol, stream_id)
+						request.receive_headers(self, headers, false)
+						
+						return request.stream
+					end
+					
+					# @return [Stream] the promised stream, on which to send data.
+					def push(path, headers = nil)
+						push_headers = [
+							[SCHEME, @scheme],
+							[METHOD, GET],
+							[PATH, path],
+							[AUTHORITY, @authority]
+						]
+						
+						if headers
+							push_headers = Headers::Merged.new(
+								push_headers,
+								headers
+							)
+						end
+						
+						@stream.send_push_promise(push_headers)
+					end
+					
 					def receive_headers(stream, headers, end_stream)
 						headers.each do |key, value|
 							if key == SCHEME

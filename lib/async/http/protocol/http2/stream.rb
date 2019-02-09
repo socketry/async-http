@@ -39,6 +39,10 @@ module Async
 					attr_accessor :delegate
 					attr :body
 					
+					def create_promise_stream(headers, stream_id)
+						@delegate.create_promise_stream(headers, stream_id)
+					end
+					
 					def send_body(body, task: Async::Task.current)
 						# TODO Might need to stop this task when body is cancelled.
 						@task = task.async do |subtask|
@@ -100,7 +104,7 @@ module Async
 					def receive_headers(frame)
 						headers = super
 						
-						delegate.receive_headers(self, headers, frame.end_stream?)
+						@delegate.receive_headers(self, headers, frame.end_stream?)
 						
 						return headers
 					end
@@ -109,7 +113,7 @@ module Async
 						data = super
 						
 						if data
-							delegate.receive_data(self, data, frame.end_stream?)
+							@delegate.receive_data(self, data, frame.end_stream?)
 						end
 						
 						return data
@@ -123,7 +127,7 @@ module Async
 							@body = nil
 						end
 						
-						delegate.receive_reset_stream(self, error_code)
+						@delegate.receive_reset_stream(self, error_code)
 						
 						return error_code
 					end
@@ -134,7 +138,7 @@ module Async
 							@body = nil
 						end
 						
-						delegate.stop_connection(error)
+						@delegate.stop_connection(error)
 					end
 				end
 			end

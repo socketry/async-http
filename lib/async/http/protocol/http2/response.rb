@@ -36,6 +36,20 @@ module Async
 						
 						@notification = Async::Notification.new
 						@exception = nil
+						
+						@promises = nil
+					end
+					
+					def promises
+						@promises ||= Async::Queue.new
+					end
+					
+					def create_promise_stream(headers, stream_id)
+						promise = Promise.new(@protocol, headers, stream_id)
+						
+						self.promises.enqueue(promise)
+						
+						return promise.stream
 					end
 					
 					# Notify anyone waiting on the response headers to be received (or failure).
@@ -44,6 +58,10 @@ module Async
 							@notification.signal
 							@notification = nil
 						end
+						
+						# if @input
+						# 	@input.close(@exception)
+						# end
 					end
 					
 					# Wait for the headers to be received or for stream reset.

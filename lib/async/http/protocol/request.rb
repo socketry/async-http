@@ -38,6 +38,10 @@ module Async
 					false
 				end
 				
+				def push?
+					false
+				end
+				
 				def peer
 					if @protocol
 						@protocol.peer

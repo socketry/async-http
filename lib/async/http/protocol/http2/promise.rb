@@ -1,4 +1,4 @@
-# Copyright, 2018, by Samuel G. D. Williams. <http://www.codeotaku.com>
+# Copyright, 2019, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,59 +18,52 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'connection'
-require_relative 'request'
-require_relative 'promise'
-
-require 'http/protocol/http2/server'
+require_relative '../response'
 
 module Async
 	module HTTP
 		module Protocol
 			module HTTP2
-				class Server < ::HTTP::Protocol::HTTP2::Server
-					include Connection
-					
-					def initialize(stream)
-						@stream = stream
+				class Promise < Response
+					def initialize(protocol, headers, stream_id)
+						super(protocol, stream_id)
 						
-						framer = ::HTTP::Protocol::HTTP2::Framer.new(stream)
-						
-						super(framer)
-						
-						@requests = Async::Queue.new
+						@request = build_request(headers)
 					end
 					
-					attr :requests
+					attr :stream
+					attr :request
 					
-					def create_stream(stream_id)
-						request = Request.new(self, stream_id)
+					private def build_request(headers)
+						request = HTTP::Request.new
+						request.headers = Headers.new
 						
-						return request.stream
-					end
-					
-					def stop_connection(error)
-						super
-						
-						@requests.enqueue nil
-					end
-					
-					def each
-						while request = @requests.dequeue
-							@count += 1
-							
-							# We need to close the stream if the user code blows up while generating a response:
-							response = begin
-								response = yield(request)
-							rescue
-								request.stream.send_reset_stream(::HTTP::Protocol::HTTP2::INTERNAL_ERROR)
+						headers.each do |key, value|
+							if key == SCHEME
+								return @stream.send_failure(400, "Request scheme already specified") if request.scheme
 								
-								Async.logger.error(request) {$!}
+								request.scheme = value
+							elsif key == AUTHORITY
+								return @stream.send_failure(400, "Request authority already specified") if request.authority
+								
+								request.authority = value
+							elsif key == METHOD
+								return @stream.send_failure(400, "Request method already specified") if request.method
+								
+								request.method = value
+							elsif key == PATH
+								return @stream.send_failure(400, "Request path already specified") if request.path
+								
+								request.path = value
 							else
-								request.send_response(response)
+								request.headers[key] = value
 							end
 						end
+						
+						return request
 					end
+					
+					undef send_request
 				end
 			end
 		end

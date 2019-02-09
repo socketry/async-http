@@ -104,6 +104,8 @@ RSpec.describe Async::HTTP::Protocol::HTTP2, timeout: 2 do
 	context 'push promises' do
 		include_context Async::HTTP::Server
 		
+		let(:protocol) {described_class::WithPush}
+		
 		let(:server) do
 			Async::HTTP::Server.for(endpoint, protocol) do |request|
 				if request.path == "/index.html"

@@ -33,7 +33,7 @@ module Async
 				}
 				
 				SERVER_SETTINGS = {
-					::HTTP::Protocol::HTTP2::Settings::ENABLE_PUSH => 0,
+					::HTTP::Protocol::HTTP2::Settings::ENABLE_PUSH => 1,
 					# We choose a lower maximum concurrent streams to avoid overloading a single connection/thread.
 					::HTTP::Protocol::HTTP2::Settings::MAXIMUM_CONCURRENT_STREAMS => 32,
 					::HTTP::Protocol::HTTP2::Settings::MAXIMUM_FRAME_SIZE => 0x100000,
@@ -56,6 +56,20 @@ module Async
 					server.start_connection
 					
 					return server
+				end
+				
+				module WithPush
+					CLIENT_SETTINGS = HTTP2::CLIENT_SETTINGS.merge(
+						::HTTP::Protocol::HTTP2::Settings::ENABLE_PUSH => 1,
+					)
+					
+					def self.client(stream, settings = CLIENT_SETTINGS)
+						HTTP2.client(stream, settings)
+					end
+					
+					def self.server(stream, settings = SERVER_SETTINGS)
+						HTTP2.server(stream, settings)
+					end
 				end
 			end
 		end

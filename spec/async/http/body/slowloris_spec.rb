@@ -1,4 +1,4 @@
-# Copyright, 2018, by Samuel G. D. Williams. <http://www.codeotaku.com>
+# Copyright, 2019, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,6 +20,26 @@
 
 require_relative 'writable_examples'
 
-RSpec.describe Async::HTTP::Body::Writable do
+require 'async/http/body/slowloris'
+
+RSpec.describe Async::HTTP::Body::Slowloris do
 	it_behaves_like Async::HTTP::Body::Writable
+	
+	it "closes body with error if throughput is not maintained" do
+		subject.write("Hello World")
+		
+		sleep 0.1
+		
+		expect do
+			subject.write("Hello World")
+		end.to raise_error(Async::HTTP::Body::Slowloris::ThroughputError, /Slow write/)
+	end
+	
+	it "doesn't close body if throughput is exceeded" do
+		subject.write("Hello World")
+		
+		expect do
+			subject.write("Hello World")
+		end.to_not raise_error
+	end
 end

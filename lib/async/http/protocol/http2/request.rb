@@ -51,6 +51,9 @@ module Async
 						return request.stream
 					end
 					
+					def close!(state)
+					end
+					
 					# @return [Stream] the promised stream, on which to send data.
 					def push(path, headers = nil)
 						push_headers = [

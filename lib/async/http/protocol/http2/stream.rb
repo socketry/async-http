@@ -43,6 +43,12 @@ module Async
 						@delegate.create_promise_stream(headers, stream_id)
 					end
 					
+					def close!(state = :closed)
+						super
+						
+						@delegate.close!(state)
+					end
+					
 					def send_body(body, task: Async::Task.current)
 						# TODO Might need to stop this task when body is cancelled.
 						@task = task.async do |subtask|

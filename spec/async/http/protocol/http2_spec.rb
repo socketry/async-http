@@ -128,5 +128,14 @@ RSpec.describe Async::HTTP::Protocol::HTTP2, timeout: 2 do
 			expect(promise).to be_success
 			expect(promise.read).to be == "Path: /index.css"
 		end
+		
+		it "doesn't sent push promises" do
+			response = client.get("/index.aspx")
+			expect(response).to be_success
+			expect(response.read).to be == "Path: /index.aspx"
+			
+			promise = response.promises.dequeue
+			expect(promise).to be_nil
+		end
 	end
 end

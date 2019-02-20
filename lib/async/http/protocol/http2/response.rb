@@ -52,6 +52,10 @@ module Async
 						return promise.stream
 					end
 					
+					def close!(state)
+						self.promises.enqueue(nil)
+					end
+					
 					# Notify anyone waiting on the response headers to be received (or failure).
 					protected def notify!
 						if @notification

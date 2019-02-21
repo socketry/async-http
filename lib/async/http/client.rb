@@ -28,6 +28,11 @@ require_relative 'middleware'
 module Async
 	module HTTP
 		class Client
+			# Provides a robust interface to a server.
+			# * If there are no connections, it will create one.
+			# * If there are already connections, it will reuse it.
+			# * If a request fails, it will retry it up to N times if it was idempotent.
+			# The client object will never become unusable. It internally manages persistent connections (or non-persistent connections if that's required).
 			def initialize(endpoint, protocol = endpoint.protocol, scheme = endpoint.scheme, authority = endpoint.authority, retries: 3, connection_limit: nil)
 				@endpoint = endpoint
 				@protocol = protocol

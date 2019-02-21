@@ -96,7 +96,6 @@ module Async
 					# This is a specific case where the entire request wasn't sent before a failure occurred. So, we can even resend non-idempotent requests.
 					@pool.release(connection) if connection
 					
-					attempt += 1
 					if attempt < @retries
 						retry
 					else

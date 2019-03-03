@@ -6,7 +6,7 @@ require 'async/http/body/writable'
 
 # The template, using inline text. The sleep could be anything - database query, HTTP request, redis, etc.
 buffer = Trenni::Buffer.new(<<-EOF)
-The \#{self[:count]} bottles of \#{self[:drink]} on the Wall song!
+The "\#{self[:count]} bottles of \#{self[:drink]} on the wall" song!
 
 <?r self[:count].downto(1) do |index| ?>
 	\#{index} bottles of \#{self[:drink]} on the wall,

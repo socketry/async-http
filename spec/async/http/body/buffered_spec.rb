@@ -54,6 +54,14 @@ RSpec.describe Async::HTTP::Body::Buffered do
 				expect(subject.read).to be == "World"
 			end
 		end
+
+		context "when body is a String" do
+			let(:body) {"Hello World"}
+
+			it "returns instance initialized with the array" do
+				expect(subject).to be_an_instance_of(described_class)
+			end
+		end
 	end
 	
 	describe "#length" do

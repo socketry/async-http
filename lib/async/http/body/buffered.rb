@@ -32,6 +32,8 @@ module Async
 						return body
 					elsif body.is_a? Array
 						return self.new(body)
+					elsif body.is_a?(String)
+						return self.new([body])
 					elsif body
 						return self.for(body)
 					end

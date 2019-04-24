@@ -172,8 +172,8 @@ module Async
 				endpoint.bind(*args, &block)
 			end
 			
-			def connect(*args, &block)
-				endpoint.connect(*args, &block)
+			def connect(&block)
+				endpoint.connect(&block)
 			end
 			
 			def each

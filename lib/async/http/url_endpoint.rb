@@ -37,7 +37,7 @@ module Async
 			def initialize(url, endpoint = nil, **options)
 				super(**options)
 				
-				raise ArgumentError.new("URL must be absolute (include scheme, host): #{url}") unless url.absolute?
+				raise ArgumentError, "URL must be absolute (include scheme, host): #{url}" unless url.absolute?
 				
 				@url = url
 				@endpoint = endpoint

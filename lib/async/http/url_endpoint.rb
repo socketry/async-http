@@ -146,6 +146,7 @@ module Async
 				{
 					reuse_port: self.reuse_port,
 					timeout: self.timeout,
+					local_address: self.local_address
 				}
 			end
 			

@@ -123,6 +123,50 @@ Async::Reactor.run do |task|
 end
 ```
 
+### Advanced Verification
+
+You can hook into SSL certificate verification to improve server verification.
+
+```ruby
+require 'async'
+require 'async/http'
+
+# These are generated from the certificate chain that the server presented.
+trusted_fingerprints = {
+	"dac9024f54d8f6df94935fb1732638ca6ad77c13" => true,
+	"e6a3b45b062d509b3382282d196efe97d5956ccb" => true,
+	"07d63f4c05a03f1c306f9941b8ebf57598719ea2" => true,
+	"e8d994f44ff20dc78dbff4e59d7da93900572bbf" => true,
+}
+
+Async do
+	endpoint = Async::HTTP::URLEndpoint.parse("https://www.codeotaku.com/index")
+	
+	# This is a quick hack/POC:
+	ssl_context = endpoint.ssl_context
+	
+	ssl_context.verify_callback = proc do |verified, store_context|
+		certificate = store_context.current_cert
+		fingerprint = OpenSSL::Digest::SHA1.new(certificate.to_der).to_s
+		
+		if trusted_fingerprints.include? fingerprint
+			true
+		else
+			Async.logger.warn("Untrusted Certificate Fingerprint"){fingerprint}
+			false
+		end
+	end
+	
+	endpoint = endpoint.with(ssl_context: ssl_context)
+	
+	client = Async::HTTP::Client.new(endpoint)
+	
+	response = client.get(endpoint.path)
+	
+	pp response.status, response.headers.fields, response.read
+end
+```
+
 ## Performance
 
 On a 4-core 8-thread i7, running `ab` which uses discrete (non-keep-alive) connections:

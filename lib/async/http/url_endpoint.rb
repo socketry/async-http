@@ -34,6 +34,11 @@ module Async
 				self.new(url, **options)
 			end
 			
+			# @option scheme [String] the scheme to use, overrides the URL scheme.
+			# @option port [Integer] the port to bind to, overrides the URL port.
+			# @option hostname [String] the hostname to use, overrides the URL hostname.
+			# @option ssl_context [OpenSSL::SSL::SSLContext] the context to use for TLS.
+			# @option alpn_protocols [Array<String>] the alpn protocols to negotiate.
 			def initialize(url, endpoint = nil, **options)
 				super(**options)
 				
@@ -143,11 +148,15 @@ module Async
 			end
 			
 			def tcp_options
-				{
-					reuse_port: self.reuse_port,
-					timeout: self.timeout,
-					local_address: self.local_address
-				}
+				options = @options.dup
+				
+				options.delete(:scheme)
+				options.delete(:port)
+				options.delete(:hostname)
+				options.delete(:ssl_context)
+				options.delete(:alpn_protocols)
+				
+				return options
 			end
 			
 			def build_endpoint(endpoint = nil)

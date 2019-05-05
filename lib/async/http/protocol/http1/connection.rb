@@ -44,7 +44,7 @@ module Async
 					end
 					
 					# @return [Async::Wrapper] the underlying non-blocking IO.
-					def hijack
+					def hijack!
 						@persistent = false
 						
 						@stream.flush

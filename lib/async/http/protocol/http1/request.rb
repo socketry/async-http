@@ -35,8 +35,8 @@ module Async
 						true
 					end
 					
-					def hijack
-						@protocol.hijack
+					def hijack!
+						@protocol.hijack!
 					end
 				end
 			end

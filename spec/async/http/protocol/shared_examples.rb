@@ -199,7 +199,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		let(:server) do
 			Async::HTTP::Server.for(endpoint, protocol) do |request|
 				if request.hijack?
-					io = request.hijack
+					io = request.hijack!
 					io.write "HTTP/1.1 200 Okay\r\nContent-Length: 16\r\n\r\nHijack Succeeded"
 					io.flush
 					io.close

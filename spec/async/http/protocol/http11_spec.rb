@@ -50,7 +50,7 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 2 do
 		
 		let(:server) do
 			Async::HTTP::Server.for(endpoint, protocol) do |request|
-				peer = request.hijack
+				peer = request.hijack!
 				
 				peer.write(
 					"#{request.version} 200 It worked!\r\n" +

@@ -14,7 +14,6 @@ addons:
 
 matrix:
   include:
-    - rvm: 2.3
     - rvm: 2.4
     - rvm: 2.5
     - rvm: 2.6

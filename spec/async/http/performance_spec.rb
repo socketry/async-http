@@ -43,6 +43,14 @@ RSpec.describe Async::HTTP::Server do
 	
 	let(:client) {Async::HTTP::Client.new(endpoint, protocol)}
 	
+	before(:all) do
+		GC.disable
+	end
+	
+	after(:all) do
+		GC.enable
+	end
+	
 	describe "simple response" do
 		it "runs quickly" do
 			bound_endpoint = nil

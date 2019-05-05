@@ -19,14 +19,20 @@
 # THE SOFTWARE.
 
 require 'async/http/body/fixed'
+require 'async/rspec/buffer'
 
 RSpec.describe Async::HTTP::Body::Fixed do
 	include_context Async::RSpec::Memory
+	include_context Async::RSpec::Buffer
 	
 	let(:content) {"Hello World"}
-	let(:io) {StringIO.new(content)}
-	let(:stream) {Async::IO::Stream.new(io)}
-	subject! {described_class.new(stream, io.size)}
+	let(:stream) {Async::IO::Stream.new(buffer)}
+	subject! {described_class.new(stream, content.bytesize)}
+	
+	before do
+		buffer.write content
+		buffer.seek(0)
+	end
 	
 	describe "#empty?" do
 		it "returns whether EOF was reached" do

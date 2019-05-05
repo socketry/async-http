@@ -20,15 +20,21 @@
 
 require 'async/http/body/chunked'
 require 'async/io/stream'
+require 'async/rspec/buffer'
 
 RSpec.describe Async::HTTP::Body::Chunked do
 	include_context Async::RSpec::Memory
+	include_context Async::RSpec::Buffer
 	
 	let(:content) {"Hello World"}
-	let(:io) {StringIO.new("#{content.bytesize.to_s(16)}\r\n#{content}\r\n0\r\n\r\n")}
-	let(:stream) {Async::IO::Stream.new(io)}
+	let(:stream) {Async::IO::Stream.new(buffer)}
 	let(:protocol) {Async::HTTP::Protocol::HTTP11.client(stream)}
 	subject! {described_class.new(protocol)}
+	
+	before do
+		buffer.write "#{content.bytesize.to_s(16)}\r\n#{content}\r\n0\r\n\r\n"
+		buffer.seek(0)
+	end
 	
 	describe "#empty?" do
 		it "returns whether EOF was reached" do

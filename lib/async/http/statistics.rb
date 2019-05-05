@@ -87,7 +87,7 @@ module Async
 					@first_chunk_time ||= Clock.now
 					
 					if chunk
-						@sent += chunk.length
+						@sent += chunk.bytesize
 					end
 					
 					return chunk

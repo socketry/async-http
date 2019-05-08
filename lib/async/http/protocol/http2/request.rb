@@ -128,7 +128,7 @@ module Async
 					
 					def send_response(response)
 						if response.nil?
-							@stream.send_headers(nil, NO_RESPONSE, ::HTTP::Protocol::HTTP2::END_STREAM)
+							@stream.send_headers(nil, NO_RESPONSE, ::Protocol::HTTP2::END_STREAM)
 						elsif response.body?
 							pseudo_headers = [
 								[STATUS, response.status],
@@ -150,7 +150,7 @@ module Async
 								[STATUS, response.status],
 							], response.headers)
 							
-							@stream.send_headers(nil, headers, ::HTTP::Protocol::HTTP2::END_STREAM)
+							@stream.send_headers(nil, headers, ::Protocol::HTTP2::END_STREAM)
 						end
 					end
 				end

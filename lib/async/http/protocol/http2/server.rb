@@ -22,19 +22,19 @@ require_relative 'connection'
 require_relative 'request'
 require_relative 'promise'
 
-require 'http/protocol/http2/server'
+require 'protocol/http2/server'
 
 module Async
 	module HTTP
 		module Protocol
 			module HTTP2
-				class Server < ::HTTP::Protocol::HTTP2::Server
+				class Server < ::Protocol::HTTP2::Server
 					include Connection
 					
 					def initialize(stream)
 						@stream = stream
 						
-						framer = ::HTTP::Protocol::HTTP2::Framer.new(stream)
+						framer = ::Protocol::HTTP2::Framer.new(stream)
 						
 						super(framer)
 						
@@ -63,7 +63,7 @@ module Async
 							response = begin
 								response = yield(request)
 							rescue
-								request.stream.send_reset_stream(::HTTP::Protocol::HTTP2::INTERNAL_ERROR)
+								request.stream.send_reset_stream(::Protocol::HTTP2::INTERNAL_ERROR)
 								
 								Async.logger.error(request) {$!}
 							else

@@ -21,19 +21,19 @@
 require_relative 'connection'
 require_relative 'response'
 
-require 'http/protocol/http2/client'
+require 'protocol/http2/client'
 
 module Async
 	module HTTP
 		module Protocol
 			module HTTP2
-				class Client < ::HTTP::Protocol::HTTP2::Client
+				class Client < ::Protocol::HTTP2::Client
 					include Connection
 					
 					def initialize(stream)
 						@stream = stream
 						
-						framer = ::HTTP::Protocol::HTTP2::Framer.new(@stream)
+						framer = ::Protocol::HTTP2::Framer.new(@stream)
 						
 						super(framer)
 					end

@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'http/protocol/http1/connection'
+require 'protocol/http1'
 
 require_relative 'request'
 require_relative 'response'
@@ -30,7 +30,7 @@ module Async
 	module HTTP
 		module Protocol
 			module HTTP1
-				class Connection < ::HTTP::Protocol::HTTP1::Connection
+				class Connection < ::Protocol::HTTP1::Connection
 					def initialize(stream, version)
 						super(stream)
 						

@@ -22,17 +22,17 @@ task :google do
 		peer = endpoint.connect
 		stream = Async::IO::Stream.new(peer)
 		
-		framer = ::HTTP::Protocol::HTTP2::Framer.new(stream)
-		client = ::HTTP::Protocol::HTTP2::Client.new(framer)
+		framer = ::Protocol::HTTP2::Framer.new(stream)
+		client = ::Protocol::HTTP2::Client.new(framer)
 		
 		client.send_connection_preface
 		
-		stream = ::HTTP::Protocol::HTTP2::Stream.new(client)
+		stream = ::Protocol::HTTP2::Stream.new(client)
 		
 		client.read_frame
 		client.read_frame
 		
-		stream.send_headers(nil, [[':method', 'GET'], [':authority', 'www.google.com'], [':path', '/']], ::HTTP::Protocol::HTTP2::END_STREAM)
+		stream.send_headers(nil, [[':method', 'GET'], [':authority', 'www.google.com'], [':path', '/']], ::Protocol::HTTP2::END_STREAM)
 		
 		binding.pry
 	end

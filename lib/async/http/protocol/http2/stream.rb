@@ -18,13 +18,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'http/protocol/http2/stream'
+require 'protocol/http2/stream'
 
 module Async
 	module HTTP
 		module Protocol
 			module HTTP2
-				class Stream < ::HTTP::Protocol::HTTP2::Stream
+				class Stream < ::Protocol::HTTP2::Stream
 					def initialize(delegate, *args)
 						super(*args)
 						
@@ -80,7 +80,7 @@ module Async
 							
 							# @body.read above might take a while and a stream reset might be received in the mean time.
 							unless closed?
-								send_data(nil, ::HTTP::Protocol::HTTP2::END_STREAM)
+								send_data(nil, ::Protocol::HTTP2::END_STREAM)
 							end
 							
 							return false

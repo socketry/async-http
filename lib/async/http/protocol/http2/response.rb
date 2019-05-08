@@ -148,7 +148,7 @@ module Async
 						)
 						
 						if request.body.nil?
-							@stream.send_headers(nil, headers, ::HTTP::Protocol::HTTP2::END_STREAM)
+							@stream.send_headers(nil, headers, ::Protocol::HTTP2::END_STREAM)
 						else
 							begin
 								@stream.send_headers(nil, headers)

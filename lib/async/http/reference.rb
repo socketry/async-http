@@ -18,10 +18,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'http/protocol/reference'
+require 'protocol/http/reference'
 
 module Async
 	module HTTP
-		Reference = ::HTTP::Protocol::Reference
+		Reference = ::Protocol::HTTP::Reference
 	end
 end

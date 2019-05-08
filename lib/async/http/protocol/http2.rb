@@ -26,18 +26,18 @@ module Async
 		module Protocol
 			module HTTP2
 				CLIENT_SETTINGS = {
-					::HTTP::Protocol::HTTP2::Settings::ENABLE_PUSH => 0,
-					::HTTP::Protocol::HTTP2::Settings::MAXIMUM_CONCURRENT_STREAMS => 256,
-					::HTTP::Protocol::HTTP2::Settings::MAXIMUM_FRAME_SIZE => 0x100000,
-					::HTTP::Protocol::HTTP2::Settings::INITIAL_WINDOW_SIZE => 0x7FFFFFFF,
+					::Protocol::HTTP2::Settings::ENABLE_PUSH => 0,
+					::Protocol::HTTP2::Settings::MAXIMUM_CONCURRENT_STREAMS => 256,
+					::Protocol::HTTP2::Settings::MAXIMUM_FRAME_SIZE => 0x100000,
+					::Protocol::HTTP2::Settings::INITIAL_WINDOW_SIZE => 0x7FFFFFFF,
 				}
 				
 				SERVER_SETTINGS = {
-					::HTTP::Protocol::HTTP2::Settings::ENABLE_PUSH => 1,
+					::Protocol::HTTP2::Settings::ENABLE_PUSH => 1,
 					# We choose a lower maximum concurrent streams to avoid overloading a single connection/thread.
-					::HTTP::Protocol::HTTP2::Settings::MAXIMUM_CONCURRENT_STREAMS => 32,
-					::HTTP::Protocol::HTTP2::Settings::MAXIMUM_FRAME_SIZE => 0x100000,
-					::HTTP::Protocol::HTTP2::Settings::INITIAL_WINDOW_SIZE => 0x7FFFFFFF,
+					::Protocol::HTTP2::Settings::MAXIMUM_CONCURRENT_STREAMS => 32,
+					::Protocol::HTTP2::Settings::MAXIMUM_FRAME_SIZE => 0x100000,
+					::Protocol::HTTP2::Settings::INITIAL_WINDOW_SIZE => 0x7FFFFFFF,
 				}
 				
 				def self.client(stream, settings = CLIENT_SETTINGS)
@@ -60,7 +60,7 @@ module Async
 				
 				module WithPush
 					CLIENT_SETTINGS = HTTP2::CLIENT_SETTINGS.merge(
-						::HTTP::Protocol::HTTP2::Settings::ENABLE_PUSH => 1,
+						::Protocol::HTTP2::Settings::ENABLE_PUSH => 1,
 					)
 					
 					def self.client(stream, settings = CLIENT_SETTINGS)

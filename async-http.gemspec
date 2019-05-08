@@ -19,7 +19,9 @@ Gem::Specification.new do |spec|
 	spec.add_dependency("async", "~> 1.14")
 	spec.add_dependency("async-io", "~> 1.18")
 	
-	spec.add_dependency("http-protocol", "~> 0.17")
+	spec.add_dependency("protocol-http", "~> 0.1.0")
+	spec.add_dependency("protocol-http1", "~> 0.1.0")
+	spec.add_dependency("protocol-http2", "~> 0.1.0")
 	
 	# spec.add_dependency("openssl")
 	

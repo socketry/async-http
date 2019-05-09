@@ -57,14 +57,22 @@ module Async
 							return if @stream.closed?
 							
 							if response
-								write_response(@version, response.status, response.headers, response.body, request.head?)
+								# Try to avoid holding on to request, to minimse GC overhead:
+								head = request.head?
+								
+								unless request.body?
+									# If there is no body, #finish is a no-op.
+									request = nil
+								end
+								
+								write_response(@version, response.status, response.headers, response.body, head)
 							else
 								# If the request failed to generate a response, it was an internal server error:
 								write_response(@version, 500, {}, nil)
 							end
 							
 							# Gracefully finish reading the request body if it was not already done so.
-							request.finish
+							request&.finish
 							
 							# This ensures we yield at least once every iteration of the loop and allow other fibers to execute.
 							task.yield

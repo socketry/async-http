@@ -21,9 +21,8 @@
 require 'async/http/client'
 require 'async/http/server'
 require 'async/http/url_endpoint'
+require 'async/http/body/hijack'
 require 'tempfile'
-
-require 'pry'
 
 RSpec.shared_examples_for Async::HTTP::Protocol do
 	include_context Async::HTTP::Server
@@ -138,6 +137,25 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 			response = client.get("/")
 			
 			expect(response).to be_server_failure
+		end
+	end
+	
+	context 'partial hijack' do
+		let(:content) {"Hello World!"}
+		
+		let(:server) do
+			Async::HTTP::Server.for(endpoint, protocol) do |request|
+				Async::HTTP::Body::Hijack.response(request, 200, {}) do |stream|
+					stream.write content
+					stream.close
+				end
+			end
+		end
+		
+		it "reads hijacked body" do
+			response = client.get("/")
+			
+			expect(response.read).to be == content
 		end
 	end
 	

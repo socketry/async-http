@@ -19,84 +19,59 @@
 # THE SOFTWARE.
 
 require_relative 'readable'
-
-require 'async/queue'
+require_relative 'stream'
 
 module Async
 	module HTTP
 		module Body
-			# A dynamic body which you can write to and read from.
-			class Writable < Readable
-				class Closed < StandardError
+			# A body which is designed for hijacked connections.
+			class Hijack < Readable
+				def self.response(request, status, headers, &block)
+					Async::HTTP::Response[status, headers, self.wrap(request, &block)]
 				end
 				
-				# @param [Integer] length The length of the response body if known.
-				# @param [Async::Queue] queue Specify a different queue implementation, e.g. `Async::LimitedQueue.new(8)` to enable back-pressure streaming.
-				def initialize(length = nil, queue: Async::Queue.new)
-					@queue = queue
-					
-					@length = length
-					
-					@count = 0
-					
-					@finished = false
-					
-					@closed = false
-					@error = nil
+				def self.wrap(request, &block)
+					self.new(request.body, &block)
 				end
 				
-				def length
-					@length
-				end
-				
-				# Stop generating output; cause the next call to write to fail with the given error.
-				def close(error = nil)
-					unless @closed
-						@queue.enqueue(nil)
-						
-						@closed = true
-						@error = error
-					end
+				def initialize(input = nil, &block)
+					@input = input
+					@block = block
 					
-					super
+					@task = nil
+					@stream = nil
 				end
 				
-				def closed?
-					@closed
+				def call(stream)
+					return @block.call(stream)
+				ensure
+					@block = nil
 				end
 				
 				# Has the producer called #finish and has the reader consumed the nil token?
 				def empty?
-					@finished
+					@block.nil?
 				end
 				
 				# Read the next available chunk.
 				def read
-					return if @finished
+					return unless @block
 					
-					unless chunk = @queue.dequeue
-						@finished = true
+					unless @task
+						@stream = Stream.new(@input)
+						
+						@task = Task.current.async do
+							@block.call(@stream)
+						end
+						
+						@block = nil
 					end
 					
-					return chunk
+					return @stream.output.read
 				end
-				
-				# Write a single chunk to the body. Signal completion by calling `#finish`.
-				def write(chunk)
-					# If the reader breaks, the writer will break.
-					# The inverse of this is less obvious (*)
-					if @closed
-						raise(@error || Closed)
-					end
-					
-					@count += 1
-					@queue.enqueue(chunk)
-				end
-				
-				alias << write
 				
 				def inspect
-					"\#<#{self.class} #{@count} chunks written#{@finished ? ', finished' : ', waiting'}>"
+					"\#<#{self.class} #{@block}>"
 				end
 			end
 		end

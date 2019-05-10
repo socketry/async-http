@@ -31,6 +31,7 @@ module Async
 					
 					# Will hold remaining data in `#read`.
 					@buffer = nil
+					@closed = false
 				end
 				
 				attr :input
@@ -110,9 +111,22 @@ module Async
 					@output&.close
 				end
 				
+				# Close the input and output bodies.
 				def close
 					self.close_read
 					self.close_write
+				ensure
+					@closed = true
+				end
+				
+				# Whether the stream has been closed.
+				def closed?
+					@closed
+				end
+				
+				# Whether there are any output chunks remaining?
+				def empty?
+					@output.empty?
 				end
 				
 				private

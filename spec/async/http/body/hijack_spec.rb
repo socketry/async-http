@@ -30,7 +30,9 @@ RSpec.describe Async::HTTP::Body::Hijack do
 		
 		subject do
 			described_class.new do |stream|
-				stream.write(content)
+				3.times do 
+					stream.write(content)
+				end
 				stream.close
 			end
 		end
@@ -38,15 +40,19 @@ RSpec.describe Async::HTTP::Body::Hijack do
 		it "should generate body using direct invocation" do
 			subject.call(stream)
 			
-			expect(stream.read).to be == content
-			expect(stream.read).to be_nil
+			3.times do
+				expect(stream.read).to be == content
+			end
 			
+			expect(stream.read).to be_nil
 			expect(stream).to be_empty
-			expect(subject).to be_empty
 		end
 		
 		it "should generate body using stream" do
-			expect(subject.read).to be == content
+			3.times do
+				expect(subject.read).to be == content
+			end
+			
 			expect(subject.read).to be_nil
 			
 			expect(subject).to be_empty

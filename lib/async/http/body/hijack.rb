@@ -44,34 +44,32 @@ module Async
 				
 				def call(stream)
 					return @block.call(stream)
-				ensure
-					@block = nil
 				end
 				
 				# Has the producer called #finish and has the reader consumed the nil token?
 				def empty?
-					@block.nil?
+					if @stream
+						@stream.empty?
+					else
+						false
+					end
 				end
 				
 				# Read the next available chunk.
 				def read
-					return unless @block
-					
 					unless @task
 						@stream = Stream.new(@input)
 						
 						@task = Task.current.async do
 							@block.call(@stream)
 						end
-						
-						@block = nil
 					end
 					
 					return @stream.output.read
 				end
 				
 				def inspect
-					"\#<#{self.class} #{@block}>"
+					"\#<#{self.class} #{@block.inspect}>"
 				end
 			end
 		end

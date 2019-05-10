@@ -147,6 +147,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 			Async::HTTP::Server.for(endpoint, protocol) do |request|
 				Async::HTTP::Body::Hijack.response(request, 200, {}) do |stream|
 					stream.write content
+					stream.write content
 					stream.close
 				end
 			end
@@ -155,7 +156,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		it "reads hijacked body" do
 			response = client.get("/")
 			
-			expect(response.read).to be == content
+			expect(response.read).to be == (content*2)
 		end
 	end
 	

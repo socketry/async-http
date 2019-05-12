@@ -32,9 +32,10 @@ module Async
 					
 					def next_request
 						# The default is true.
-						return nil unless @persistent
+						return unless @persistent
 						
-						request = Request.new(self)
+						# Read an incoming request:
+						return unless request = Request.read(self)
 						
 						unless persistent?(request.version, request.headers)
 							@persistent = false

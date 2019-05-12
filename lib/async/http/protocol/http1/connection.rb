@@ -40,8 +40,8 @@ module Async
 					
 					attr :version
 					
-					def read_line
-						@stream.read_until(CRLF) or raise EOFError, "Could not read line"
+					def read_line?
+						@stream.read_until(CRLF)
 					end
 					
 					# @return [Async::Wrapper] the underlying non-blocking IO.

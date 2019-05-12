@@ -25,9 +25,14 @@ module Async
 		module Protocol
 			module HTTP1
 				class Request < Protocol::Request
-					def initialize(protocol)
-						super(nil, *protocol.read_request)
-						
+					def self.read(protocol)
+						if parts = protocol.read_request
+							self.new(protocol, *parts)
+						end
+					end
+					
+					def initialize(protocol, *parts)
+						super(nil, *parts)
 						@protocol = protocol
 					end
 					

@@ -23,48 +23,32 @@ require_relative 'readable'
 module Async
 	module HTTP
 		module Body
-			class Fixed < Readable
-				def initialize(stream, length)
+			class Remainder < Readable
+				def initialize(stream)
 					@stream = stream
-					@length = length
-					@remaining = length
 				end
 				
-				attr :length
-				attr :remaining
-				
 				def empty?
-					@remaining == 0
+					@stream.closed?
 				end
 				
 				def close(error = nil)
-					if @remaining != 0
-						@stream.close
-					end
+					# We can't really do anything in this case except close the connection.
+					@stream.close
 					
 					super
 				end
 				
 				def read
-					if @remaining > 0
-						if chunk = @stream.read_partial(@remaining)
-							@remaining -= chunk.bytesize
-							
-							return chunk
-						end
-					end
+					@stream.read_partial
 				end
 				
 				def join
-					buffer = @stream.read(@remaining)
-					
-					@remaining = 0
-					
-					return buffer
+					read
 				end
 				
 				def inspect
-					"\#<#{self.class} length=#{@length} remaining=#{@remaining}>"
+					"\#<#{self.class} #{@stream.closed? ? 'closed' : 'open'}>"
 				end
 			end
 		end

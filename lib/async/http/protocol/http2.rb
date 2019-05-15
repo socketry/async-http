@@ -25,11 +25,18 @@ module Async
 	module HTTP
 		module Protocol
 			module HTTP2
+				VERSION = "h2"
+				
+				def self.bidirectional?
+					true
+				end
+				
 				CLIENT_SETTINGS = {
 					::Protocol::HTTP2::Settings::ENABLE_PUSH => 0,
 					::Protocol::HTTP2::Settings::MAXIMUM_CONCURRENT_STREAMS => 256,
 					::Protocol::HTTP2::Settings::MAXIMUM_FRAME_SIZE => 0x100000,
 					::Protocol::HTTP2::Settings::INITIAL_WINDOW_SIZE => 0x7FFFFFFF,
+					::Protocol::HTTP2::Settings::ENABLE_CONNECT_PROTOCOL => 1,
 				}
 				
 				SERVER_SETTINGS = {
@@ -38,6 +45,7 @@ module Async
 					::Protocol::HTTP2::Settings::MAXIMUM_CONCURRENT_STREAMS => 32,
 					::Protocol::HTTP2::Settings::MAXIMUM_FRAME_SIZE => 0x100000,
 					::Protocol::HTTP2::Settings::INITIAL_WINDOW_SIZE => 0x7FFFFFFF,
+					::Protocol::HTTP2::Settings::ENABLE_CONNECT_PROTOCOL => 1,
 				}
 				
 				def self.client(stream, settings = CLIENT_SETTINGS)

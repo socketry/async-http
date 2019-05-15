@@ -25,14 +25,14 @@ module Async
 		module Protocol
 			module HTTP2
 				class Response < Protocol::Response
-					def initialize(protocol, stream_id)
+					def initialize(connection, stream_id)
 						@input = nil
 						@length = nil
 						
-						super(protocol.version, nil, nil, Headers.new, nil)
+						super(connection.version, nil, nil, Headers.new)
 						
-						@protocol = protocol
-						@stream = Stream.new(self, protocol, stream_id)
+						@connection = connection
+						@stream = Stream.new(self, connection, stream_id)
 						
 						@notification = Async::Notification.new
 						@exception = nil
@@ -45,7 +45,7 @@ module Async
 					end
 					
 					def create_promise_stream(headers, stream_id)
-						promise = Promise.new(@protocol, headers, stream_id)
+						promise = Promise.new(@connection, headers, stream_id)
 						
 						self.promises.enqueue(promise)
 						
@@ -89,6 +89,8 @@ module Async
 								@reason = value
 							elsif key == CONTENT_LENGTH
 								@length = Integer(value)
+							elsif key == PROTOCOL
+								@protocol = value
 							else
 								@headers[key] = value
 							end
@@ -140,6 +142,10 @@ module Async
 						# To ensure that the HTTP/1.1 request line can be reproduced accurately, this pseudo-header field MUST be omitted when translating from an HTTP/1.1 request that has a request target in origin or asterisk form (see [RFC7230], Section 5.3). Clients that generate HTTP/2 requests directly SHOULD use the :authority pseudo-header field instead of the Host header field.
 						if authority = request.authority
 							pseudo_headers << [AUTHORITY, authority]
+						end
+						
+						if protocol = request.protocol
+							pseudo_headers << [PROTOCOL, protocol]
 						end
 						
 						headers = Headers::Merged.new(

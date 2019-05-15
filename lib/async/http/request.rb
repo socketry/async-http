@@ -27,7 +27,7 @@ module Async
 		class Request
 			prepend Body::Reader
 			
-			def initialize(scheme = nil, authority = nil, method = nil, path = nil, version = nil, headers = [], body = nil)
+			def initialize(scheme = nil, authority = nil, method = nil, path = nil, version = nil, headers = [], body = nil, protocol = nil)
 				@scheme = scheme
 				@authority = authority
 				@method = method
@@ -35,6 +35,7 @@ module Async
 				@version = version
 				@headers = headers
 				@body = body
+				@protocol = protocol
 			end
 			
 			attr_accessor :scheme
@@ -44,6 +45,12 @@ module Async
 			attr_accessor :version
 			attr_accessor :headers
 			attr_accessor :body
+			attr_accessor :protocol
+			
+			# Send the request to the given connection.
+			def call(connection)
+				connection.call(self)
+			end
 			
 			def head?
 				self.method == HEAD

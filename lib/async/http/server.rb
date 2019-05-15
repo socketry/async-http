@@ -43,11 +43,11 @@ module Async
 			
 			def accept(peer, address, task: Task.current)
 				stream = Async::IO::Stream.new(peer)
-				protocol = @protocol.server(stream)
+				connection = @protocol.server(stream)
 				
 				Async.logger.debug(self) {"Incoming connnection from #{address.inspect} to #{protocol}"}
 				
-				protocol.each do |request|
+				connection.each do |request|
 					# We set the default scheme unless it was otherwise specified.
 					# https://tools.ietf.org/html/rfc7230#section-5.5
 					request.scheme ||= self.scheme

@@ -97,7 +97,7 @@ RSpec.describe Async::HTTP::Protocol::HTTP2, timeout: 2 do
 			
 			notification.wait
 			
-			expect(response.protocol).to be_reusable
+			expect(response.connection).to be_reusable
 		end
 	end
 	

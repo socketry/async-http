@@ -26,12 +26,13 @@ module Async
 		class Response
 			prepend Body::Reader
 			
-			def initialize(version = nil, status = 200, reason = nil, headers = [], body = nil)
+			def initialize(version = nil, status = 200, reason = nil, headers = [], body = nil, protocol = nil)
 				@version = version
 				@status = status
 				@reason = reason
 				@headers = headers
 				@body = body
+				@protocol = protocol
 			end
 			
 			attr_accessor :version
@@ -39,6 +40,7 @@ module Async
 			attr_accessor :reason
 			attr_accessor :headers
 			attr_accessor :body
+			attr_accessor :protocol
 			
 			def continue?
 				status == 100

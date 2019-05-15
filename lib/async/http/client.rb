@@ -84,7 +84,7 @@ module Async
 					# As we cache pool, it's possible these pool go bad (e.g. closed by remote host). In this case, we need to try again. It's up to the caller to impose a timeout on this. If this is the last attempt, we force a new connection.
 					connection = @pool.acquire
 					
-					response = connection.call(request)
+					response = request.call(connection)
 					
 					# The connection won't be released until the body is completely read/released.
 					Body::Streamable.wrap(response) do
@@ -118,9 +118,7 @@ module Async
 				Pool.new(connection_limit) do
 					Async.logger.debug(self) {"Making connection to #{@endpoint.inspect}"}
 					
-					peer = @endpoint.connect
-					
-					@protocol.client(IO::Stream.new(peer))
+					@protocol.client(IO::Stream.new(@endpoint.connect))
 				end
 			end
 		end

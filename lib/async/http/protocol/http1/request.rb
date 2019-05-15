@@ -31,9 +31,9 @@ module Async
 						end
 					end
 					
-					def initialize(protocol, *parts)
+					def initialize(connection, *parts)
 						super(nil, *parts)
-						@protocol = protocol
+						@connection = connection
 					end
 					
 					def hijack?
@@ -41,7 +41,7 @@ module Async
 					end
 					
 					def hijack!
-						@protocol.hijack!
+						@connection.hijack!
 					end
 				end
 			end

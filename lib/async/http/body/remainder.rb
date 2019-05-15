@@ -35,12 +35,20 @@ module Async
 				def close(error = nil)
 					# We can't really do anything in this case except close the connection.
 					@stream.close
-					
+				
 					super
 				end
 				
 				def read
 					@stream.read_partial
+				end
+				
+				def call(stream)
+					self.each do |chunk|
+						stream.write(chunk)
+					end
+					
+					stream.flush
 				end
 				
 				def join

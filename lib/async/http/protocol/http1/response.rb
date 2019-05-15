@@ -25,10 +25,10 @@ module Async
 		module Protocol
 			module HTTP1
 				class Response < Protocol::Response
-					def initialize(protocol, request)
-						super(*protocol.read_response(request.method))
+					def initialize(connection, request)
+						super(*connection.read_response(request.method))
 						
-						@protocol = protocol
+						@connection = connection
 					end
 				end
 			end

@@ -31,6 +31,7 @@ module Async
 				AUTHORITY = ':authority'.freeze
 				REASON = 'reason'.freeze
 				STATUS = ':status'.freeze
+				PROTOCOL = ':protocol'.freeze
 				VERSION = 'HTTP/2.0'.freeze
 				
 				CONTENT_LENGTH = 'content-length'
@@ -44,6 +45,14 @@ module Async
 					end
 					
 					attr :stream
+					
+					def http1?
+						false
+					end
+					
+					def http2?
+						true
+					end
 					
 					def start_connection
 						@reader ||= read_in_background

@@ -66,10 +66,17 @@ module Async
 									request = nil
 								end
 								
-								write_response(@version, response.status, response.headers, response.body, head)
+								write_response(@version, response.status, response.headers)
+								
+								if body = response.body and protocol = response.protocol
+									write_upgrade_body(protocol, body)
+								else
+									write_body(@version, body, head)
+								end
 							else
 								# If the request failed to generate a response, it was an internal server error:
-								write_response(@version, 500, {}, nil)
+								write_response(@version, 500, {})
+								write_body(@version, nil)
 							end
 							
 							# Gracefully finish reading the request body if it was not already done so.

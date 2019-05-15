@@ -26,6 +26,10 @@ module Async
 			module HTTP10
 				VERSION = "HTTP/1.0"
 				
+				def self.bidirectional?
+					false
+				end
+				
 				def self.client(stream)
 					HTTP1::Client.new(stream, VERSION)
 				end

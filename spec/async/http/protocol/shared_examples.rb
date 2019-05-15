@@ -266,7 +266,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		end
 	end
 	
-	context 'bi-directional streaming' do
+	context 'bi-directional streaming', if: described_class.bidirectional? do
 		let(:server) do
 			Async::HTTP::Server.for(endpoint, protocol) do |request|
 				# Echo the request body back to the client.
@@ -288,7 +288,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 			expect(response).to be_success
 			
 			body.write "."
-			count = 1
+			count = 0
 			
 			response.each do |chunk|
 				if chunk.bytesize > 32
@@ -300,7 +300,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 				end
 			end
 			
-			expect(count).to be == 7
+			expect(count).to be == 6
 		end
 	end
 end

@@ -26,12 +26,12 @@ module Async
 		module Protocol
 			module HTTP2
 				class Request < Protocol::Request
-					def initialize(protocol, stream_id)
+					def initialize(connection, stream_id)
 						super(nil, nil, nil, nil, VERSION, Headers.new)
 						
 						@input = nil
-						@protocol = protocol
-						@stream = Stream.new(self, protocol, stream_id)
+						@connection = connection
+						@stream = Stream.new(self, connection, stream_id)
 					end
 					
 					attr :stream
@@ -41,11 +41,11 @@ module Async
 					end
 					
 					def push?
-						@protocol.enable_push?
+						@connection.enable_push?
 					end
 					
 					def create_promise_stream(headers, stream_id)
-						request = self.class.new(@protocol, stream_id)
+						request = self.class.new(@connection, stream_id)
 						request.receive_headers(self, headers, false)
 						
 						return request.stream
@@ -91,6 +91,10 @@ module Async
 								return @stream.send_failure(400, "Request path already specified") if @path
 								
 								@path = value
+							elsif key == PROTOCOL
+								return @stream.send_failure(400, "Request protocol already specified") if @protocol
+								
+								@protocol = value
 							else
 								@headers[key] = value
 							end
@@ -102,7 +106,7 @@ module Async
 						end
 						
 						# We are ready for processing:
-						@protocol.requests.enqueue self
+						@connection.requests.enqueue self
 					end
 					
 					def receive_data(stream, data, end_stream)
@@ -136,6 +140,10 @@ module Async
 							
 							if length = response.body.length
 								pseudo_headers << [CONTENT_LENGTH, length]
+							end
+							
+							if protocol = response.protocol
+								pseudo_headers << [PROTOCOL, protocol]
 							end
 							
 							headers = Headers::Merged.new(

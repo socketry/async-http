@@ -31,19 +31,26 @@ module Async
 						
 						# We carefully interpret https://tools.ietf.org/html/rfc7230#section-6.3.1 to implement this correctly.
 						begin
-							self.write_request(request.authority, request.method, request.path, self.version, request.headers)
+							write_request(request.authority, request.method, request.path, @version, request.headers)
 						rescue
 							# If we fail to fully write the request and body, we can retry this request.
-							raise RequestFailed.new
+							raise RequestFailed
 						end
 						
 						if request.body?
-							task.async do
-								# Once we start writing the body, we can't recover if the request fails. That's because the body might be generated dynamically, streaming, etc.
-								self.write_body(request.body)
+							body = request.body
+							
+							if protocol = request.protocol
+								stream = write_upgrade_body(protocol)
+								body.call(stream)
+							else
+								task.async do
+									# Once we start writing the body, we can't recover if the request fails. That's because the body might be generated dynamically, streaming, etc.
+									write_body(@version, body)
+								end
 							end
 						else
-							self.write_empty_body(request.body)
+							write_empty_body(request.body)
 						end
 						
 						# This won't return the response until the entire body is written.

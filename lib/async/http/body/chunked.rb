@@ -24,8 +24,9 @@ module Async
 	module HTTP
 		module Body
 			class Chunked < Readable
-				def initialize(protocol)
-					@protocol = protocol
+				# TODO maybe this should take a stream rather than a connection?
+				def initialize(connection)
+					@connection = connection
 					@finished = false
 					
 					@length = 0
@@ -39,7 +40,7 @@ module Async
 				def close(error = nil)
 					# We only close the connection if we haven't completed reading the entire body:
 					unless @finished
-						@protocol.close
+						@connection.close
 						@finished = true
 					end
 					
@@ -49,17 +50,17 @@ module Async
 				def read
 					return nil if @finished
 					
-					length = @protocol.read_line.to_i(16)
+					length = @connection.read_line.to_i(16)
 					
 					if length == 0
 						@finished = true
-						@protocol.read_line
+						@connection.read_line
 						
 						return nil
 					end
 					
-					chunk = @protocol.stream.read(length)
-					@protocol.read_line # Consume the trailing CRLF
+					chunk = @connection.stream.read(length)
+					@connection.read_line # Consume the trailing CRLF
 					
 					@length += length
 					@count += 1

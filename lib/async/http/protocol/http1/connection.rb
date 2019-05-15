@@ -40,6 +40,14 @@ module Async
 					
 					attr :version
 					
+					def http1?
+						true
+					end
+					
+					def http2?
+						false
+					end
+					
 					def read_line?
 						@stream.read_until(CRLF)
 					end
@@ -89,6 +97,10 @@ module Async
 					
 					def read_remainder_body
 						Body::Remainder.new(@stream)
+					end
+					
+					def read_upgrade_body(protocol)
+						Body::Remainder.new(@stream, protocol: protocol)
 					end
 				end
 			end

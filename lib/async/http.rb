@@ -23,4 +23,4 @@ require_relative 'http/version'
 require_relative 'http/client'
 require_relative 'http/server'
 
-require_relative 'http/url_endpoint'
+require_relative 'http/endpoint'

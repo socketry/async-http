@@ -23,7 +23,7 @@ require 'async/http/client'
 require 'async/reactor'
 
 require 'async/io/ssl_socket'
-require 'async/http/url_endpoint'
+require 'async/http/endpoint'
 require 'async/http/accept_encoding'
 require 'async/http/content_encoding'
 

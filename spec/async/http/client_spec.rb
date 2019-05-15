@@ -23,7 +23,7 @@ require 'async/http/client'
 require 'async/reactor'
 
 require 'async/io/ssl_socket'
-require 'async/http/url_endpoint'
+require 'async/http/endpoint'
 require 'async/http/accept_encoding'
 
 RSpec.describe Async::HTTP::Client, timeout: 5 do
@@ -40,7 +40,7 @@ RSpec.describe Async::HTTP::Client, timeout: 5 do
 	context 'non-existant host' do
 		include_context Async::RSpec::Reactor
 		
-		let(:endpoint) {Async::HTTP::URLEndpoint.parse('http://the.future')}
+		let(:endpoint) {Async::HTTP::Endpoint.parse('http://the.future')}
 		let(:client) {Async::HTTP::Client.new(endpoint)}
 		
 		it "should fail to connect" do
@@ -53,7 +53,7 @@ RSpec.describe Async::HTTP::Client, timeout: 5 do
 	describe Async::HTTP::Protocol::HTTPS do
 		include_context Async::RSpec::Reactor
 		
-		let(:endpoint) {Async::HTTP::URLEndpoint.parse('https://www.codeotaku.com')}
+		let(:endpoint) {Async::HTTP::Endpoint.parse('https://www.codeotaku.com')}
 		let(:client) {Async::HTTP::Client.new(endpoint)}
 		
 		it "should specify hostname" do

@@ -22,7 +22,7 @@ require 'async/http/relative_location'
 require 'async/http/server'
 
 RSpec.describe Async::HTTP::RelativeLocation do
-	let(:endpoint) {Async::HTTP::URLEndpoint.parse('http://127.0.0.1:9294', reuse_port: true)}
+	let(:endpoint) {Async::HTTP::Endpoint.parse('http://127.0.0.1:9294', reuse_port: true)}
 	let(:client) {Async::HTTP::Client.new(endpoint)}
 	
 	subject {described_class.new(client)}

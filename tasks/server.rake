@@ -1,7 +1,7 @@
 
 task :http1 do
 	require 'async/http/protocol'
-	require 'async/http/url_endpoint'
+	require 'async/http/endpoint'
 	require 'async/io/host_endpoint'
 
 	@protocol = Async::HTTP::Protocol::HTTP1
@@ -18,7 +18,7 @@ task :google do
 	require 'pry'
 	
 	Async.run do
-		endpoint = Async::HTTP::URLEndpoint.parse("https://www.google.com")
+		endpoint = Async::HTTP::Endpoint.parse("https://www.google.com")
 		peer = endpoint.connect
 		stream = Async::IO::Stream.new(peer)
 		

@@ -6,12 +6,12 @@
 require 'async'
 require 'async/logger'
 require 'async/http/client'
-require 'async/http/url_endpoint'
+require 'async/http/endpoint'
 
 # Async.logger.level = Logger::DEBUG
 
 Async.run do |task|
-	endpoint = Async::HTTP::URLEndpoint.parse("https://www.google.com")
+	endpoint = Async::HTTP::Endpoint.parse("https://www.google.com")
 	
 	client = Async::HTTP::Client.new(endpoint)
 	

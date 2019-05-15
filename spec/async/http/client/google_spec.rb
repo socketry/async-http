@@ -19,12 +19,12 @@
 # THE SOFTWARE.
 
 require 'async/http/client'
-require 'async/http/url_endpoint'
+require 'async/http/endpoint'
 
 RSpec.describe Async::HTTP::Client, timeout: 5 do
 	include_context Async::RSpec::Reactor
 	
-	let(:endpoint) {Async::HTTP::URLEndpoint.parse('https://www.google.com')}
+	let(:endpoint) {Async::HTTP::Endpoint.parse('https://www.google.com')}
 	let(:client) {Async::HTTP::Client.new(endpoint)}
 	
 	it 'can fetch remote resource' do

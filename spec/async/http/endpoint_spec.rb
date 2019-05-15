@@ -18,9 +18,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'async/http/url_endpoint'
+require 'async/http/endpoint'
 
-RSpec.describe Async::HTTP::URLEndpoint do
+RSpec.describe Async::HTTP::Endpoint do
 	it "should fail to parse relative url" do
 		expect{
 			described_class.parse("/foo/bar")
@@ -31,13 +31,13 @@ RSpec.describe Async::HTTP::URLEndpoint do
 		let(:url_string) {"https://localhost:9292"}
 		
 		it "extracts port from URL" do
-			endpoint = Async::HTTP::URLEndpoint.parse(url_string)
+			endpoint = Async::HTTP::Endpoint.parse(url_string)
 			
 			expect(endpoint.port).to eq 9292
 		end
 		
 		it "extracts port from options" do
-			endpoint = Async::HTTP::URLEndpoint.parse(url_string, port: 9000)
+			endpoint = Async::HTTP::Endpoint.parse(url_string, port: 9000)
 			
 			expect(endpoint.port).to eq 9000
 		end
@@ -47,13 +47,13 @@ RSpec.describe Async::HTTP::URLEndpoint do
 		let(:url_string) {"https://127.0.0.1:9292"}
 		
 		it "extracts hostname from URL" do
-			endpoint = Async::HTTP::URLEndpoint.parse(url_string)
+			endpoint = Async::HTTP::Endpoint.parse(url_string)
 			
 			expect(endpoint.hostname).to eq '127.0.0.1'
 		end
 		
 		it "extracts hostname from options" do
-			endpoint = Async::HTTP::URLEndpoint.parse(url_string, hostname: 'localhost')
+			endpoint = Async::HTTP::Endpoint.parse(url_string, hostname: 'localhost')
 			
 			expect(endpoint.hostname).to eq 'localhost'
 		end
@@ -61,7 +61,7 @@ RSpec.describe Async::HTTP::URLEndpoint do
 end
 
 RSpec.describe "http://www.google.com/search" do
-	let(:endpoint) {Async::HTTP::URLEndpoint.parse(subject)}
+	let(:endpoint) {Async::HTTP::Endpoint.parse(subject)}
 	
 	it "should be valid endpoint" do
 		expect{endpoint}.to_not raise_error
@@ -76,7 +76,7 @@ RSpec.describe "http://www.google.com/search" do
 	end
 	
 	it "should be eql? if host part is same" do
-		other = Async::HTTP::URLEndpoint.parse('http://www.google.com/search?q=ruby')
+		other = Async::HTTP::Endpoint.parse('http://www.google.com/search?q=ruby')
 		expect(endpoint).to be_eql other
 	end
 end

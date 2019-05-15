@@ -22,7 +22,7 @@ require 'async/http/body'
 
 require 'async/http/server'
 require 'async/http/client'
-require 'async/http/url_endpoint'
+require 'async/http/endpoint'
 
 require 'async/io/ssl_socket'
 
@@ -113,7 +113,7 @@ end
 RSpec.describe Async::HTTP::Protocol::HTTP1, timeout: 2 do
 	include_context Async::RSpec::Reactor
 	
-	let(:endpoint) {Async::HTTP::URLEndpoint.parse('http://127.0.0.1:9296', reuse_port: true)}
+	let(:endpoint) {Async::HTTP::Endpoint.parse('http://127.0.0.1:9296', reuse_port: true)}
 	let(:client_endpoint) {endpoint}
 	let(:server_endpoint) {endpoint}
 	
@@ -147,8 +147,8 @@ RSpec.describe Async::HTTP::Protocol::HTTPS, timeout: 2 do
 	end
 	
 	# Shared port for localhost network tests.
-	let(:server_endpoint) {Async::HTTP::URLEndpoint.parse("https://localhost:9296", ssl_context: server_context)}
-	let(:client_endpoint) {Async::HTTP::URLEndpoint.parse("https://localhost:9296", ssl_context: client_context)}
+	let(:server_endpoint) {Async::HTTP::Endpoint.parse("https://localhost:9296", ssl_context: server_context)}
+	let(:client_endpoint) {Async::HTTP::Endpoint.parse("https://localhost:9296", ssl_context: client_context)}
 	
 	it_should_behave_like Async::HTTP::Body
 end

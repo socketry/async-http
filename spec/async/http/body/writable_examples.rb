@@ -25,7 +25,7 @@ require 'async/reactor'
 require 'async/http/body'
 require 'async/http/body/deflate'
 require 'async/http/body/writable'
-require 'async/http/url_endpoint'
+require 'async/http/endpoint'
 
 require 'async/io/ssl_socket'
 require 'async/rspec/ssl'

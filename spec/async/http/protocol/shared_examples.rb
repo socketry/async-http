@@ -20,7 +20,7 @@
 
 require 'async/http/client'
 require 'async/http/server'
-require 'async/http/url_endpoint'
+require 'async/http/endpoint'
 require 'async/http/body/hijack'
 require 'tempfile'
 
@@ -250,7 +250,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 	end
 	
 	context 'slow server' do
-		let(:endpoint) {Async::HTTP::URLEndpoint.parse('http://127.0.0.1:9294', reuse_port: true, timeout: 0.1)}
+		let(:endpoint) {Async::HTTP::Endpoint.parse('http://127.0.0.1:9294', reuse_port: true, timeout: 0.1)}
 		
 		let(:server) do
 			Async::HTTP::Server.for(endpoint, protocol) do |request|

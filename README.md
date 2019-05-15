@@ -97,10 +97,10 @@ Here is a basic example of a client/server running in the same reactor:
 require 'async/http/server'
 require 'async/http/client'
 require 'async/reactor'
-require 'async/http/url_endpoint'
+require 'async/http/endpoint'
 require 'async/http/response'
 
-endpoint = Async::HTTP::URLEndpoint.parse('http://127.0.0.1:9294')
+endpoint = Async::HTTP::Endpoint.parse('http://127.0.0.1:9294')
 
 app = lambda do |request|
 	Async::HTTP::Response[200, {}, ["Hello World"]]
@@ -140,7 +140,7 @@ trusted_fingerprints = {
 }
 
 Async do
-	endpoint = Async::HTTP::URLEndpoint.parse("https://www.codeotaku.com/index")
+	endpoint = Async::HTTP::Endpoint.parse("https://www.codeotaku.com/index")
 	
 	# This is a quick hack/POC:
 	ssl_context = endpoint.ssl_context

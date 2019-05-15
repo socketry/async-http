@@ -6,10 +6,10 @@ require 'async'
 require 'async/http/body/file'
 require 'async/http/body/delayed'
 require 'async/http/client'
-require 'async/http/url_endpoint'
+require 'async/http/endpoint'
 
 Async.run do
-	endpoint = Async::HTTP::URLEndpoint.parse("http://localhost:9222")
+	endpoint = Async::HTTP::Endpoint.parse("http://localhost:9222")
 	client = Async::HTTP::Client.new(endpoint, Async::HTTP::Protocol::HTTP2)
 	
 	headers = [

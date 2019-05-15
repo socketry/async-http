@@ -1,7 +1,7 @@
 
 require 'async/http/server'
 require 'async/http/client'
-require 'async/http/url_endpoint'
+require 'async/http/endpoint'
 
 require 'async/io/ssl_socket'
 
@@ -36,8 +36,8 @@ RSpec.describe Async::HTTP::Server, timeout: 5 do
 		end
 		
 		# Shared port for localhost network tests.
-		let(:server_endpoint) {Async::HTTP::URLEndpoint.parse("https://localhost:6779", ssl_context: server_context)}
-		let(:client_endpoint) {Async::HTTP::URLEndpoint.parse("https://localhost:6779", ssl_context: client_context)}
+		let(:server_endpoint) {Async::HTTP::Endpoint.parse("https://localhost:6779", ssl_context: server_context)}
+		let(:client_endpoint) {Async::HTTP::Endpoint.parse("https://localhost:6779", ssl_context: client_context)}
 		
 		it "client can get a resource via https" do
 			server = Async::HTTP::Server.for(server_endpoint, Async::HTTP::Protocol::HTTP1) do |request|

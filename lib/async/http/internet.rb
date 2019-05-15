@@ -19,7 +19,7 @@
 # THE SOFTWARE.
 
 require_relative 'client'
-require_relative 'url_endpoint'
+require_relative 'endpoint'
 require_relative 'middleware'
 require_relative 'body/buffered'
 
@@ -31,7 +31,7 @@ module Async
 			end
 			
 			def call(method, url, headers = [], body = nil)
-				endpoint = URLEndpoint.parse(url)
+				endpoint = Endpoint.parse(url)
 				
 				client = @clients.fetch(endpoint) do
 					@clients[endpoint] = Client.new(endpoint)

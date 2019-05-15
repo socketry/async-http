@@ -19,7 +19,7 @@
 # THE SOFTWARE.
 
 require_relative 'client'
-require_relative 'url_endpoint'
+require_relative 'endpoint'
 
 require_relative 'reference'
 

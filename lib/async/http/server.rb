@@ -39,13 +39,15 @@ module Async
 				@scheme = scheme
 			end
 			
+			attr :endpoint
+			attr :protocol
 			attr :scheme
 			
 			def accept(peer, address, task: Task.current)
 				stream = Async::IO::Stream.new(peer)
 				connection = @protocol.server(stream)
 				
-				Async.logger.debug(self) {"Incoming connnection from #{address.inspect} to #{protocol}"}
+				Async.logger.debug(self) {"Incoming connnection from #{address.inspect} to #{@protocol}"}
 				
 				connection.each do |request|
 					# We set the default scheme unless it was otherwise specified.

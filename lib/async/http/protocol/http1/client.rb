@@ -41,8 +41,9 @@ module Async
 							body = request.body
 							
 							if protocol = request.protocol
-								stream = write_upgrade_body(protocol)
-								body.call(stream)
+								task.async do
+									write_upgrade_body(protocol, body)
+								end
 							else
 								task.async do
 									# Once we start writing the body, we can't recover if the request fails. That's because the body might be generated dynamically, streaming, etc.
@@ -53,8 +54,7 @@ module Async
 							write_empty_body(request.body)
 						end
 						
-						# This won't return the response until the entire body is written.
-						return Response.new(self, request)
+						return Response.read(self, request)
 					rescue
 						# This will ensure that #reusable? returns false.
 						@stream.close

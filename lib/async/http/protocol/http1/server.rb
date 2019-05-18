@@ -69,7 +69,12 @@ module Async
 								write_response(@version, response.status, response.headers)
 								
 								if body = response.body and protocol = response.protocol
-									write_upgrade_body(protocol, body)
+									stream = write_upgrade_body(protocol)
+									
+									# At this point, the request body is hijacked, so we don't want to call #finish below.
+									request = nil
+									
+									body.call(stream)
 								else
 									write_body(@version, body, head)
 								end

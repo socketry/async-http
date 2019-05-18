@@ -98,10 +98,6 @@ module Async
 					def read_remainder_body
 						Body::Remainder.new(@stream)
 					end
-					
-					def read_upgrade_body(protocol)
-						Body::Remainder.new(@stream, protocol: protocol)
-					end
 				end
 			end
 		end

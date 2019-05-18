@@ -25,10 +25,18 @@ module Async
 		module Protocol
 			module HTTP1
 				class Response < Protocol::Response
-					def initialize(connection, request)
-						super(*connection.read_response(request.method))
-						
+					def self.read(connection, request)
+						if parts = connection.read_response(request.method)
+							self.new(connection, *parts)
+						end
+					end
+					
+					def initialize(connection, version, status, reason, headers, body)
 						@connection = connection
+						
+						protocol = connection.upgrade?(headers)
+						
+						super(version, status, reason, headers, body, protocol)
 					end
 				end
 			end

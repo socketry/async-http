@@ -25,15 +25,18 @@ module Async
 		module Protocol
 			module HTTP1
 				class Request < Protocol::Request
-					def self.read(protocol)
-						if parts = protocol.read_request
-							self.new(protocol, *parts)
+					def self.read(connection)
+						if parts = connection.read_request
+							self.new(connection, *parts)
 						end
 					end
 					
-					def initialize(connection, *parts)
-						super(nil, *parts)
+					def initialize(connection, authority, method, path, version, headers, body)
 						@connection = connection
+						
+						protocol = connection.upgrade?(headers)
+						
+						super(nil, authority, method, path, version, headers, body, protocol)
 					end
 					
 					def hijack?

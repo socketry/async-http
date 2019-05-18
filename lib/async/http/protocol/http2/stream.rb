@@ -79,7 +79,7 @@ module Async
 							end
 							
 							# @body.read above might take a while and a stream reset might be received in the mean time.
-							unless closed?
+							unless closed? or @connection.closed?
 								send_data(nil, ::Protocol::HTTP2::END_STREAM)
 							end
 							

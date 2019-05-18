@@ -32,7 +32,6 @@ module Async
 				REASON = 'reason'.freeze
 				STATUS = ':status'.freeze
 				PROTOCOL = ':protocol'.freeze
-				VERSION = 'HTTP/2.0'.freeze
 				
 				CONTENT_LENGTH = 'content-length'
 				
@@ -106,7 +105,8 @@ module Async
 						Async.logger.debug(self) {"Closing connection"}
 						
 						@reader.stop if @reader
-						@stream.close
+						
+						super
 					end
 				end
 			end

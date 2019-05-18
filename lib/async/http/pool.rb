@@ -97,7 +97,7 @@ module Async
 			end
 			
 			def to_s
-				"\#<#{self.class} resources=#{availability_string} limit=#{@limit}>"
+				"\#<#{self.class} resources=#{availability_string} limit=#{@limit.inspect}>"
 			end
 			
 			protected

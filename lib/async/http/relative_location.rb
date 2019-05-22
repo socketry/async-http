@@ -20,14 +20,15 @@
 
 require_relative 'client'
 require_relative 'endpoint'
-
 require_relative 'reference'
+
+require 'protocol/http/middleware'
 
 module Async
 	module HTTP
 		# A client wrapper which transparently handles both relative and absolute redirects to a given maximum number of hops.
-		class RelativeLocation < Middleware
-			DEFAULT_METHOD = 'GET'.freeze
+		class RelativeLocation < ::Protocol::HTTP::Middleware
+			DEFAULT_METHOD = GET
 			
 			def initialize(app, maximum_hops = 4)
 				super(app)

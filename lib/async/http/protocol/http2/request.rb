@@ -27,7 +27,7 @@ module Async
 			module HTTP2
 				class Request < Protocol::Request
 					def initialize(connection, stream_id)
-						super(nil, nil, nil, nil, VERSION, Headers.new)
+						super(nil, nil, nil, nil, VERSION, ::Protocol::HTTP::Headers.new)
 						
 						@input = nil
 						@connection = connection
@@ -58,7 +58,7 @@ module Async
 					def push(path, headers = nil)
 						push_headers = [
 							[SCHEME, @scheme],
-							[METHOD, GET],
+							[METHOD, ::Protocol::HTTP::Methods::GET],
 							[PATH, path],
 							[AUTHORITY, @authority]
 						]
@@ -146,7 +146,7 @@ module Async
 								pseudo_headers << [PROTOCOL, protocol]
 							end
 							
-							headers = Headers::Merged.new(
+							headers = ::Protocol::HTTP::Headers::Merged.new(
 								pseudo_headers,
 								response.headers
 							)

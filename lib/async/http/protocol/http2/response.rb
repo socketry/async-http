@@ -29,7 +29,7 @@ module Async
 						@input = nil
 						@length = nil
 						
-						super(connection.version, nil, nil, Headers.new)
+						super(connection.version, nil, nil, ::Protocol::HTTP::Headers.new)
 						
 						@connection = connection
 						@stream = Stream.new(self, connection, stream_id)
@@ -148,7 +148,7 @@ module Async
 							pseudo_headers << [PROTOCOL, protocol]
 						end
 						
-						headers = Headers::Merged.new(
+						headers = ::Protocol::HTTP::Headers::Merged.new(
 							pseudo_headers,
 							request.headers
 						)

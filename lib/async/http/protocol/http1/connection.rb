@@ -23,10 +23,6 @@ require 'protocol/http1'
 require_relative 'request'
 require_relative 'response'
 
-require_relative '../../body/chunked'
-require_relative '../../body/fixed'
-require_relative '../../body/remainder'
-
 module Async
 	module HTTP
 		module Protocol
@@ -76,18 +72,6 @@ module Async
 						Async.logger.debug(self) {"Closing connection"}
 						
 						@stream.close
-					end
-					
-					def read_chunked_body
-						Body::Chunked.new(self)
-					end
-					
-					def read_fixed_body(length)
-						Body::Fixed.new(@stream, length)
-					end
-					
-					def read_remainder_body
-						Body::Remainder.new(@stream)
 					end
 				end
 			end

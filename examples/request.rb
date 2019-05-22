@@ -19,7 +19,7 @@ Async.run do |task|
 		'accept' => 'text/html',
 	}
 	
-	request = Async::HTTP::Request.new(client.scheme, "www.google.com", "GET", "/search?q=cats", headers)
+	request = Protocol::HTTP::Request.new(client.scheme, "www.google.com", "GET", "/search?q=cats", headers)
 	
 	puts "Sending request..."
 	response = client.call(request)

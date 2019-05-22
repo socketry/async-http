@@ -18,13 +18,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'readable'
-
+require 'protocol/http/body/readable'
 require 'async/queue'
 
 module Async
 	module HTTP
 		module Body
+			include ::Protocol::HTTP::Body
+			
 			# A dynamic body which you can write to and read from.
 			class Writable < Readable
 				class Closed < StandardError

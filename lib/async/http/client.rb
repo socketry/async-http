@@ -21,13 +21,14 @@
 require 'async/io/endpoint'
 require 'async/io/stream'
 
+require 'protocol/http/body/streamable'
+require 'protocol/http/methods'
+
 require_relative 'protocol'
-require_relative 'body/streamable'
-require_relative 'middleware'
 
 module Async
 	module HTTP
-		class Client
+		class Client < ::Protocol::HTTP::Methods
 			# Provides a robust interface to a server.
 			# * If there are no connections, it will create one.
 			# * If there are already connections, it will reuse it.
@@ -73,8 +74,6 @@ module Async
 				@pool.close
 			end
 			
-			include Methods
-			
 			def call(request)
 				request.scheme ||= self.scheme
 				request.authority ||= self.authority
@@ -91,7 +90,7 @@ module Async
 					response = request.call(connection)
 					
 					# The connection won't be released until the body is completely read/released.
-					Body::Streamable.wrap(response) do
+					::Protocol::HTTP::Body::Streamable.wrap(response) do
 						@pool.release(connection)
 					end
 					

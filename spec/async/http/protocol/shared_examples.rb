@@ -33,7 +33,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 	
 	context 'buffered body' do
 		let(:body) {Async::HTTP::Body::Buffered.new(["Hello World"])}
-		let(:response) {Async::HTTP::Response[200, {}, body]}
+		let(:response) {Protocol::HTTP::Response[200, {}, body]}
 		
 		let(:server) do
 			Async::HTTP::Server.for(endpoint, protocol) do |request|
@@ -54,11 +54,11 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 			Async::HTTP::Server.for(endpoint, protocol) do |request|
 				if request.method == 'POST'
 					# We stream the request body directly to the response.
-					Async::HTTP::Response[200, {}, request.body]
+					Protocol::HTTP::Response[200, {}, request.body]
 				elsif request.method == 'GET'
 					expect(request.body).to be nil
 					
-					Async::HTTP::Response[200, {
+					Protocol::HTTP::Response[200, {
 						'remote-address' => request.remote_address.inspect
 					}, ["#{request.method} #{request.version}"]]
 				end
@@ -165,7 +165,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		
 		let(:server) do
 			Async::HTTP::Server.for(endpoint, protocol) do |request|
-				Async::HTTP::Response[200, {}, bad_body]
+				Protocol::HTTP::Response[200, {}, bad_body]
 			end
 		end
 		
@@ -199,7 +199,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 					body.finish
 				end
 				
-				Async::HTTP::Response[200, {}, body]
+				Protocol::HTTP::Response[200, {}, body]
 			end
 		end
 		
@@ -223,7 +223,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 					io.flush
 					io.close
 				else
-					Async::HTTP::Response[200, {}, ["Hijack Failed"]]
+					Protocol::HTTP::Response[200, {}, ["Hijack Failed"]]
 				end
 			end
 		end
@@ -255,7 +255,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		let(:server) do
 			Async::HTTP::Server.for(endpoint, protocol) do |request|
 				Async::Task.current.sleep(endpoint.timeout * 2)
-				Async::HTTP::Response[200, {}, []]
+				Protocol::HTTP::Response[200, {}, []]
 			end
 		end
 		
@@ -270,7 +270,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		let(:server) do
 			Async::HTTP::Server.for(endpoint, protocol) do |request|
 				# Echo the request body back to the client.
-				Async::HTTP::Response[200, {}, request.body]
+				Protocol::HTTP::Response[200, {}, request.body]
 			end
 		end
 		

@@ -60,7 +60,7 @@ RSpec.describe Async::HTTP::Server do
 			end
 			
 			server = Async::HTTP::Server.new(
-				Async::HTTP::Middleware::Okay,
+				Protocol::HTTP::Middleware::Okay,
 				bound_endpoint, protocol, endpoint.scheme
 			)
 			

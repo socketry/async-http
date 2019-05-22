@@ -103,7 +103,7 @@ require 'async/http/response'
 endpoint = Async::HTTP::Endpoint.parse('http://127.0.0.1:9294')
 
 app = lambda do |request|
-	Async::HTTP::Response[200, {}, ["Hello World"]]
+	Protocol::HTTP::Response[200, {}, ["Hello World"]]
 end
 
 server = Async::HTTP::Server.new(app, endpoint)

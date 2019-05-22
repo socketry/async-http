@@ -12,7 +12,7 @@ Async.logger.level = Logger::DEBUG
 
 Async.run do
 	server = Async::HTTP::Server.for(endpoint, protocol) do |request|
-		Async::HTTP::Response[200, {}, request.body]
+		Protocol::HTTP::Response[200, {}, request.body]
 	end
 	
 	server.run

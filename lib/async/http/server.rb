@@ -22,11 +22,11 @@ require 'async/io/endpoint'
 require 'async/io/stream'
 
 require_relative 'protocol'
-require_relative 'response'
+require 'protocol/http/middleware'
 
 module Async
 	module HTTP
-		class Server < Middleware
+		class Server < ::Protocol::HTTP::Middleware
 			def self.for(*args, &block)
 				self.new(block, *args)
 			end

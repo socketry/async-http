@@ -39,7 +39,7 @@ RSpec.describe Async::HTTP::Protocol::HTTP2, timeout: 2 do
 		
 		let(:server) do
 			Async::HTTP::Server.for(endpoint, protocol) do |request|
-				Async::HTTP::Response[200, request.headers, ["Authority: #{request.authority.inspect}"]]
+				Protocol::HTTP::Response[200, request.headers, ["Authority: #{request.authority.inspect}"]]
 			end
 		end
 		
@@ -80,7 +80,7 @@ RSpec.describe Async::HTTP::Protocol::HTTP2, timeout: 2 do
 					end
 				end
 				
-				Async::HTTP::Response[200, {}, body]
+				Protocol::HTTP::Response[200, {}, body]
 			end
 		end
 		
@@ -112,7 +112,7 @@ RSpec.describe Async::HTTP::Protocol::HTTP2, timeout: 2 do
 					request.push('/index.css')
 				end
 				
-				Async::HTTP::Response[200, {}, ["Path: #{request.path}"]]
+				Protocol::HTTP::Response[200, {}, ["Path: #{request.path}"]]
 			end
 		end
 		

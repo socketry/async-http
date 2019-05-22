@@ -20,8 +20,8 @@
 
 require_relative 'client'
 require_relative 'endpoint'
-require_relative 'middleware'
-require_relative 'body/buffered'
+require 'protocol/http/middleware'
+require 'protocol/http/body/buffered'
 
 module Async
 	module HTTP
@@ -39,7 +39,7 @@ module Async
 				
 				body = Body::Buffered.wrap(body)
 				
-				request = Request.new(client.scheme, endpoint.authority, method, endpoint.path, nil, headers, body)
+				request = ::Protocol::HTTP::Request.new(client.scheme, endpoint.authority, method, endpoint.path, nil, headers, body)
 				
 				return client.call(request)
 			end
@@ -49,7 +49,7 @@ module Async
 				@clients.clear
 			end
 			
-			VERBS.each do |verb|
+			::Protocol::HTTP::Methods.each do |name, verb|
 				define_method(verb.downcase) do |url, headers = [], body = nil|
 					self.call(verb, url.to_str, headers, body)
 				end

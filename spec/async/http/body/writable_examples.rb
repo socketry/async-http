@@ -23,7 +23,7 @@ require 'async/http/client'
 require 'async/reactor'
 
 require 'async/http/body'
-require 'async/http/body/deflate'
+require 'protocol/http/body/deflate'
 require 'async/http/body/writable'
 require 'async/http/endpoint'
 
@@ -93,7 +93,7 @@ RSpec.shared_examples_for Async::HTTP::Body::Writable do
 		end
 		
 		it "can propagate failures in nested bodies" do
-			nested = Async::HTTP::Body::Deflate.for(subject)
+			nested = Protocol::HTTP::Body::Deflate.for(subject)
 			
 			reactor.async do
 				expect do

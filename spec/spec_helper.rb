@@ -45,7 +45,7 @@ RSpec.shared_context Async::HTTP::Server do
 	
 	let(:server) do
 		Async::HTTP::Server.for(endpoint, protocol) do |request|
-			Async::HTTP::Response[200, {}, []]
+			Protocol::HTTP::Response[200, {}, []]
 		end
 	end
 end

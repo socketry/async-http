@@ -18,22 +18,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+require 'protocol/http/body/buffered'
 require_relative 'body/writable'
-require_relative 'body/buffered'
 
 module Async
 	module HTTP
-		# These classes implement a general IO model for streaming HTTP bodies.
 		module Body
-			# The implementation assumes a sequential unbuffered stream of data.
-			# class Body
-			# 	def each -> yield(String | nil)
-			# 	def read -> String | nil
-			# 	def join -> String
-			
-			# 	def finish -> buffer the stream and close it.
-			# 	def close(error = nil) -> close the stream immediately.
-			# end
+			include ::Protocol::HTTP::Body
 		end
 	end
 end

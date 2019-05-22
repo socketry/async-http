@@ -18,16 +18,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'readable'
+require 'protocol/http/body/readable'
 require_relative 'stream'
 
 module Async
 	module HTTP
 		module Body
 			# A body which is designed for hijacked connections.
-			class Hijack < Readable
+			class Hijack < ::Protocol::HTTP::Body::Readable
 				def self.response(request, status, headers, &block)
-					Async::HTTP::Response[status, headers, self.wrap(request, &block)]
+					::Protocol::HTTP::Response[status, headers, self.wrap(request, &block)]
 				end
 				
 				def self.wrap(request, &block)

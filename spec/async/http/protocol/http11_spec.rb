@@ -29,7 +29,7 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 2 do
 		
 		let(:server) do
 			Async::HTTP::Server.for(endpoint, protocol) do |request|
-				Async::HTTP::Response[200, {}, ["Hello", "World"]]
+				Protocol::HTTP::Response[200, {}, ["Hello", "World"]]
 			end
 		end
 		

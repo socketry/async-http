@@ -46,11 +46,11 @@ RSpec.describe Async::HTTP::RelativeLocation do
 				Async::HTTP::Server.for(endpoint) do |request|
 					case request.path
 					when '/'
-						Async::HTTP::Response[301, {'location' => '/index.html'}, []]
+						Protocol::HTTP::Response[301, {'location' => '/index.html'}, []]
 					when '/forever'
-						Async::HTTP::Response[301, {'location' => '/forever'}, []]
+						Protocol::HTTP::Response[301, {'location' => '/forever'}, []]
 					when '/index.html'
-						Async::HTTP::Response[200, {}, [request.method]]
+						Protocol::HTTP::Response[200, {}, [request.method]]
 					end
 				end
 			end
@@ -74,9 +74,9 @@ RSpec.describe Async::HTTP::RelativeLocation do
 				Async::HTTP::Server.for(endpoint) do |request|
 					case request.path
 					when '/'
-						Async::HTTP::Response[302, {'location' => '/index.html'}, []]
+						Protocol::HTTP::Response[302, {'location' => '/index.html'}, []]
 					when '/index.html'
-						Async::HTTP::Response[200, {}, [request.method]]
+						Protocol::HTTP::Response[200, {}, [request.method]]
 					end
 				end
 			end
@@ -94,9 +94,9 @@ RSpec.describe Async::HTTP::RelativeLocation do
 				Async::HTTP::Server.for(endpoint) do |request|
 					case request.path
 					when '/'
-						Async::HTTP::Response[307, {'location' => '/index.html'}, []]
+						Protocol::HTTP::Response[307, {'location' => '/index.html'}, []]
 					when '/index.html'
-						Async::HTTP::Response[200, {}, [request.method]]
+						Protocol::HTTP::Response[200, {}, [request.method]]
 					end
 				end
 			end
@@ -114,9 +114,9 @@ RSpec.describe Async::HTTP::RelativeLocation do
 				Async::HTTP::Server.for(endpoint) do |request|
 					case request.path
 					when '/'
-						Async::HTTP::Response[308, {'location' => '/index.html'}, []]
+						Protocol::HTTP::Response[308, {'location' => '/index.html'}, []]
 					when '/index.html'
-						Async::HTTP::Response[200, {}, [request.method]]
+						Protocol::HTTP::Response[200, {}, [request.method]]
 					end
 				end
 			end

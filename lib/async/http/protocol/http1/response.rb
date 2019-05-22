@@ -38,6 +38,14 @@ module Async
 						
 						super(version, status, reason, headers, body, protocol)
 					end
+					
+					def hijack?
+						@body.nil?
+					end
+					
+					def hijack!
+						@connection.hijack!
+					end
 				end
 			end
 		end

@@ -41,7 +41,7 @@ RSpec.describe Async::HTTP::Server, timeout: 5 do
 		
 		it "client can get a resource via https" do
 			server = Async::HTTP::Server.for(server_endpoint, Async::HTTP::Protocol::HTTP1) do |request|
-				Async::HTTP::Response[200, {}, ['Hello World']]
+				Protocol::HTTP::Response[200, {}, ['Hello World']]
 			end
 			
 			client = Async::HTTP::Client.new(client_endpoint)

@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'body/wrapper'
+require 'protocol/http/body/wrapper'
 
 require 'async/clock'
 
@@ -44,7 +44,7 @@ module Async
 		
 		module Body
 			# Invokes a callback once the body has finished reading.
-			class Statistics < Wrapper
+			class Statistics < ::Protocol::HTTP::Body::Wrapper
 				def initialize(start_time, body, callback)
 					super(body)
 					

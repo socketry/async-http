@@ -28,7 +28,7 @@ RSpec.describe Async::HTTP::Statistics, timeout: 5 do
 		Async::HTTP::Server.for(endpoint, protocol) do |request|
 			statistics = described_class.start
 			
-			response = Async::HTTP::Response[200, {}, ["Hello ", "World!"]]
+			response = Protocol::HTTP::Response[200, {}, ["Hello ", "World!"]]
 			
 			statistics.wrap(response) do |statistics, error|
 				expect(statistics.sent).to be == 12

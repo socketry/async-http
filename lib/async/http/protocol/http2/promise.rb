@@ -35,8 +35,8 @@ module Async
 					attr :request
 					
 					private def build_request(headers)
-						request = HTTP::Request.new
-						request.headers = Headers.new
+						request = ::Protocol::HTTP::Request.new
+						request.headers = ::Protocol::HTTP::Headers.new
 						
 						headers.each do |key, value|
 							if key == SCHEME

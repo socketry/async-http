@@ -41,7 +41,9 @@ module Async
 							body = request.body
 							
 							if protocol = request.protocol
+								# This is a very tricky apect of handling HTTP/1 upgrade connections. In theory, this approach is a bit inefficient, because we spin up a task just to handle writing to the underlying stream when we could be writing to the stream directly. But we need to maintain some level of compatibility with HTTP/2. Additionally, we don't know if the upgrade request will be accepted, so starting to write the body at this point needs to be handled with care.
 								task.async do
+									# If this fails, this connection will be closed.
 									write_upgrade_body(protocol, body)
 								end
 							else
@@ -50,6 +52,8 @@ module Async
 									write_body(@version, body)
 								end
 							end
+						elsif protocol = request.protocol
+							write_upgrade_body(protocol)
 						else
 							write_empty_body(request.body)
 						end

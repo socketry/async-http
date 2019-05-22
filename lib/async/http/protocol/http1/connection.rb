@@ -52,15 +52,6 @@ module Async
 						@stream.read_until(CRLF)
 					end
 					
-					# @return [Async::Wrapper] the underlying non-blocking IO.
-					def hijack!
-						@persistent = false
-						
-						@stream.flush
-						
-						return @stream.io
-					end
-					
 					def peer
 						@stream.io
 					end

@@ -53,6 +53,10 @@ module Async
 			attr :scheme
 			attr :authority
 			
+			def secure?
+				@endpoint.secure?
+			end
+			
 			def self.open(*args, &block)
 				client = self.new(*args)
 				

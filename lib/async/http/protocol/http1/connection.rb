@@ -60,18 +60,17 @@ module Async
 					
 					# Can we use this connection to make requests?
 					def connected?
-						@stream.connected?
+						@stream&.connected?
 					end
 					
 					def reusable?
-						!@stream.closed?
+						@stream && !@stream.closed?
 						# !(self.closed? || @stream.closed?)
 					end
 					
 					def close
 						Async.logger.debug(self) {"Closing connection"}
-						
-						@stream.close
+						super
 					end
 				end
 			end

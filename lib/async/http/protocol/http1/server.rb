@@ -55,7 +55,7 @@ module Async
 						while request = next_request
 							response = yield(request, self)
 							
-							return if @stream.closed?
+							return if @stream.nil? or @stream.closed?
 							
 							if response
 								# Try to avoid holding on to request, to minimse GC overhead:

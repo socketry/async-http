@@ -29,7 +29,7 @@ module Async
 						@input = nil
 						@length = nil
 						
-						super(connection.version, nil, nil, ::Protocol::HTTP::Headers.new)
+						super(connection.version, nil, ::Protocol::HTTP::Headers.new)
 						
 						@connection = connection
 						@stream = Stream.new(self, connection, stream_id)

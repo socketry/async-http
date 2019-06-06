@@ -36,7 +36,7 @@ module Async
 						
 						protocol = connection.upgrade?(headers)
 						
-						super(version, status, reason, headers, body, protocol)
+						super(version, status, headers, body, protocol)
 					end
 					
 					def hijack?

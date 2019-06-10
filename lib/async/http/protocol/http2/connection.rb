@@ -65,8 +65,7 @@ module Async
 							nested_task.annotate("#{version} reading data for #{self.class}")
 							
 							begin
-								# Even thought the connection might be logically closed, we are not done until all HTTP/2 streams are closed or the underlying I/O is closed.
-								while !@stream.closed?
+								while !self.closed?
 									self.read_frame
 								end
 							ensure

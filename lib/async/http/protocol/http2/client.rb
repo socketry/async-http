@@ -48,12 +48,12 @@ module Async
 					
 					# Used by the client to send requests to the remote server.
 					def call(request)
+						raise ::Protocol::HTTP2::Error, "Connection closed!" if self.closed?
+						
 						@count += 1
 						
 						response = Response.new(self, next_stream_id)
-						
 						response.send_request(request)
-						
 						response.wait
 						
 						return response

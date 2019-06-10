@@ -137,12 +137,12 @@ module Async
 								[STATUS, response.status],
 							]
 							
-							if length = response.body.length
-								pseudo_headers << [CONTENT_LENGTH, length]
-							end
-							
 							if protocol = response.protocol
 								pseudo_headers << [PROTOCOL, protocol]
+							end
+							
+							if length = response.body.length
+								pseudo_headers << [CONTENT_LENGTH, length]
 							end
 							
 							headers = ::Protocol::HTTP::Headers::Merged.new(
@@ -153,7 +153,7 @@ module Async
 							@stream.send_headers(nil, headers)
 							@stream.send_body(response.body)
 						else
-							headers = Headers::Merged.new([
+							headers = ::Protocol::HTTP::Headers::Merged.new([
 								[STATUS, response.status],
 							], response.headers)
 							

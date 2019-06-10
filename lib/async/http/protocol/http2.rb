@@ -40,7 +40,6 @@ module Async
 				}
 				
 				SERVER_SETTINGS = {
-					::Protocol::HTTP2::Settings::ENABLE_PUSH => 1,
 					# We choose a lower maximum concurrent streams to avoid overloading a single connection/thread.
 					::Protocol::HTTP2::Settings::MAXIMUM_CONCURRENT_STREAMS => 32,
 					::Protocol::HTTP2::Settings::MAXIMUM_FRAME_SIZE => 0x100000,

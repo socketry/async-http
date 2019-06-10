@@ -20,6 +20,8 @@
 
 require_relative 'stream'
 
+require 'async/semaphore'
+
 module Async
 	module HTTP
 		module Protocol
@@ -40,6 +42,9 @@ module Async
 						
 						@count = 0
 						@reader = nil
+						
+						# Writing multiple frames at the same time can cause odd problems if frames are only partially written. So we use a semaphore to ensure frames are written in their entirety.
+						@write_frame_guard = Async::Semaphore.new(1)
 					end
 					
 					attr :stream
@@ -58,6 +63,13 @@ module Async
 					
 					def stop_connection(error)
 						@reader = nil
+					end
+					
+					def write_frame(frame)
+						# We don't want to write multiple frames at the same time.
+						@write_frame_guard.acquire do
+							super
+						end
 					end
 					
 					def read_in_background(task: Task.current)

@@ -47,4 +47,13 @@ RSpec.describe Async::HTTP::Internet, timeout: 5 do
 		
 		subject.close
 	end
+	
+	it "can't fetch hashicorp jobs" do
+		response = subject.get('https://www.hashicorp.com/jobs')
+		
+		expect(response).to be_failure
+		response.close
+		
+		subject.close
+	end
 end

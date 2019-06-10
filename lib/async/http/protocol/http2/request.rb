@@ -127,7 +127,6 @@ module Async
 					
 					NO_RESPONSE = [
 						[STATUS, '500'],
-						[REASON, "No response generated"]
 					]
 					
 					def send_response(response)

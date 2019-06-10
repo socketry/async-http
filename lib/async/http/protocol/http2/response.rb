@@ -85,8 +85,6 @@ module Async
 						headers.each do |key, value|
 							if key == STATUS
 								@status = Integer(value)
-							elsif key == REASON
-								@reason = value
 							elsif key == CONTENT_LENGTH
 								@length = Integer(value)
 							elsif key == PROTOCOL

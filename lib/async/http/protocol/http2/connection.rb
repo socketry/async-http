@@ -29,7 +29,6 @@ module Async
 				METHOD = ':method'.freeze
 				PATH = ':path'.freeze
 				AUTHORITY = ':authority'.freeze
-				REASON = 'reason'.freeze
 				STATUS = ':status'.freeze
 				PROTOCOL = ':protocol'.freeze
 				

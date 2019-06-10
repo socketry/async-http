@@ -31,6 +31,7 @@ module Async
 						end
 					end
 					
+					# @param reason [String] HTTP response line reason, ignored.
 					def initialize(connection, version, status, reason, headers, body)
 						@connection = connection
 						

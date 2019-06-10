@@ -1,4 +1,4 @@
-# Copyright, 2017, by Samuel G. D. Williams. <http://www.codeotaku.com>
+# Copyright, 2019, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,33 +18,33 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'server_context'
+require 'async/http/server'
 
-require 'async/http/statistics'
+# Async.logger.level = Logger::DEBUG
 
-RSpec.describe Async::HTTP::Statistics, timeout: 5 do
-	include_context Async::HTTP::Server
-	let(:protocol) {Async::HTTP::Protocol::HTTP1}
+RSpec.shared_context Async::HTTP::Server do
+	include_context Async::RSpec::Reactor
 	
-	let(:server) do
-		Async::HTTP::Server.for(endpoint, protocol) do |request|
-			statistics = described_class.start
-			
-			response = Protocol::HTTP::Response[200, {}, ["Hello ", "World!"]]
-			
-			statistics.wrap(response) do |statistics, error|
-				expect(statistics.sent).to be == 12
-				expect(error).to be_nil
-			end.tap do |response|
-				expect(response.body).to receive(:complete_statistics).and_call_original
-			end
+	let(:protocol) {described_class}
+	let(:endpoint) {Async::HTTP::Endpoint.parse('http://127.0.0.1:9294', reuse_port: true)}
+	
+	let(:retries) {1}
+	let!(:client) {Async::HTTP::Client.new(endpoint, protocol, retries: retries)}
+	
+	let!(:server_task) do
+		server_task = reactor.async do
+			server.run
 		end
 	end
 	
-	it "client can get resource" do
-		response = client.get("/")
-		expect(response.read).to be == "Hello World!"
-		
-		expect(response).to be_success
+	after(:each) do
+		server_task.stop
+		client.close
+	end
+	
+	let(:server) do
+		Async::HTTP::Server.for(endpoint, protocol) do |request|
+			Protocol::HTTP::Response[200, {}, []]
+		end
 	end
 end

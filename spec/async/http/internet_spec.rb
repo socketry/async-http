@@ -28,12 +28,14 @@ RSpec.describe Async::HTTP::Internet, timeout: 5 do
 	
 	let(:headers) {[['accept', '*/*'], ['user-agent', 'async-http']]}
 	
+	after do
+		subject.close
+	end
+	
 	it "can fetch remote website" do
 		response = subject.get("https://www.codeotaku.com/index", headers)
 		
 		expect(response).to be_success
-		
-		subject.close
 	end
 	
 	let(:sample) {{"hello" => "world"}}
@@ -44,16 +46,11 @@ RSpec.describe Async::HTTP::Internet, timeout: 5 do
 		
 		expect(response).to be_success
 		expect{JSON.parse(response.read)}.to_not raise_error
-		
-		subject.close
 	end
 	
 	it "can't fetch hashicorp jobs" do
-		response = subject.get('https://www.hashicorp.com/jobs')
-		
-		expect(response).to be_failure
-		response.close
-		
-		subject.close
+		expect do
+			subject.get('https://www.hashicorp.com/jobs')
+		end.to raise_error(::Protocol::HTTP2::Error)
 	end
 end

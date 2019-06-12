@@ -46,7 +46,7 @@ module Async
 					def close(state = :closed)
 						super
 						
-						@delegate.close(state)
+						@delegate.close
 					end
 					
 					def send_body(body, task: Async::Task.current)

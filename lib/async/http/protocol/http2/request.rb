@@ -55,7 +55,7 @@ module Async
 						return request.stream
 					end
 					
-					def close(state)
+					def close
 					end
 					
 					# @return [Stream] the promised stream, on which to send data.

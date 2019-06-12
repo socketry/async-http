@@ -55,7 +55,7 @@ module Async
 						return promise.stream
 					end
 					
-					def close(state)
+					def close
 						self.promises.enqueue(nil)
 					end
 					

@@ -46,6 +46,8 @@ module Async
 					def create_stream(stream_id)
 						request = Request.new(self, stream_id)
 						
+						@streams[stream_id] = request.stream
+						
 						return request.stream
 					end
 					

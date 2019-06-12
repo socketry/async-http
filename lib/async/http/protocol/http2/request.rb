@@ -100,13 +100,17 @@ module Async
 							end
 						end
 						
-						# We only construct the input/body if data is coming.
-						unless end_stream
-							@body = @input = Body::Writable.new
+						unless @scheme and @method and @path
+							send_reset_stream(PROTOCOL_ERROR)
+						else
+							# We only construct the input/body if data is coming.
+							unless end_stream
+								@body = @input = Body::Writable.new
+							end
+							
+							# We are ready for processing:
+							@connection.requests.enqueue self
 						end
-						
-						# We are ready for processing:
-						@connection.requests.enqueue self
 					end
 					
 					def receive_data(stream, data, end_stream)

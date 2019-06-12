@@ -80,6 +80,8 @@ module Async
 								while !self.closed?
 									self.read_frame
 								end
+							rescue EOFError
+								# Ignore.
 							ensure
 								stop_connection($!)
 							end
@@ -109,14 +111,6 @@ module Async
 					
 					def version
 						VERSION
-					end
-					
-					def close
-						Async.logger.debug(self) {"Closing connection"}
-						
-						@reader.stop if @reader
-						
-						super
 					end
 				end
 			end

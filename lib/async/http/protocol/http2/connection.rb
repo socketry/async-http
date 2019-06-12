@@ -80,8 +80,8 @@ module Async
 								while !self.closed?
 									self.read_frame
 								end
-							rescue EOFError
-								# Ignore.
+							rescue EOFError, Async::Wrapper::Cancelled
+								# Stream closed.
 							ensure
 								stop_connection($!)
 							end

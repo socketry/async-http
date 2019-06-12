@@ -46,6 +46,7 @@ module Async
 					def close(state = :closed)
 						super
 						
+						# I don't really like the fact that this name is not just #close but oh well.
 						@delegate.close_stream
 					end
 					

@@ -46,16 +46,16 @@ module Async
 						@promises ||= Async::Queue.new
 					end
 					
-					def create_promise_stream(headers, stream_id)
-						promise = Promise.new(@connection, headers, stream_id)
-						@connection.streams[stream_id] = promise.stream
-						
-						self.promises.enqueue(promise)
-						
-						return promise.stream
+					def accept_push_promise_stream(promised_stream_id, headers)
+						@connection.accept_push_promise_stream(promised_stream_id) do
+							promise = Promise.new(@connection, headers, promised_stream_id)
+							
+							self.promises.enqueue(promise)
+						end
 					end
 					
-					def close_stream
+					# Stream state transition into `:closed`.
+					def close!
 						self.promises.enqueue(nil)
 					end
 					

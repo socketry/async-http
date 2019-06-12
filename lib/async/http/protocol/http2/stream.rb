@@ -39,15 +39,18 @@ module Async
 					attr_accessor :delegate
 					attr :body
 					
-					def create_promise_stream(headers, stream_id)
-						@delegate.create_promise_stream(headers, stream_id)
+					def create_push_promise_stream(headers)
+						@delegate.create_push_promise_stream(headers)
 					end
 					
-					def close(state = :closed)
+					def accept_push_promise_stream(headers, stream_id)
+						@delegate.accept_push_promise_stream(headers, stream_id)
+					end
+					
+					def close!
 						super
 						
-						# I don't really like the fact that this name is not just #close but oh well.
-						@delegate.close_stream
+						@delegate.close!
 					end
 					
 					def send_body(body, task: Async::Task.current)

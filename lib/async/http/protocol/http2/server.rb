@@ -43,12 +43,11 @@ module Async
 					
 					attr :requests
 					
-					def create_stream(stream_id)
-						request = Request.new(self, stream_id)
-						
-						@streams[stream_id] = request.stream
-						
-						return request.stream
+					# A new request has come in:
+					def accept_stream(stream_id)
+						super do
+							Request.new(self, stream_id)
+						end
 					end
 					
 					def stop_connection(error)

@@ -46,16 +46,16 @@ module Async
 						@connection.enable_push?
 					end
 					
-					def create_promise_stream(headers, stream_id)
-						request = self.class.new(@connection, stream_id)
-						@connection.streams[stream_id] = request.stream
-						
-						request.receive_headers(self, headers, false)
-						
-						return request.stream
+					def create_push_promise_stream(headers)
+						@connection.create_push_promise_stream do |stream_id|
+							request = self.class.new(@connection, stream_id)
+							
+							request.receive_headers(self, headers, false)
+						end
 					end
 					
-					def close_stream
+					# Stream state transition into `:closed`.
+					def close!
 					end
 					
 					# @return [Stream] the promised stream, on which to send data.

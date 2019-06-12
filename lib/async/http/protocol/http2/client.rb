@@ -38,6 +38,10 @@ module Async
 						super(framer)
 					end
 					
+					def create_response
+						Response.new(self, self.next_stream_id)
+					end
+					
 					def stop_connection(error)
 						super
 						
@@ -54,10 +58,7 @@ module Async
 						
 						@count += 1
 						
-						stream_id = next_stream_id
-						response = Response.new(self, stream_id)
-						@streams[stream_id] = response.stream
-						
+						response = create_response
 						response.send_request(request)
 						response.wait
 						

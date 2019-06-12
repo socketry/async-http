@@ -40,19 +40,22 @@ module Async
 						@promises = nil
 					end
 					
+					attr :stream
+					
 					def promises
 						@promises ||= Async::Queue.new
 					end
 					
 					def create_promise_stream(headers, stream_id)
 						promise = Promise.new(@connection, headers, stream_id)
+						@connection.streams[stream_id] = promise.stream
 						
 						self.promises.enqueue(promise)
 						
 						return promise.stream
 					end
 					
-					def close!(state)
+					def close(state)
 						self.promises.enqueue(nil)
 					end
 					

@@ -25,7 +25,7 @@ require 'async/http/endpoint'
 require 'async/io/shared_endpoint'
 require 'async/reactor'
 
-require 'async/container/forked'
+require 'async/container'
 
 require 'etc'
 require 'benchmark'
@@ -64,7 +64,9 @@ RSpec.describe Async::HTTP::Server do
 				bound_endpoint, protocol, endpoint.scheme
 			)
 			
-			container = Async::Container::Forked.new(concurrency: concurrency) do
+			container = Async::Container.new
+			
+			container.run(count: concurrency) do
 				server.run
 			end
 			
@@ -79,7 +81,7 @@ RSpec.describe Async::HTTP::Server do
 				system(wrk, "-c", concurrency.to_s, "-d", "2", "-t", concurrency.to_s, url)
 			end
 			
-			container.stop(:KILL)
+			container.stop(false)
 		end
 	end
 end

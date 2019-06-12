@@ -47,7 +47,9 @@ task :server do
 		return Protocol::HTTP::Response[200, {'content-type' => 'text/plain'}, ["Hello World"]]
 	end
 	
-	container = Async::Container::Forked.new(concurrency: 1) do
+	container = Async::Container.new
+	
+	container.run(count: 1) do
 		#GC.disable
 		
 		server.run
@@ -86,7 +88,9 @@ task :wrk do
 
 	concurrency = 1
 	
-	container = Async::Container::Forked.new(concurrency: concurrency) do
+	container = Async::Container.new
+	
+	container.run(count: concurrency) do
 		server.run
 	end
 
@@ -96,5 +100,5 @@ task :wrk do
 		system("wrk", "-c", concurrency.to_s, "-d", "10", "-t", concurrency.to_s, url)
 	end
 
-	container.stop
+	container.stop(false)
 end

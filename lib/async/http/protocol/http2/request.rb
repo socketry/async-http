@@ -30,6 +30,8 @@ module Async
 						super(nil, nil, nil, nil, VERSION, ::Protocol::HTTP::Headers.new)
 						
 						@input = nil
+						@length = nil
+						
 						@connection = connection
 						@stream = Stream.new(self, connection, stream_id)
 					end
@@ -46,12 +48,14 @@ module Async
 					
 					def create_promise_stream(headers, stream_id)
 						request = self.class.new(@connection, stream_id)
+						@connection.streams[stream_id] = request.stream
+						
 						request.receive_headers(self, headers, false)
 						
 						return request.stream
 					end
 					
-					def close!(state)
+					def close(state)
 					end
 					
 					# @return [Stream] the promised stream, on which to send data.
@@ -95,6 +99,10 @@ module Async
 								return @stream.send_failure(400, "Request protocol already specified") if @protocol
 								
 								@protocol = value
+							elsif key == CONTENT_LENGTH
+								return @stream.send_failure(400, "Request protocol already content length") if @length
+								
+								@length = Integer(value)
 							else
 								@headers[key] = value
 							end
@@ -105,7 +113,7 @@ module Async
 						else
 							# We only construct the input/body if data is coming.
 							unless end_stream
-								@body = @input = Body::Writable.new
+								@body = @input = Body::Writable.new(@length)
 							end
 							
 							# We are ready for processing:

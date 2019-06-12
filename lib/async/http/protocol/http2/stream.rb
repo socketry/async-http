@@ -43,10 +43,10 @@ module Async
 						@delegate.create_promise_stream(headers, stream_id)
 					end
 					
-					def close!(state = :closed)
+					def close(state = :closed)
 						super
 						
-						@delegate.close!(state)
+						@delegate.close(state)
 					end
 					
 					def send_body(body, task: Async::Task.current)

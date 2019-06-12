@@ -42,7 +42,9 @@ module Async
 						super
 						
 						@streams.each do |id, stream|
-							stream.stop_connection(error)
+							if stream.respond_to?(:stop_connection)
+								stream.stop_connection(error)
+							end
 						end
 					end
 					
@@ -52,7 +54,10 @@ module Async
 						
 						@count += 1
 						
-						response = Response.new(self, next_stream_id)
+						stream_id = next_stream_id
+						response = Response.new(self, stream_id)
+						@streams[stream_id] = response.stream
+						
 						response.send_request(request)
 						response.wait
 						

@@ -42,16 +42,6 @@ module Async
 						Response.new(self, self.next_stream_id)
 					end
 					
-					def stop_connection(error)
-						super
-						
-						@streams.each do |id, stream|
-							if stream.respond_to?(:stop_connection)
-								stream.stop_connection(error)
-							end
-						end
-					end
-					
 					# Used by the client to send requests to the remote server.
 					def call(request)
 						raise ::Protocol::HTTP2::Error, "Connection closed!" if self.closed?

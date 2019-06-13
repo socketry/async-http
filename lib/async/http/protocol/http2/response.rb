@@ -124,7 +124,7 @@ module Async
 						notify!
 					end
 					
-					def stop_connection(error)
+					def stream_closed(error)
 						@exception = error
 						
 						notify!

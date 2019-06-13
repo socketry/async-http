@@ -58,6 +58,13 @@ module Async
 					def close!
 					end
 					
+					def stream_closed(error)
+						if @input
+							@input.close(error)
+							@input = nil
+						end
+					end
+					
 					# @return [Stream] the promised stream, on which to send data.
 					def push(path, headers = nil)
 						push_headers = [
@@ -132,9 +139,6 @@ module Async
 					end
 					
 					def receive_reset_stream(stream, error_code)
-					end
-					
-					def stop_connection(error)
 					end
 					
 					NO_RESPONSE = [

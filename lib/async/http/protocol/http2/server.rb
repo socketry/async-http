@@ -50,7 +50,7 @@ module Async
 						end
 					end
 					
-					def stop_connection(error)
+					def close(error = nil)
 						super
 						
 						@requests.enqueue nil

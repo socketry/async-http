@@ -30,9 +30,13 @@ module Async
 						
 						@delegate = delegate
 						
-						@body = body
+						# This is the body that is being sent.
+						@body = nil
+						
+						# The remainder of the current chunk being sent.
 						@remainder = nil
 						
+						# The task that is handling sending the body.
 						@task = nil
 					end
 					
@@ -45,12 +49,6 @@ module Async
 					
 					def accept_push_promise_stream(headers, stream_id)
 						@delegate.accept_push_promise_stream(headers, stream_id)
-					end
-					
-					def close!
-						super
-						
-						@delegate.close!
 					end
 					
 					def send_body(body, task: Async::Task.current)
@@ -142,13 +140,21 @@ module Async
 						return error_code
 					end
 					
-					def stop_connection(error)
+					def close!
+						@delegate.close!
+						
+						super
+					end
+					
+					def close(error = nil)
+						super
+						
 						if @body
 							@body.close(error)
 							@body = nil
 						end
 						
-						@delegate.stop_connection(error)
+						@delegate.stream_closed(error)
 					end
 				end
 			end

@@ -61,8 +61,10 @@ module Async
 						@reader ||= read_in_background
 					end
 					
-					def stop_connection(error)
+					def close(error = nil)
 						@reader = nil
+						
+						super
 					end
 					
 					def write_frame(frame)
@@ -81,9 +83,9 @@ module Async
 									self.read_frame
 								end
 							rescue EOFError, Async::Wrapper::Cancelled
-								# Stream closed.
+								# Ignore.
 							ensure
-								stop_connection($!)
+								close($!)
 							end
 						end
 					end

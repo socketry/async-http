@@ -103,7 +103,9 @@ module Async
 			protected
 			
 			def availability_string
-				@resources.collect{|resource,usage| "#{usage}/#{resource.multiplex}#{resource.connected? ? '' : '*'}"}.join(";")
+				@resources.collect do |resource,usage|
+					"#{usage}/#{resource.multiplex}#{resource.connected? ? '' : '*'}/#{resource.count}"
+				end.join(";")
 			end
 			
 			def reuse(resource)

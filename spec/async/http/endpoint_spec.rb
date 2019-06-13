@@ -58,6 +58,18 @@ RSpec.describe Async::HTTP::Endpoint do
 			expect(endpoint.hostname).to eq 'localhost'
 		end
 	end
+	
+	describe '#path' do
+		it "can normal urls" do
+			endpoint = Async::HTTP::Endpoint.parse("http://foo.com/bar?baz")
+			expect(endpoint.path).to be == "/bar?baz"
+		end
+		
+		it "can handle websocket urls" do
+			endpoint = Async::HTTP::Endpoint.parse("wss://foo.com/bar?baz")
+			expect(endpoint.path).to be == "/bar?baz"
+		end
+	end
 end
 
 RSpec.describe "http://www.google.com/search" do

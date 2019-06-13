@@ -113,8 +113,15 @@ module Async
 				end
 			end
 			
+			# Return the path and query components of the given URL.
 			def path
-				@url.request_uri
+				buffer = @url.path || "/"
+				
+				if query = @url.query
+					buffer << "?#{query}"
+				end
+				
+				return buffer
 			end
 			
 			DEFAULT_ALPN_PROTOCOLS = ['h2', 'http/1.1'].freeze

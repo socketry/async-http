@@ -56,21 +56,19 @@ module Async
 						@requests.enqueue nil
 					end
 					
-					def each(task: Task.current)
-						while request = @requests.dequeue
+					def each
+						@requests.async do |task, request|
 							@count += 1
 							
-							task.async do
-								begin
-									response = yield(request)
-								rescue
-									# We need to close the stream if the user code blows up while generating a response:
-									request.stream.send_reset_stream(::Protocol::HTTP2::INTERNAL_ERROR)
-									
-									raise
-								else
-									request.send_response(response)
-								end
+							begin
+								response = yield(request)
+							rescue
+								# We need to close the stream if the user code blows up while generating a response:
+								request.stream.send_reset_stream(::Protocol::HTTP2::INTERNAL_ERROR)
+								
+								raise
+							else
+								request.send_response(response)
 							end
 						end
 					end

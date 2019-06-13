@@ -117,7 +117,7 @@ module Async
 							end
 							
 							# We are ready for processing:
-							@connection.requests.enqueue self
+							@connection.requests.enqueue(self)
 						end
 					end
 					

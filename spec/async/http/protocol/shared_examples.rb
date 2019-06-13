@@ -96,6 +96,17 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 			it "has protocol version" do
 				expect(response.version).to_not be_nil
 			end
+			
+			it "can fetch several things" do
+				responses = 10.times.collect do
+					client.get("/")
+				end
+				
+				responses.each do |response|
+					expect(response).to be_success
+					expect(response.read).to eq expected
+				end
+			end
 		end
 		
 		context 'POST' do

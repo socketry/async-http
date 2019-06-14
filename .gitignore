@@ -12,3 +12,4 @@
 
 .rspec_status
 .covered.db
+/h2spec

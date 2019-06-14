@@ -34,7 +34,7 @@ module Async
 							@window_updates.enqueue(@stream.available_frame_size)
 							
 							@task = task.async do
-								while chunk = @body.read
+								while chunk = @body&.read
 									@chunks.unshift(chunk)
 									while !@chunks.empty?
 										maximum_size = @stream.available_frame_size
@@ -43,13 +43,16 @@ module Async
 											maximum_size = @window_updates.dequeue
 										end
 										
-										puts "#{self} send_data #{@chunks.inspect}"
 										self.send_data(self.pop, maximum_size)
 									end
 								end
 								
 								self.end_stream
-								@body = nil
+								
+								if @body
+									@body.close
+									@body = nil
+								end
 							end
 						end
 						
@@ -68,11 +71,6 @@ module Async
 							if @body
 								@body.close(error)
 								@body = nil
-							end
-							
-							if @task
-								@task.stop
-								@task = nil
 							end
 						end
 						

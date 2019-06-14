@@ -43,7 +43,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 			end
 		end
 		
-		it "response should be closed" do
+		it "response body should be closed" do
 			expect(body).to receive(:close).and_call_original
 			# expect(response).to receive(:close).and_call_original
 			
@@ -98,16 +98,22 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 			end
 			
 			it "can handle many simultaneous requests", timeout: 10 do
-				10.times do
-					responses = 100.times.collect do
-						client.get("/")
-					end
-					
-					responses.each do |response|
-						expect(response).to be_success
-						expect(response.read).to eq expected
+				duration = Async::Clock.measure do
+					10.times do
+						responses = 100.times.collect do
+							client.get("/")
+						end
+						
+						puts "Pool: #{client.pool}"
+						
+						responses.each do |response|
+							expect(response).to be_success
+							expect(response.read).to eq expected
+						end
 					end
 				end
+				
+				puts "Duration = #{duration.round(2)}"
 			end
 		end
 		

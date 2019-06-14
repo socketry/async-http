@@ -78,6 +78,7 @@ RSpec.shared_examples Async::HTTP::Body do
 			
 			Async::Task.current.async do |task|
 				10.times do |i|
+					puts "body.write(#{i})"
 					body.write("#{i}")
 					notification.wait
 				end
@@ -99,6 +100,7 @@ RSpec.shared_examples Async::HTTP::Body do
 		j = 0
 		# This validates interleaving
 		response.body.each do |line|
+			puts "body.eachd do |#{line}|"
 			expect(line.to_i).to be == j
 			j += 1
 			

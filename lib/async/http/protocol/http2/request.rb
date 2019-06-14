@@ -145,7 +145,7 @@ module Async
 						[STATUS, '500'],
 					]
 					
-					def send_response(response)
+					def send_response(response, task: Task.current)
 						if response.nil?
 							@stream.send_headers(nil, NO_RESPONSE, ::Protocol::HTTP2::END_STREAM)
 						elsif response.body?

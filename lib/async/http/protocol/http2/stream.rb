@@ -51,61 +51,69 @@ module Async
 						@delegate.accept_push_promise_stream(headers, stream_id)
 					end
 					
-					def send_body(body, task: Async::Task.current)
-						# TODO Might need to stop this task when body is cancelled.
-						@task = task.async do |subtask|
-							subtask.annotate "Sending body: #{body.class}"
-							
-							@body = body
-							
-							window_updated
-						end
+					# Set the body and begin sending it.
+					def send_body(body, task: Task.current)
+						@body = body
 					end
 					
-					def send_chunk
-						maximum_size = self.available_frame_size
-						
-						if maximum_size == 0
-							return false
-						end
-						
+					def data_available?
+						@body or @remainder
+					end
+					
+					def next_chunk
+						# Figure out what we are going to send:
 						if @remainder
 							chunk = @remainder
 							@remainder = nil
-						elsif chunk = @body.read
-							# There was a new chunk of data to send
-						else
-							if @body
-								@body.close
-								@body = nil
-							end
+						elsif chunk = @body&.read # This is a non-blocking operation.
+							# There was a new chunk of data to send.
+						elsif @body
+							# We had a body, and it didn't give us any more chunks, so it's finished:
+							@body.close
+							@body = nil
 							
-							# @body.read above might take a while and a stream reset might be received in the mean time.
-							unless closed? or @connection.closed?
+							# It's possible that the stream has been closed at this point:
+							unless self.closed?
 								send_data(nil, ::Protocol::HTTP2::END_STREAM)
 							end
 							
+							# There is no more data to send:
+							return false
+						else
+							# There was no data and no body:
 							return false
 						end
 						
+						return chunk
+					end
+					
+					def write_data(maximum_size)
+						# This operation is non-blocking:
+						return unless chunk = next_chunk
+						
+						# We want to send a chunk but the stream has been closed, so we are done:
 						return false if closed?
 						
+						# The flow control window doesn't have any available capacity, we are finished:
+						if maximum_size <= 0
+							@remainder = chunk
+							return false
+						end
+						
+						# Send as much of the chunk as possible:
 						if chunk.bytesize <= maximum_size
 							send_data(chunk, maximum_size: maximum_size)
+							
+							# We can send another chunk of data:
+							return true
 						else
 							send_data(chunk.byteslice(0, maximum_size), maximum_size: maximum_size)
 							
+							# The window was not big enough to send all the data, so we save it for next time:
 							@remainder = chunk.byteslice(maximum_size, chunk.bytesize - maximum_size)
-						end
-						
-						return true
-					end
-					
-					def window_updated
-						return unless @body
-						
-						while send_chunk
-							# There could be more data to send...
+							
+							# We need to wait for another window update before we can continue sending data:
+							return false
 						end
 					end
 					
@@ -140,7 +148,7 @@ module Async
 						return error_code
 					end
 					
-					def close!
+					def close!(error_code = nil)
 						@delegate.close!
 						
 						super

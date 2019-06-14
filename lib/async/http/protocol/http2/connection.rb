@@ -80,6 +80,7 @@ module Async
 							
 							begin
 								while !self.closed?
+									self.write_data
 									self.read_frame
 								end
 							rescue EOFError, Async::Wrapper::Cancelled

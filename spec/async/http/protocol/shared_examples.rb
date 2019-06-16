@@ -20,6 +20,7 @@
 
 require_relative '../server_context'
 
+require 'async/clock'
 require 'async/http/client'
 require 'async/http/server'
 require 'async/http/endpoint'

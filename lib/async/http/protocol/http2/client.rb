@@ -39,7 +39,7 @@ module Async
 					end
 					
 					def create_response
-						Response.new(self, self.next_stream_id)
+						Response::Stream.create(self, self.next_stream_id).response
 					end
 					
 					# Used by the client to send requests to the remote server.

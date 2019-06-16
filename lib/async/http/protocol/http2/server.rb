@@ -20,7 +20,6 @@
 
 require_relative 'connection'
 require_relative 'request'
-require_relative 'promise'
 
 require 'protocol/http2/server'
 
@@ -32,6 +31,7 @@ module Async
 					include Connection
 					
 					def initialize(stream)
+						# Used by some generic methods in Connetion:
 						@stream = stream
 						
 						framer = ::Protocol::HTTP2::Framer.new(stream)
@@ -43,21 +43,23 @@ module Async
 					
 					attr :requests
 					
-					# A new request has come in:
 					def accept_stream(stream_id)
 						super do
-							Request.new(self, stream_id)
+							Request::Stream.create(self, stream_id)
 						end
 					end
 					
 					def close(error = nil)
 						super
 						
+						# Stop the request loop:
 						@requests.enqueue nil
+						@requests = nil
 					end
 					
 					def each
-						@requests.async do |task, request|
+						# It's possible the connection has died before we get here...
+						@requests&.async do |task, request|
 							@count += 1
 							
 							begin

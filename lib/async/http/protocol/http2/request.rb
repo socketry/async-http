@@ -19,59 +19,117 @@
 # THE SOFTWARE.
 
 require_relative '../request'
-require_relative 'connection'
+require_relative 'stream'
 
 module Async
 	module HTTP
 		module Protocol
 			module HTTP2
+				# Typically used on the server side to represent an incoming request, and write the response.
 				class Request < Protocol::Request
-					def initialize(connection, stream_id)
+					class Stream < HTTP2::Stream
+						def initialize(*)
+							super
+							
+							@request = Request.new(self)
+						end
+						
+						attr :request
+						
+						# Create a fake request on the server, with the given headers.
+						def create_push_promise_stream(headers)
+							stream = @connection.create_push_promise_stream(&Stream.method(:create))
+							
+							# This will ultimately enqueue the request to be processed by the server:
+							stream.apply_headers(headers, false)
+							
+							return stream
+						end
+						
+						def receive_headers(frame)
+							apply_headers(super, frame.end_stream?)
+						end
+						
+						def apply_headers(headers, end_stream)
+							headers.each do |key, value|
+								if key == SCHEME
+									return send_failure(400, "Request scheme already specified") if @request.scheme
+									
+									@request.scheme = value
+								elsif key == AUTHORITY
+									return send_failure(400, "Request authority already specified") if @request.authority
+									
+									@request.authority = value
+								elsif key == METHOD
+									return send_failure(400, "Request method already specified") if @request.method
+									
+									@request.method = value
+								elsif key == PATH
+									return send_failure(400, "Request path already specified") if @request.path
+									
+									@request.path = value
+								elsif key == PROTOCOL
+									return send_failure(400, "Request protocol already specified") if @request.protocol
+									
+									@request.protocol = value
+								elsif key == CONTENT_LENGTH
+									return send_failure(400, "Request protocol already content length") if @length
+									
+									@length = Integer(value)
+								elsif key.start_with? ':'
+									return send_failure(400, "Invalid pseudo-header #{key}")
+								else
+									@request.headers.add(key, value)
+								end
+							end
+							
+							unless @request.valid?
+								send_reset_stream(::Protocol::HTTP2::Error::PROTOCOL_ERROR)
+							else
+								# We only construct the input/body if data is coming.
+								unless end_stream
+									@input = Body::Writable.new(@length)
+									@request.body = @input
+								end
+								
+								# We are ready for processing:
+								@connection.requests.enqueue(@request)
+							end
+							
+							return headers
+						end
+					end
+					
+					def initialize(stream)
 						super(nil, nil, nil, nil, VERSION, ::Protocol::HTTP::Headers.new)
 						
-						@input = nil
-						@length = nil
-						
-						@connection = connection
-						@stream = Stream.new(self, connection, stream_id)
+						@stream = stream
 					end
 					
 					attr :stream
+					
+					def valid?
+						@scheme and @method and @path
+					end
 					
 					def hijack?
 						false
 					end
 					
 					def push?
-						@connection.enable_push?
-					end
-					
-					def create_push_promise_stream(headers)
-						@connection.create_push_promise_stream do |stream_id|
-							request = self.class.new(@connection, stream_id)
-							
-							request.receive_headers(self, headers, false)
-						end
-					end
-					
-					# Stream state transition into `:closed`.
-					def close!
-					end
-					
-					def stream_closed(error)
-						if @input
-							@input.close(error)
-							@input = nil
-						end
+						@stream.connection.enable_push?
 					end
 					
 					# @return [Stream] the promised stream, on which to send data.
-					def push(path, headers = nil)
+					def push(path, headers = nil, scheme = @scheme, authority = @authority)
+						raise ArgumentError, "Missing scheme!" unless scheme
+						raise ArgumentError, "Missing authority!" unless authority
+						
 						push_headers = [
-							[SCHEME, @scheme],
+							[SCHEME, scheme],
 							[METHOD, ::Protocol::HTTP::Methods::GET],
 							[PATH, path],
-							[AUTHORITY, @authority]
+							[AUTHORITY, authority]
 						]
 						
 						if headers
@@ -84,68 +142,11 @@ module Async
 						@stream.send_push_promise(push_headers)
 					end
 					
-					def receive_headers(stream, headers, end_stream)
-						headers.each do |key, value|
-							if key == SCHEME
-								return @stream.send_failure(400, "Request scheme already specified") if @scheme
-								
-								@scheme = value
-							elsif key == AUTHORITY
-								return @stream.send_failure(400, "Request authority already specified") if @authority
-								
-								@authority = value
-							elsif key == METHOD
-								return @stream.send_failure(400, "Request method already specified") if @method
-								
-								@method = value
-							elsif key == PATH
-								return @stream.send_failure(400, "Request path already specified") if @path
-								
-								@path = value
-							elsif key == PROTOCOL
-								return @stream.send_failure(400, "Request protocol already specified") if @protocol
-								
-								@protocol = value
-							elsif key == CONTENT_LENGTH
-								return @stream.send_failure(400, "Request protocol already content length") if @length
-								
-								@length = Integer(value)
-							else
-								@headers[key] = value
-							end
-						end
-						
-						unless @scheme and @method and @path
-							send_reset_stream(PROTOCOL_ERROR)
-						else
-							# We only construct the input/body if data is coming.
-							unless end_stream
-								@body = @input = Body::Writable.new(@length)
-							end
-							
-							# We are ready for processing:
-							@connection.requests.enqueue(self)
-						end
-					end
-					
-					def receive_data(stream, data, end_stream)
-						unless data.empty?
-							@input.write(data)
-						end
-						
-						if end_stream
-							@input.close
-						end
-					end
-					
-					def receive_reset_stream(stream, error_code)
-					end
-					
 					NO_RESPONSE = [
 						[STATUS, '500'],
 					]
 					
-					def send_response(response, task: Task.current)
+					def send_response(response)
 						if response.nil?
 							@stream.send_headers(nil, NO_RESPONSE, ::Protocol::HTTP2::END_STREAM)
 						elsif response.body?

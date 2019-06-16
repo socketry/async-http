@@ -19,119 +19,155 @@
 # THE SOFTWARE.
 
 require_relative '../response'
+require_relative 'stream'
 
 module Async
 	module HTTP
 		module Protocol
 			module HTTP2
+				# Typically used on the client side to represent a request and the incoming response.
 				class Response < Protocol::Response
-					def initialize(connection, stream_id)
-						@input = nil
-						@length = nil
+					class Stream < HTTP2::Stream
+						def initialize(*)
+							super
+							
+							@response = Response.new(self)
+							
+							@notification = Async::Notification.new
+							@exception = nil
+						end
 						
-						super(connection.version, nil, ::Protocol::HTTP::Headers.new)
+						attr :response
 						
-						@connection = connection
-						@stream = Stream.new(self, connection, stream_id)
+						def accept_push_promise_stream(promised_stream_id, headers)
+							stream = @connection.accept_push_promise_stream(promised_stream_id, &Stream.method(:accept))
+							
+							stream.response.build_request(headers)
+							
+							@response.promises.enqueue(stream.response)
+							
+							return stream
+						end
 						
-						@notification = Async::Notification.new
-						@exception = nil
+						def receive_headers(frame)
+							apply_headers(super, frame.end_stream?)
+						end
 						
+						# This should be invoked from the background reader, and notifies the task waiting for the headers that we are done.
+						def apply_headers(headers, end_stream)
+							headers.each do |key, value|
+								if key == STATUS
+									@response.status = Integer(value)
+								elsif key == PROTOCOL
+									@response.protocol = value
+								elsif key == CONTENT_LENGTH
+									@length = Integer(value)
+								else
+									@response.headers.add(key, value)
+								end
+							end
+							
+							unless @response.valid?
+								send_reset_stream(::Protocol::HTTP2::Error::PROTOCOL_ERROR)
+							else
+								# We only construct the input/body if data is coming.
+								unless end_stream
+									@input = Body::Writable.new(@length)
+									@response.body = @input
+								end
+							end
+							
+							self.notify!
+							
+							return headers
+						end
+						
+						# Notify anyone waiting on the response headers to be received (or failure).
+						def notify!
+							if @notification
+								@notification.signal
+								@notification = nil
+							end
+						end
+						
+						# Wait for the headers to be received or for stream reset.
+						def wait
+							# If you call wait after the headers were already received, it should return immediately:
+							@notification&.wait
+							
+							if @exception
+								raise @exception
+							end
+						end
+						
+						def close(error)
+							super
+							
+							@response.promises.enqueue nil
+							
+							@exception = error
+							
+							notify!
+						end
+					end
+					
+					def initialize(stream)
+						super(stream.connection.version, nil, ::Protocol::HTTP::Headers.new)
+						
+						@stream = stream
+						@request = nil
 						@promises = nil
 					end
 					
 					attr :stream
 					
+					attr :request
+					
+					def wait
+						@stream.wait
+					end
+					
+					def valid?
+						!!@status
+					end
+					
 					def promises
 						@promises ||= Async::Queue.new
 					end
 					
-					def accept_push_promise_stream(promised_stream_id, headers)
-						@connection.accept_push_promise_stream(promised_stream_id) do
-							promise = Promise.new(@connection, headers, promised_stream_id)
-							
-							self.promises.enqueue(promise)
-						end
-					end
-					
-					# Stream state transition into `:closed`.
-					def close!
-						self.promises.enqueue(nil)
-					end
-					
-					# Notify anyone waiting on the response headers to be received (or failure).
-					protected def notify!
-						if @notification
-							@notification.signal
-							@notification = nil
-						end
+					def build_request(headers)
+						request = ::Protocol::HTTP::Request.new
+						request.headers = ::Protocol::HTTP::Headers.new
 						
-						# if @input
-						# 	@input.close(@exception)
-						# end
-					end
-					
-					# Wait for the headers to be received or for stream reset.
-					def wait
-						# If you call wait after the headers were already received, it should return immediately.
-						if @notification
-							@notification.wait
-						end
-						
-						if @exception
-							raise @exception
-						end
-					end
-					
-					# This should be invoked from the background reader, and notifies the task waiting for the headers that we are done.
-					def receive_headers(stream, headers, end_stream)
 						headers.each do |key, value|
-							if key == STATUS
-								@status = Integer(value)
-							elsif key == CONTENT_LENGTH
-								@length = Integer(value)
-							elsif key == PROTOCOL
-								@protocol = value
+							if key == SCHEME
+								return @stream.send_failure(400, "Request scheme already specified") if request.scheme
+								
+								request.scheme = value
+							elsif key == AUTHORITY
+								return @stream.send_failure(400, "Request authority already specified") if request.authority
+								
+								request.authority = value
+							elsif key == METHOD
+								return @stream.send_failure(400, "Request method already specified") if request.method
+								
+								request.method = value
+							elsif key == PATH
+								return @stream.send_failure(400, "Request path already specified") if request.path
+								
+								request.path = value
 							else
-								@headers[key] = value
+								request.headers[key] = value
 							end
 						end
 						
-						unless end_stream
-							@body = @input = Body::Writable.new(@length)
-						end
-						
-						notify!
-					end
-					
-					def receive_data(stream, data, end_stream)
-						unless data.empty?
-							@input.write(data)
-						end
-						
-						if end_stream
-							@input.close
-						end
-					rescue
-						@stream.send_reset_stream(0)
-					end
-					
-					def receive_reset_stream(stream, error_code)
-						if error_code > 0
-							@exception = EOFError.new("Stream reset: error_code=#{error_code}")
-						end
-						
-						notify!
-					end
-					
-					def stream_closed(error)
-						@exception = error
-						
-						notify!
+						@request = request
 					end
 					
 					# Send a request and read it into this response.
 					def send_request(request, task: Async::Task.current)
+						@request = request
+						
 						# https://http2.github.io/http2-spec/#rfc.section.8.1.2.3
 						# All HTTP/2 requests MUST include exactly one valid value for the :method, :scheme, and :path pseudo-header fields, unless it is a CONNECT request (Section 8.3). An HTTP request that omits mandatory pseudo-header fields is malformed (Section 8.1.2.6).
 						pseudo_headers = [

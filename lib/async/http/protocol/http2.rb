@@ -41,7 +41,7 @@ module Async
 				
 				SERVER_SETTINGS = {
 					# We choose a lower maximum concurrent streams to avoid overloading a single connection/thread.
-					::Protocol::HTTP2::Settings::MAXIMUM_CONCURRENT_STREAMS => 32,
+					::Protocol::HTTP2::Settings::MAXIMUM_CONCURRENT_STREAMS => 64,
 					::Protocol::HTTP2::Settings::MAXIMUM_FRAME_SIZE => 0x100000,
 					::Protocol::HTTP2::Settings::INITIAL_WINDOW_SIZE => 0x7FFFFFFF,
 					::Protocol::HTTP2::Settings::ENABLE_CONNECT_PROTOCOL => 1,

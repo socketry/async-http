@@ -30,7 +30,11 @@ namespace :h2spec do
 	end
 	
 	task :test => :server do
-		system("./h2spec", "-p", "7272")
+		if test = ENV['TEST']
+			sh("./h2spec", test, "-p", "7272")
+		else
+			sh("./h2spec", "-p", "7272")
+		end
 	ensure
 		@container.stop(false)
 	end

@@ -48,11 +48,11 @@ module Async
 								end
 								
 								self.end_stream
-								
-								if @body
-									@body.close
-									@body = nil
-								end
+							rescue Errno::EPIPE
+								# Ignore.
+							ensure
+								@body&.close($!)
+								@body = nil
 							end
 						end
 						

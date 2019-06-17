@@ -83,7 +83,7 @@ module Async
 									self.consume_window
 									self.read_frame
 								end
-							rescue EOFError, Async::Wrapper::Cancelled
+							rescue EOFError, Errno::ECONNRESET, Errno::EPIPE, Async::Wrapper::Cancelled
 								# Ignore.
 							ensure
 								close($!)

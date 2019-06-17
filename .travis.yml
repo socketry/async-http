@@ -30,5 +30,5 @@ matrix:
     - rvm: jruby-head
     - rvm: truffleruby
 
-after_success:
-  - bundle exec rake h2spec:all
+# after_success:
+#   - bundle exec rake h2spec:all

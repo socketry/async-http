@@ -49,13 +49,13 @@ module Async
 								
 								self.send_data(chunk, maximum_size)
 							end
+							
+							self.end_stream
 						rescue Async::Stop
 							# Ignore.
 						ensure
 							@body&.close($!)
 							@body = nil
-							
-							self.end_stream
 						end
 						
 						def read

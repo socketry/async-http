@@ -41,6 +41,8 @@ module Async
 						def create_push_promise_stream(headers)
 							stream = @connection.create_push_promise_stream(&Stream.method(:create))
 							
+							stream.headers = ::Protocol::HTTP::Headers.new
+							
 							# This will ultimately enqueue the request to be processed by the server:
 							stream.receive_initial_headers(headers, false)
 							

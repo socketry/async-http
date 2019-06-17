@@ -109,7 +109,9 @@ RSpec.describe Async::HTTP::Protocol::HTTP2, timeout: 2 do
 		let(:server) do
 			Async::HTTP::Server.for(endpoint, protocol) do |request|
 				if request.path == "/index.html"
-					request.push('/index.css')
+					stream = request.push('/index.css')
+					
+					expect(stream.headers).to_not be_nil
 				end
 				
 				Protocol::HTTP::Response[200, {}, ["Path: #{request.path}"]]
@@ -123,6 +125,9 @@ RSpec.describe Async::HTTP::Protocol::HTTP2, timeout: 2 do
 			
 			promise = response.promises.dequeue
 			expect(promise.request.path).to be == '/index.css'
+			
+			expect(promise.request.headers).to_not be_nil
+			expect(promise.headers).to_not be_nil
 			
 			promise.wait # Wait for the promise to complete
 			expect(promise).to be_success

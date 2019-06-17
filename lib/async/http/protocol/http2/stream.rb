@@ -121,7 +121,7 @@ module Async
 						@output = nil
 					end
 					
-					attr :headers
+					attr_accessor :headers
 					
 					def add_header(key, value)
 						if key == CONNECTION

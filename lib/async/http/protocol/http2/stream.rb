@@ -34,26 +34,28 @@ module Async
 							
 							@window_updated = Async::Condition.new
 							
-							@task = task.async do
-								while chunk = self.read
+							@task = task.async(&self.method(:passthrough))
+						end
+						
+						def passthrough(task)
+							while chunk = self.read
+								maximum_size = @stream.available_frame_size
+								
+								while maximum_size <= 0
+									@window_updated.wait
+									
 									maximum_size = @stream.available_frame_size
-									
-									while maximum_size <= 0
-										@window_updated.wait
-										
-										maximum_size = @stream.available_frame_size
-									end
-									
-									self.send_data(chunk, maximum_size)
 								end
 								
-								self.end_stream
-							rescue Errno::EPIPE
-								# Ignore.
-							ensure
-								@body&.close($!)
-								@body = nil
+								self.send_data(chunk, maximum_size)
 							end
+							
+							self.end_stream
+						rescue Errno::EPIPE
+							# Ignore.
+						ensure
+							@body&.close($!)
+							@body = nil
 						end
 						
 						def read

@@ -30,13 +30,15 @@ namespace :h2spec do
 	end
 	
 	task :test => :server do
-		if test = ENV['TEST']
-			sh("./h2spec", test, "-p", "7272")
-		else
-			sh("./h2spec", "-p", "7272")
+		begin
+			if test = ENV['TEST']
+				sh("./h2spec", test, "-p", "7272")
+			else
+				sh("./h2spec", "-p", "7272")
+			end
+		ensure
+			@container.stop(false)
 		end
-	ensure
-		@container.stop(false)
 	end
 	
 	task :all => [:build, :test]

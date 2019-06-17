@@ -49,13 +49,13 @@ module Async
 								
 								self.send_data(chunk, maximum_size)
 							end
-							
-							self.end_stream
-						rescue Errno::EPIPE
+						rescue Async::Stop
 							# Ignore.
 						ensure
 							@body&.close($!)
 							@body = nil
+							
+							self.end_stream
 						end
 						
 						def read
@@ -102,6 +102,8 @@ module Async
 								@body.close(error)
 								@body = nil
 							end
+							
+							@task&.stop
 						end
 					end
 					

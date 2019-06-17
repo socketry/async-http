@@ -28,9 +28,9 @@ RSpec.describe Async::HTTP::Protocol::HTTP2, timeout: 2 do
 		include_context Async::HTTP::Server
 		
 		it "should fail with explicit authority" do
-			response = client.post("/", [[':authority', 'foo']])
-			
-			expect(response).to be_bad_request
+			expect do
+				client.post("/", [[':authority', 'foo']])
+			end.to raise_error(Protocol::HTTP2::StreamError)
 		end
 	end
 	

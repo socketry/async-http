@@ -267,7 +267,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		it "can't get /" do
 			expect do
 				response = client.get("/")
-			end.to raise_error(EOFError)
+			end.to raise_error(Exception)
 		end
 	end
 	

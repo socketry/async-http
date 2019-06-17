@@ -129,7 +129,7 @@ module Async
 						end
 						
 						return data
-					rescue ProtocolError
+					rescue ::Protocol::HTTP2::ProtocolError
 						raise
 					rescue # Anything else...
 						send_reset_stream(::Protocol::HTTP2::Error::INTERNAL_ERROR)

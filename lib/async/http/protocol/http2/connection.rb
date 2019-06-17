@@ -101,7 +101,7 @@ module Async
 					attr :count
 					
 					def multiplex
-						@remote_settings.maximum_concurrent_streams
+						self.maximum_concurrent_streams
 					end
 					
 					# Can we use this connection to make requests?

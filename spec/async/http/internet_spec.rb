@@ -48,10 +48,10 @@ RSpec.describe Async::HTTP::Internet, timeout: 5 do
 		expect{JSON.parse(response.read)}.to_not raise_error
 	end
 	
-	it "can't fetch hashicorp jobs" do
-		# There are a multitude of ways this can file (Protocol::HTTP2::Error, Errno::EPIPE):
-		expect do
-			subject.get('https://www.hashicorp.com/jobs')
-		end.to raise_error(Exception)
+	it "can fetch hashicorp jobs" do
+		response = subject.get('https://www.hashicorp.com/jobs')
+		
+		expect(response).to be_success
+		response.close
 	end
 end

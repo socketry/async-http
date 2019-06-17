@@ -141,21 +141,24 @@ module Async
 						
 						headers.each do |key, value|
 							if key == SCHEME
-								return @stream.send_failure(400, "Request scheme already specified") if request.scheme
+								raise ::Protocol::HTTP2::HeaderError, "Request scheme already specified!" if request.scheme
 								
 								request.scheme = value
 							elsif key == AUTHORITY
-								return @stream.send_failure(400, "Request authority already specified") if request.authority
+								raise ::Protocol::HTTP2::HeaderError, "Request authority already specified!" if request.authority
 								
 								request.authority = value
 							elsif key == METHOD
-								return @stream.send_failure(400, "Request method already specified") if request.method
+								raise ::Protocol::HTTP2::HeaderError, "Request method already specified!" if request.method
 								
 								request.method = value
 							elsif key == PATH
-								return @stream.send_failure(400, "Request path already specified") if request.path
+								raise ::Protocol::HTTP2::HeaderError, "Request path is empty!" if value.empty?
+								raise ::Protocol::HTTP2::HeaderError, "Request path already specified!" if request.path
 								
 								request.path = value
+							elsif key.start_with? ':'
+								raise ::Protocol::HTTP2::HeaderError, "Invalid pseudo-header #{key}!"
 							else
 								request.headers[key] = value
 							end

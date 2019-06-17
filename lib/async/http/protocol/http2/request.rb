@@ -48,43 +48,52 @@ module Async
 						
 						def receive_headers(frame)
 							apply_headers(super, frame.end_stream?)
+						rescue ::Protocol::HTTP2::HeaderError => error
+							Async.logger.error(error)
+							
+							send_reset_stream(error.code)
 						end
 						
 						def apply_headers(headers, end_stream)
 							headers.each do |key, value|
 								if key == SCHEME
-									return send_failure(400, "Request scheme already specified") if @request.scheme
+									raise ::Protocol::HTTP2::HeaderError, "Request scheme already specified!" if @request.scheme
 									
 									@request.scheme = value
 								elsif key == AUTHORITY
-									return send_failure(400, "Request authority already specified") if @request.authority
+									raise ::Protocol::HTTP2::HeaderError, "Request authority already specified!" if @request.authority
 									
 									@request.authority = value
 								elsif key == METHOD
-									return send_failure(400, "Request method already specified") if @request.method
+									raise ::Protocol::HTTP2::HeaderError, "Request method already specified!" if @request.method
 									
 									@request.method = value
 								elsif key == PATH
-									return send_failure(400, "Request path already specified") if @request.path
+									raise ::Protocol::HTTP2::HeaderError, "Request path is empty!" if value.empty?
+									raise ::Protocol::HTTP2::HeaderError, "Request path already specified!" if @request.path
 									
 									@request.path = value
 								elsif key == PROTOCOL
-									return send_failure(400, "Request protocol already specified") if @request.protocol
+									raise ::Protocol::HTTP2::HeaderError, "Request protocol already specified!" if @request.protocol
 									
 									@request.protocol = value
 								elsif key == CONTENT_LENGTH
-									return send_failure(400, "Request protocol already content length") if @length
+									raise ::Protocol::HTTP2::HeaderError, "Request content length already specified!" if @length
 									
 									@length = Integer(value)
+								elsif key == CONNECTION
+									raise ::Protocol::HTTP2::HeaderError, "Connection header is not allowed!" if @length
 								elsif key.start_with? ':'
-									return send_failure(400, "Invalid pseudo-header #{key}")
+									raise ::Protocol::HTTP2::HeaderError, "Invalid pseudo-header #{key}!"
+								elsif key =~ /A-Z/
+									raise ::Protocol::HTTP2::HeaderError, "Invalid characters in header #{key}!"
 								else
 									@request.headers.add(key, value)
 								end
 							end
 							
 							unless @request.valid?
-								send_reset_stream(::Protocol::HTTP2::Error::PROTOCOL_ERROR)
+								raise ::Protocol::HTTP2::HeaderError, "Request is missing required headers!"
 							else
 								# We only construct the input/body if data is coming.
 								unless end_stream

@@ -34,7 +34,8 @@ module Async
 				STATUS = ':status'.freeze
 				PROTOCOL = ':protocol'.freeze
 				
-				CONTENT_LENGTH = 'content-length'
+				CONTENT_LENGTH = 'content-length'.freeze
+				CONNECTION = 'connection'.freeze
 				
 				module Connection
 					def initialize(*)

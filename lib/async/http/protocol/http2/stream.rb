@@ -106,12 +106,59 @@ module Async
 					def initialize(*)
 						super
 						
+						@headers = nil
+						@trailers = nil
+						
 						# Input buffer (receive_data):
 						@length = nil
 						@input = nil
 						
 						# Output buffer (window_updated):
 						@output = nil
+					end
+					
+					attr :headers
+					
+					def add_header(key, value)
+						if key == CONNECTION
+							raise ::Protocol::HTTP2::HeaderError, "Connection header is not allowed!"
+						elsif key.start_with? ':'
+							raise ::Protocol::HTTP2::HeaderError, "Invalid pseudo-header #{key}!"
+						elsif key =~ /[A-Z]/
+							raise ::Protocol::HTTP2::HeaderError, "Invalid upper-case characters in header #{key}!"
+						else
+							@headers.add(key, value)
+						end
+					end
+					
+					def add_trailer(key, value)
+						if @trailers.include(key)
+							add_header(key, value)
+						else
+							raise ::Protocol::HTTP2::HeaderError, "Cannot add trailer #{key} as it was not specified in trailers!"
+						end
+					end
+					
+					def receive_trailing_headers(headers, end_stream)
+						headers.each do |key, value|
+							add_trailer(key, value)
+						end
+					end
+					
+					def receive_headers(frame)
+						if @headers.nil?
+							@headers = ::Protocol::HTTP::Headers.new
+							self.receive_initial_headers(super, frame.end_stream?)
+							@trailers = @headers[TRAILERS]
+						elsif @trailers and frame.end_stream?
+							self.receive_trailing_headers(super, frame.end_stream?)
+						else
+							raise ::Protocol::HTTP2::HeaderError, "Unable to process headers!"
+						end
+					rescue ::Protocol::HTTP2::HeaderError => error
+						Async.logger.error(self, error)
+						
+						send_reset_stream(error.code)
 					end
 					
 					def process_data(frame)

@@ -31,6 +31,7 @@ module Async
 						def initialize(*)
 							super
 							
+							@enqueued = false
 							@request = Request.new(self)
 						end
 						
@@ -41,20 +42,12 @@ module Async
 							stream = @connection.create_push_promise_stream(&Stream.method(:create))
 							
 							# This will ultimately enqueue the request to be processed by the server:
-							stream.apply_headers(headers, false)
+							stream.receive_initial_headers(headers, false)
 							
 							return stream
 						end
 						
-						def receive_headers(frame)
-							apply_headers(super, frame.end_stream?)
-						rescue ::Protocol::HTTP2::HeaderError => error
-							Async.logger.error(error)
-							
-							send_reset_stream(error.code)
-						end
-						
-						def apply_headers(headers, end_stream)
+						def receive_initial_headers(headers, end_stream)
 							headers.each do |key, value|
 								if key == SCHEME
 									raise ::Protocol::HTTP2::HeaderError, "Request scheme already specified!" if @request.scheme
@@ -82,15 +75,17 @@ module Async
 									
 									@length = Integer(value)
 								elsif key == CONNECTION
-									raise ::Protocol::HTTP2::HeaderError, "Connection header is not allowed!" if @length
+									raise ::Protocol::HTTP2::HeaderError, "Connection header is not allowed!"
 								elsif key.start_with? ':'
 									raise ::Protocol::HTTP2::HeaderError, "Invalid pseudo-header #{key}!"
-								elsif key =~ /A-Z/
+								elsif key =~ /[A-Z]/
 									raise ::Protocol::HTTP2::HeaderError, "Invalid characters in header #{key}!"
 								else
-									@request.headers.add(key, value)
+									add_header(key, value)
 								end
 							end
+							
+							@request.headers = @headers
 							
 							unless @request.valid?
 								raise ::Protocol::HTTP2::HeaderError, "Request is missing required headers!"
@@ -110,7 +105,7 @@ module Async
 					end
 					
 					def initialize(stream)
-						super(nil, nil, nil, nil, VERSION, ::Protocol::HTTP::Headers.new)
+						super(nil, nil, nil, nil, VERSION, nil)
 						
 						@stream = stream
 					end

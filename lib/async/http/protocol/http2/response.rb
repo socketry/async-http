@@ -49,12 +49,8 @@ module Async
 							return stream
 						end
 						
-						def receive_headers(frame)
-							apply_headers(super, frame.end_stream?)
-						end
-						
 						# This should be invoked from the background reader, and notifies the task waiting for the headers that we are done.
-						def apply_headers(headers, end_stream)
+						def receive_initial_headers(headers, end_stream)
 							headers.each do |key, value|
 								if key == STATUS
 									@response.status = Integer(value)
@@ -63,9 +59,11 @@ module Async
 								elsif key == CONTENT_LENGTH
 									@length = Integer(value)
 								else
-									@response.headers.add(key, value)
+									add_header(key, value)
 								end
 							end
+							
+							@response.headers = @headers
 							
 							unless @response.valid?
 								send_reset_stream(::Protocol::HTTP2::Error::PROTOCOL_ERROR)
@@ -112,7 +110,7 @@ module Async
 					end
 					
 					def initialize(stream)
-						super(stream.connection.version, nil, ::Protocol::HTTP::Headers.new)
+						super(stream.connection.version, nil, nil)
 						
 						@stream = stream
 						@request = nil

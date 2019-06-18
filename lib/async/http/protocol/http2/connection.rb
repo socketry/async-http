@@ -76,6 +76,12 @@ module Async
 						end
 					end
 					
+					def write_frames(&block)
+						@write_frame_guard.acquire do
+							super
+						end
+					end
+					
 					def read_in_background(task: Task.current)
 						task.async do |nested_task|
 							nested_task.annotate("#{version} reading data for #{self.class}")

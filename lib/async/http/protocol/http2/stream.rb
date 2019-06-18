@@ -65,7 +65,7 @@ module Async
 								
 								return remainder
 							else
-								@body.read
+								@body&.read
 							end
 						end
 						

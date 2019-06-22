@@ -34,6 +34,10 @@ module Async
 			# * If there are already connections, it will reuse it.
 			# * If a request fails, it will retry it up to N times if it was idempotent.
 			# The client object will never become unusable. It internally manages persistent connections (or non-persistent connections if that's required).
+			# @param endpoint [Endpoint] the endpoint to connnect to.
+			# @param protocol [Protocol::HTTP1 | Protocol::HTTP2 | Protocol::HTTPS] the protocol to use.
+			# @param scheme [String] The default scheme to set to requests.
+			# @param authority [String] The default authority to set to requests.
 			def initialize(endpoint, protocol = endpoint.protocol, scheme = endpoint.scheme, authority = endpoint.authority, retries: 3, connection_limit: nil)
 				@endpoint = endpoint
 				@protocol = protocol

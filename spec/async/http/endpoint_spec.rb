@@ -56,6 +56,43 @@ RSpec.describe Async::HTTP::Endpoint do
 			endpoint = Async::HTTP::Endpoint.parse(url_string, hostname: 'localhost')
 			
 			expect(endpoint.hostname).to eq 'localhost'
+			expect(endpoint).to be_localhost
+		end
+	end
+	
+	context '#localhost?' do
+		let(:url_string) {"https://localhost"}
+		let(:hostname) {self.class.metadata.fetch(:description_args).first}
+		subject {Async::HTTP::Endpoint.parse(url_string, hostname: hostname)}
+		
+		describe 'localhost' do
+			it "should be localhost" do
+				is_expected.to be_localhost
+			end
+		end
+		
+		describe 'hello.localhost' do
+			it "should be localhost" do
+				is_expected.to be_localhost
+			end
+		end
+		
+		describe 'localhost.' do
+			it "should be localhost" do
+				is_expected.to be_localhost
+			end
+		end
+		
+		describe 'hello.localhost.' do
+			it "should be localhost" do
+				is_expected.to be_localhost
+			end
+		end
+		
+		describe 'localhost.com' do
+			it "should not be localhost" do
+				is_expected.to_not be_localhost
+			end
 		end
 	end
 	

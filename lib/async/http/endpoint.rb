@@ -31,7 +31,7 @@ module Async
 			def self.parse(string, **options)
 				url = URI.parse(string).normalize
 				
-				self.new(url, **options)
+				return self.new(url, nil, **options)
 			end
 			
 			# @option scheme [String] the scheme to use, overrides the URL scheme.
@@ -67,7 +67,6 @@ module Async
 			end
 			
 			attr :url
-			attr :options
 			
 			def address
 				endpoint.address
@@ -130,12 +129,13 @@ module Async
 				@options[:alpn_protocols] || DEFAULT_ALPN_PROTOCOLS
 			end
 			
-			LOCALHOST = 'localhost'.freeze
+			def localhost?
+				self.hostname =~ /^(.*?\.)?localhost\.?$/
+			end
 			
 			# We don't try to validate peer certificates when talking to localhost because they would always be self-signed.
 			def ssl_verify_mode
-				case self.hostname
-				when LOCALHOST
+				if self.localhost?
 					OpenSSL::SSL::VERIFY_NONE
 				else
 					OpenSSL::SSL::VERIFY_PEER

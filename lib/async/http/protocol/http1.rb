@@ -27,14 +27,20 @@ module Async
 			module HTTP1
 				VERSION = "HTTP/1.1"
 				
-				def self.client(stream)
-					Client.new(stream, VERSION)
+				def self.bidirectional?
+					true
 				end
 				
-				# A server that supports both HTTP1.0 and HTTP1.1 semantics by detecting the version of the request.
-				# TODO Verify correct behaviour.
+				def self.client(stream)
+					HTTP1::Client.new(stream, VERSION)
+				end
+				
 				def self.server(stream)
-					Server.new(stream, VERSION)
+					HTTP1::Server.new(stream, VERSION)
+				end
+				
+				def self.names
+					["http/1.1", "http/1.0"]
 				end
 			end
 		end

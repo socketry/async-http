@@ -37,6 +37,10 @@ module Async
 				def self.server(stream)
 					HTTP1::Server.new(stream, VERSION)
 				end
+				
+				def self.names
+					["http/1.1"]
+				end
 			end
 		end
 	end

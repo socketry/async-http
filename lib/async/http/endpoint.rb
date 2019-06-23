@@ -27,6 +27,7 @@ require_relative 'protocol/https'
 
 module Async
 	module HTTP
+		# Represents a way to connect to a remote HTTP server.
 		class Endpoint < Async::IO::Endpoint
 			def self.parse(string, **options)
 				url = URI.parse(string).normalize
@@ -77,10 +78,12 @@ module Async
 			end
 			
 			def protocol
-				if secure?
-					Protocol::HTTPS
-				else
-					Protocol::HTTP1
+				@options.fetch(:protocol) do
+					if secure?
+						Protocol::HTTPS
+					else
+						Protocol::HTTP1
+					end
 				end
 			end
 			
@@ -123,10 +126,8 @@ module Async
 				return buffer
 			end
 			
-			DEFAULT_ALPN_PROTOCOLS = ['h2', 'http/1.1'].freeze
-			
 			def alpn_protocols
-				@options[:alpn_protocols] || DEFAULT_ALPN_PROTOCOLS
+				@options.fetch(:alpn_protocols) {self.protocol.names}
 			end
 			
 			def localhost?
@@ -162,6 +163,7 @@ module Async
 				options.delete(:hostname)
 				options.delete(:ssl_context)
 				options.delete(:alpn_protocols)
+				options.delete(:protocol)
 				
 				return options
 			end

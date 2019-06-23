@@ -49,9 +49,9 @@ module Async
 			# A server that supports both HTTP1.0 and HTTP1.1 semantics by detecting the version of the request.
 			module HTTPS
 				HANDLERS = {
-					"http/1.0" => HTTP10,
-					"http/1.1" => HTTP11,
 					"h2" => HTTP2,
+					"http/1.1" => HTTP11,
+					"http/1.0" => HTTP10,
 					nil => HTTP11,
 				}
 				
@@ -74,6 +74,11 @@ module Async
 				
 				def self.server(stream)
 					protocol_for(stream).server(stream)
+				end
+				
+				# Supported Application Layer Protocol Negotiation names:
+				def self.names
+					HANDLERS.keys.compact
 				end
 			end
 		end

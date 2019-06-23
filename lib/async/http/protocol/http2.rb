@@ -63,6 +63,10 @@ module Async
 					return server
 				end
 				
+				def self.names
+					["h2"]
+				end
+				
 				module WithPush
 					CLIENT_SETTINGS = HTTP2::CLIENT_SETTINGS.merge(
 						::Protocol::HTTP2::Settings::ENABLE_PUSH => 1,
@@ -74,6 +78,10 @@ module Async
 					
 					def self.server(stream, settings = SERVER_SETTINGS)
 						HTTP2.server(stream, settings)
+					end
+					
+					def self.names
+						HTTP2.names
 					end
 				end
 			end

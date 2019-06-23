@@ -53,11 +53,6 @@ module Async
 					# Server loop.
 					def each(task: Task.current)
 						while request = next_request
-							Async.logger.debug(self) do |buffer|
-								buffer.puts "Incoming request: #{request.authority} #{request.method} #{request.path} #{request.version}"
-								buffer.puts "Incoming headers: #{request.headers}"
-							end
-							
 							response = yield(request, self)
 							
 							return if @stream.nil? or @stream.closed?

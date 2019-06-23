@@ -36,8 +36,8 @@ module Async
 			end
 			
 			# @option scheme [String] the scheme to use, overrides the URL scheme.
+			# @option hostname [String] the hostname to connect to (or bind to), overrides the URL hostname (used for SNI).
 			# @option port [Integer] the port to bind to, overrides the URL port.
-			# @option hostname [String] the hostname to use, overrides the URL hostname.
 			# @option ssl_context [OpenSSL::SSL::SSLContext] the context to use for TLS.
 			# @option alpn_protocols [Array<String>] the alpn protocols to negotiate.
 			def initialize(url, endpoint = nil, **options)
@@ -60,7 +60,7 @@ module Async
 			end
 			
 			def to_s
-				"\#<#{self.class} #{self.to_url}>"
+				"\#<#{self.class} #{self.to_url} #{@options}>"
 			end
 			
 			def inspect
@@ -99,6 +99,7 @@ module Async
 				@options[:port] || @url.port || default_port
 			end
 			
+			# The hostname is the server we are connecting to:
 			def hostname
 				@options[:hostname] || @url.hostname
 			end
@@ -109,9 +110,9 @@ module Async
 			
 			def authority
 				if default_port?
-					hostname
+					@url.hostname
 				else
-					"#{hostname}:#{port}"
+					"#{@url.hostname}:#{port}"
 				end
 			end
 			
@@ -131,7 +132,7 @@ module Async
 			end
 			
 			def localhost?
-				self.hostname =~ /^(.*?\.)?localhost\.?$/
+				@url.hostname =~ /^(.*?\.)?localhost\.?$/
 			end
 			
 			# We don't try to validate peer certificates when talking to localhost because they would always be self-signed.
@@ -169,13 +170,13 @@ module Async
 			end
 			
 			def build_endpoint(endpoint = nil)
-				endpoint ||= Async::IO::Endpoint.tcp(hostname, port, tcp_options)
+				endpoint ||= Async::IO::Endpoint.tcp(self.hostname, port, tcp_options)
 				
 				if secure?
 					# Wrap it in SSL:
 					return Async::IO::SSLEndpoint.new(endpoint,
 						ssl_context: self.ssl_context,
-						hostname: self.hostname,
+						hostname: @url.hostname,
 						timeout: self.timeout,
 					)
 				end

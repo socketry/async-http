@@ -44,42 +44,48 @@ RSpec.describe Async::HTTP::Endpoint do
 	end
 	
 	describe '#hostname' do
-		let(:url_string) {"https://127.0.0.1:9292"}
-		
-		it "extracts hostname from URL" do
-			endpoint = Async::HTTP::Endpoint.parse(url_string)
+		describe Async::HTTP::Endpoint.parse("https://127.0.0.1:9292") do
+			it {is_expected.to have_attributes(hostname: '127.0.0.1')}
 			
-			expect(endpoint.hostname).to eq '127.0.0.1'
+			it "should be connecting to 127.0.0.1" do
+				expect(subject.endpoint).to be_a Async::IO::SSLEndpoint
+				expect(subject.endpoint).to have_attributes(hostname: '127.0.0.1')
+				expect(subject.endpoint.endpoint).to have_attributes(hostname: '127.0.0.1')
+			end
 		end
 		
-		it "extracts hostname from options" do
-			endpoint = Async::HTTP::Endpoint.parse(url_string, hostname: 'localhost')
+		describe Async::HTTP::Endpoint.parse("https://127.0.0.1:9292", hostname: 'localhost') do
+			it {is_expected.to have_attributes(hostname: 'localhost')}
+			it {is_expected.to_not be_localhost}
 			
-			expect(endpoint.hostname).to eq 'localhost'
-			expect(endpoint).to be_localhost
+			it "should be connecting to localhost" do
+				expect(subject.endpoint).to be_a Async::IO::SSLEndpoint
+				expect(subject.endpoint).to have_attributes(hostname: '127.0.0.1')
+				expect(subject.endpoint.endpoint).to have_attributes(hostname: 'localhost')
+			end
 		end
 	end
 	
 	describe '#localhost?' do
-		subject {Async::HTTP::Endpoint.parse("https://localhost", hostname: description)}
+		subject {Async::HTTP::Endpoint.parse(description)}
 		
-		context 'localhost' do
+		context 'http://localhost' do
 			it { is_expected.to be_localhost }
 		end
 		
-		context 'hello.localhost' do
+		context 'http://hello.localhost' do
 			it { is_expected.to be_localhost }
 		end
 		
-		context 'localhost.' do
+		context 'http://localhost.' do
 			it { is_expected.to be_localhost }
 		end
 		
-		context 'hello.localhost.' do
+		context 'http://hello.localhost.' do
 			it { is_expected.to be_localhost }
 		end
 		
-		context 'localhost.com' do
+		context 'http://localhost.com' do
 			it { is_expected.to_not be_localhost }
 		end
 	end

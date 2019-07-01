@@ -34,14 +34,14 @@ module Async
 				CLIENT_SETTINGS = {
 					::Protocol::HTTP2::Settings::ENABLE_PUSH => 0,
 					::Protocol::HTTP2::Settings::MAXIMUM_FRAME_SIZE => 0x100000,
-					::Protocol::HTTP2::Settings::INITIAL_WINDOW_SIZE => 0x7FFFFFFF,
+					::Protocol::HTTP2::Settings::INITIAL_WINDOW_SIZE => 0xF00000,
 				}
 				
 				SERVER_SETTINGS = {
 					# We choose a lower maximum concurrent streams to avoid overloading a single connection/thread.
-					::Protocol::HTTP2::Settings::MAXIMUM_CONCURRENT_STREAMS => 10,
+					::Protocol::HTTP2::Settings::MAXIMUM_CONCURRENT_STREAMS => 128,
 					::Protocol::HTTP2::Settings::MAXIMUM_FRAME_SIZE => 0x100000,
-					::Protocol::HTTP2::Settings::INITIAL_WINDOW_SIZE => 0x7FFFFFFF,
+					::Protocol::HTTP2::Settings::INITIAL_WINDOW_SIZE => 0xF00000,
 					::Protocol::HTTP2::Settings::ENABLE_CONNECT_PROTOCOL => 1,
 				}
 				

@@ -123,26 +123,6 @@ module Async
 					def version
 						VERSION
 					end
-					
-					# def encode_headers(headers, buffer = String.new.b)
-					# 	super.tap do |data|
-					# 		Async.logger.debug(self) do |buffer|
-					# 			buffer.puts "Encode headers: #{headers.inspect}"
-					# 			buffer.puts "-> #{data.inspect}"
-					# 			buffer.puts "@encoder: #{@encoder.inspect}"
-					# 		end
-					# 	end
-					# end
-					# 
-					# def decode_headers(data)
-					# 	super.tap do |headers|
-					# 		Async.logger.debug(self) do |buffer|
-					# 			buffer.puts "Decode headers: #{data.inspect}"
-					# 			buffer.puts "-> #{headers.inspect}"
-					# 			buffer.puts "@decoder: #{@decoder.inspect}"
-					# 		end
-					# 	end
-					# end
 				end
 			end
 		end

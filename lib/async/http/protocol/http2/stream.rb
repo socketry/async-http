@@ -19,13 +19,31 @@
 # THE SOFTWARE.
 
 require 'protocol/http2/stream'
+require_relative '../../body/writable'
 
 module Async
 	module HTTP
 		module Protocol
 			module HTTP2
 				class Stream < ::Protocol::HTTP2::Stream
-					class Buffer
+					class Input < Body::Writable
+						def initialize(stream, length)
+							super(length)
+							
+							@stream = stream
+						end
+						
+						def read
+							if chunk = super
+								# If we read a chunk fron the stream, we want to extend the window if required so more data will be provided.
+								@stream.request_window_update
+							end
+							
+							return chunk
+						end
+					end
+					
+					class Output
 						def initialize(stream, body, task: Task.current)
 							@stream = stream
 							
@@ -37,6 +55,7 @@ module Async
 							@task = task.async(&self.method(:passthrough))
 						end
 						
+						# Reads chunks from the given body and writes them to the stream as fast as possible.
 						def passthrough(task)
 							while chunk = self.read
 								maximum_size = @stream.available_frame_size
@@ -113,11 +132,11 @@ module Async
 						@headers = nil
 						@trailers = nil
 						
-						# Input buffer (receive_data):
+						# Input buffer, reading request body, or response body (receive_data):
 						@length = nil
 						@input = nil
 						
-						# Output buffer (window_updated):
+						# Output buffer, writing request body or response body (window_updated):
 						@output = nil
 					end
 					
@@ -165,6 +184,21 @@ module Async
 						send_reset_stream(error.code)
 					end
 					
+					def prepare_input(length)
+						if @input.nil?
+							@input = Input.new(self, length)
+						else
+							raise ArgumentError, "Input body already prepared!"
+						end
+					end
+					
+					def update_local_window(frame)
+						consume_local_window(frame)
+						
+						# This is done on demand.
+						# request_window_update
+					end
+					
 					def process_data(frame)
 						data = frame.unpack
 						
@@ -188,7 +222,7 @@ module Async
 					
 					# Set the body and begin sending it.
 					def send_body(body)
-						@output = Buffer.new(self, body)
+						@output = Output.new(self, body)
 					end
 					
 					def window_updated(size)

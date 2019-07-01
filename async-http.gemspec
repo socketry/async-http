@@ -21,7 +21,7 @@ Gem::Specification.new do |spec|
 	
 	spec.add_dependency("protocol-http", "~> 0.8.0")
 	spec.add_dependency("protocol-http1", "~> 0.8.0")
-	spec.add_dependency("protocol-http2", "~> 0.8.0")
+	spec.add_dependency("protocol-http2", "~> 0.9.0")
 	
 	# spec.add_dependency("openssl")
 	

@@ -94,8 +94,7 @@ module Async
 							else
 								# We only construct the input/body if data is coming.
 								unless end_stream
-									@input = Body::Writable.new(@length)
-									@request.body = @input
+									@request.body = prepare_input(@length)
 								end
 								
 								# We are ready for processing:

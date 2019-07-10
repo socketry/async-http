@@ -29,6 +29,8 @@ module Async
 					@input = input
 					@output = output
 					
+					raise ArgumentError, "Non-writable output!" unless output.respond_to?(:write)
+					
 					# Will hold remaining data in `#read`.
 					@buffer = nil
 					@closed = false

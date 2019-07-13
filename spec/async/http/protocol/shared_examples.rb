@@ -36,7 +36,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		expect(client.scheme).to be == "http"
 	end
 	
-	context "huge body", timeout: 60 do
+	context "huge body", timeout: 600 do
 		let(:body) {Protocol::HTTP::Body::File.open("/dev/zero", size: 1024*1024**2)}
 		
 		let(:server) do

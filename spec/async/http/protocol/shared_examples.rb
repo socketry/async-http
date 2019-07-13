@@ -27,11 +27,40 @@ require 'async/http/endpoint'
 require 'async/http/body/hijack'
 require 'tempfile'
 
+require 'protocol/http/body/file'
+
 RSpec.shared_examples_for Async::HTTP::Protocol do
 	include_context Async::HTTP::Server
 	
 	it "should have valid scheme" do
 		expect(client.scheme).to be == "http"
+	end
+	
+	context "huge body", timeout: 60 do
+		let(:body) {Protocol::HTTP::Body::File.open("/dev/zero", size: 1024*1024**2)}
+		
+		let(:server) do
+			Async::HTTP::Server.for(endpoint, protocol) do |request|
+				Protocol::HTTP::Response[200, {}, body]
+			end
+		end
+		
+		it "client can get resource" do |example|
+			response = client.get("/")
+			expect(response).to be_success
+			
+			data_size = 0
+			duration = Async::Clock.measure do
+				while chunk = response.body.read
+					data_size += chunk.bytesize
+					chunk.clear
+				end
+			end
+			
+			size_mbytes = data_size / 1024**2
+			
+			example.reporter.message "Data size: #{size_mbytes}MB Duration: #{duration.round(2)}s Throughput: #{(size_mbytes / duration).round(2)}MB/s"
+		end
 	end
 	
 	context 'buffered body' do

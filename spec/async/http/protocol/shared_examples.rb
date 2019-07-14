@@ -37,7 +37,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 	end
 	
 	context "huge body", timeout: 600 do
-		let(:body) {Protocol::HTTP::Body::File.open("/dev/zero", size: 1024*1024**2)}
+		let(:body) {Protocol::HTTP::Body::File.open("/dev/zero", size: 512*1024**2)}
 		
 		let(:server) do
 			Async::HTTP::Server.for(endpoint, protocol) do |request|

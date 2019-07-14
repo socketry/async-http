@@ -60,7 +60,7 @@ module Async
 					def each
 						# It's possible the connection has died before we get here...
 						@requests&.async do |task, request|
-							task.annotate("Handling #{request.method} #{request.path.inspect}.")
+							task.annotate("Incoming request: #{request.method} #{request.path.inspect}.")
 							
 							@count += 1
 							

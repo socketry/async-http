@@ -75,6 +75,10 @@ module Async
 				def inspect
 					"\#<#{self.class} #{@block.inspect}>"
 				end
+				
+				def to_s
+					"<Hijack #{@block.class}>"
+				end
 			end
 		end
 	end

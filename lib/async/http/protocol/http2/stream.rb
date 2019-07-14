@@ -111,6 +111,8 @@ module Async
 						private
 						
 						def stream(task)
+							task.annotate("Streaming #{@body} to #{@stream}.")
+							
 							@body.call(Body::Stream.new(@stream.input, self))
 						rescue Async::Stop
 							# Ignore.
@@ -118,7 +120,7 @@ module Async
 						
 						# Reads chunks from the given body and writes them to the stream as fast as possible.
 						def passthrough(task)
-							task.annotate("Stream #{@stream.id} output buffer.")
+							task.annotate("Writing #{@body} to #{@stream}.")
 							
 							while chunk = @body&.read
 								self.write(chunk)

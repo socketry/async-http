@@ -44,20 +44,38 @@ module Async
 					end
 					
 					class Output
-						def initialize(stream, body, task: Task.current)
-							@stream = stream
+						def self.for(stream, body)
+							output = self.new(stream, body)
 							
-							@body = body
-							@remainder = nil
+							output.start
 							
-							@window_updated = Async::Condition.new
-							
-							@task = task.async(&self.method(:passthrough))
+							return output
 						end
 						
-						# Reads chunks from the given body and writes them to the stream as fast as possible.
-						def passthrough(task)
-							while chunk = self.read
+						def initialize(stream, body)
+							@stream = stream
+							@body = body
+							
+							@window_updated = Async::Condition.new
+						end
+						
+						def start(parent: Task.current)
+							if @body.respond_to?(:call)
+								@task = parent.async(&self.method(:stream))
+							else
+								@task = parent.async(&self.method(:passthrough))
+							end
+						end
+						
+						def stop(error)
+							# Ensure that invoking #close doesn't try to close the stream.
+							@stream = nil
+							
+							@task&.stop
+						end
+						
+						def write(chunk)
+							until chunk.empty?
 								maximum_size = @stream.available_frame_size
 								
 								while maximum_size <= 0
@@ -66,10 +84,47 @@ module Async
 									maximum_size = @stream.available_frame_size
 								end
 								
-								self.send_data(chunk, maximum_size)
+								break unless chunk = send_data(chunk, maximum_size)
+							end
+						end
+						
+						def window_updated(size)
+							@window_updated.signal
+						end
+						
+						def close(error = nil)
+							if @stream
+								if error
+									@stream.close(error)
+								else
+									self.close_write
+								end
+								
+								@stream = nil
+							end
+						end
+						
+						def close_write
+							@stream.send_data(nil, ::Protocol::HTTP2::END_STREAM)
+						end
+						
+						private
+						
+						def stream(task)
+							@body.call(Body::Stream.new(@stream.input, self))
+						rescue Async::Stop
+							# Ignore.
+						end
+						
+						# Reads chunks from the given body and writes them to the stream as fast as possible.
+						def passthrough(task)
+							task.annotate("Stream #{@stream.id} output buffer.")
+							
+							while chunk = @body&.read
+								self.write(chunk)
 							end
 							
-							self.end_stream
+							self.close_write
 						rescue Async::Stop
 							# Ignore.
 						ensure
@@ -77,24 +132,10 @@ module Async
 							@body = nil
 						end
 						
-						def read
-							if @remainder
-								remainder = @remainder
-								@remainder = nil
-								
-								return remainder
-							else
-								@body&.read
-							end
-						end
-						
-						def push(chunk)
-							@remainder = chunk
-						end
-						
 						# Send `maximum_size` bytes of data using the specified `stream`. If the buffer has no more chunks, `END_STREAM` will be sent on the final chunk.
 						# @param maximum_size [Integer] send up to this many bytes of data.
 						# @param stream [Stream] the stream to use for sending data frames.
+						# @return [String, nil] any data that could not be written.
 						def send_data(chunk, maximum_size)
 							if chunk.bytesize <= maximum_size
 								@stream.send_data(chunk, maximum_size: maximum_size)
@@ -102,27 +143,10 @@ module Async
 								@stream.send_data(chunk.byteslice(0, maximum_size), maximum_size: maximum_size)
 								
 								# The window was not big enough to send all the data, so we save it for next time:
-								self.push(
-									chunk.byteslice(maximum_size, chunk.bytesize - maximum_size)
-								)
-							end
-						end
-						
-						def end_stream
-							@stream.send_data(nil, ::Protocol::HTTP2::END_STREAM)
-						end
-						
-						def window_updated(size)
-							@window_updated.signal
-						end
-						
-						def close(error)
-							if @body
-								@body.close(error)
-								@body = nil
+								return chunk.byteslice(maximum_size, chunk.bytesize - maximum_size)
 							end
 							
-							@task&.stop
+							return nil
 						end
 					end
 					
@@ -141,6 +165,8 @@ module Async
 					end
 					
 					attr_accessor :headers
+					
+					attr :input
 					
 					def add_header(key, value)
 						if key == CONNECTION
@@ -222,7 +248,7 @@ module Async
 					
 					# Set the body and begin sending it.
 					def send_body(body)
-						@output = Output.new(self, body)
+						@output = Output.for(self, body)
 					end
 					
 					def window_updated(size)
@@ -240,7 +266,7 @@ module Async
 						end
 						
 						if @output
-							@output.close(error)
+							@output.stop(error)
 							@output = nil
 						end
 					end

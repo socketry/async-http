@@ -46,6 +46,8 @@ module Async
 					return @block.call(stream)
 				end
 				
+				attr :input
+				
 				# Has the producer called #finish and has the reader consumed the nil token?
 				def empty?
 					if @stream

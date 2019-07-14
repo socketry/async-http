@@ -60,7 +60,9 @@ module Async
 					unless @task
 						@stream = Stream.new(@input)
 						
-						@task = Task.current.async do
+						@task = Task.current.async do |task|
+							task.annotate "Streaming hijacked body."
+							
 							@block.call(@stream)
 						end
 					end

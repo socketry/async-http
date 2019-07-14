@@ -42,12 +42,16 @@ module Async
 							
 							if protocol = request.protocol
 								# This is a very tricky apect of handling HTTP/1 upgrade connections. In theory, this approach is a bit inefficient, because we spin up a task just to handle writing to the underlying stream when we could be writing to the stream directly. But we need to maintain some level of compatibility with HTTP/2. Additionally, we don't know if the upgrade request will be accepted, so starting to write the body at this point needs to be handled with care.
-								task.async do
+								task.async do |subtask|
+									subtask.annotate("Upgrading request.")
+									
 									# If this fails, this connection will be closed.
 									write_upgrade_body(protocol, body)
 								end
 							else
-								task.async do
+								task.async do |subtask|
+									subtask.annotate("Streaming body.")
+									
 									# Once we start writing the body, we can't recover if the request fails. That's because the body might be generated dynamically, streaming, etc.
 									write_body(@version, body)
 								end

@@ -26,6 +26,7 @@ module Async
 		module Protocol
 			module HTTP2
 				class Stream < ::Protocol::HTTP2::Stream
+					# A writable body which requests window updates when data is read from it.
 					class Input < Body::Writable
 						def initialize(stream, length)
 							super(length)
@@ -113,7 +114,9 @@ module Async
 						def stream(task)
 							task.annotate("Streaming #{@body} to #{@stream}.")
 							
-							@body.call(Body::Stream.new(@stream.input, self))
+							input = @stream.wait_for_input
+							
+							@body.call(Body::Stream.new(input, self))
 						rescue Async::Stop
 							# Ignore.
 						end
@@ -212,6 +215,12 @@ module Async
 						send_reset_stream(error.code)
 					end
 					
+					def wait_for_input
+						return @input
+					end
+					
+					# Prepare the input stream which will be used for incoming data frames.
+					# @return [Input] the input body.
 					def prepare_input(length)
 						if @input.nil?
 							@input = Input.new(self, length)
@@ -223,7 +232,7 @@ module Async
 					def update_local_window(frame)
 						consume_local_window(frame)
 						
-						# This is done on demand.
+						# This is done on demand in `Input#read`:
 						# request_window_update
 					end
 					

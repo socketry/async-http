@@ -25,7 +25,7 @@ module Async
 	module HTTP
 		module Protocol
 			module HTTP2
-				# Typically used on the client side to represent a request and the incoming response.
+				# Typically used on the client side  for writing a request and reading the incoming response.
 				class Response < Protocol::Response
 					class Stream < HTTP2::Stream
 						def initialize(*)
@@ -38,6 +38,14 @@ module Async
 						end
 						
 						attr :response
+						
+						def wait_for_input
+							# The input isn't ready until the response headers have been received:
+							@response.wait
+							
+							# There is a possible race condition if you try to access @input - it might already be closed and nil.
+							return @response.body
+						end
 						
 						def accept_push_promise_stream(promised_stream_id, headers)
 							stream = @connection.accept_push_promise_stream(promised_stream_id, &Stream.method(:accept))
@@ -81,9 +89,9 @@ module Async
 						
 						# Notify anyone waiting on the response headers to be received (or failure).
 						def notify!
-							if @notification
-								@notification.signal
+							if notification = @notification
 								@notification = nil
+								notification.signal
 							end
 						end
 						

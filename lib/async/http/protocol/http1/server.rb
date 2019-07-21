@@ -74,6 +74,9 @@ module Async
 									# At this point, the request body is hijacked, so we don't want to call #finish below.
 									request = nil
 									
+									# We also don't want to hold on to the response object:
+									response = nil
+									
 									body.call(stream)
 								else
 									write_body(@version, body, head)

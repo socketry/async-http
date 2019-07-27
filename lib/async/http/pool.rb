@@ -149,7 +149,7 @@ module Async
 			end
 			
 			def available_resource
-				# This is a linear search... not idea, but simple for now.
+				# TODO This is a linear search... not ideal, but simple for now.
 				@resources.each do |resource, count|
 					if count < resource.multiplex
 						# We want to use this resource... but is it connected?

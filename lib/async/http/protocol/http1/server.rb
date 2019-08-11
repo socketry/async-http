@@ -37,7 +37,7 @@ module Async
 						# Read an incoming request:
 						return unless request = Request.read(self)
 						
-						unless persistent?(request.version, request.headers)
+						unless persistent?(request.version, request.method, request.headers)
 							@persistent = false
 						end
 						
@@ -58,14 +58,6 @@ module Async
 							return if @stream.nil? or @stream.closed?
 							
 							if response
-								# Try to avoid holding on to request, to minimse GC overhead:
-								head = request.head?
-								
-								unless request.body?
-									# If there is no body, #finish is a no-op.
-									request = nil
-								end
-								
 								write_response(@version, response.status, response.headers)
 								
 								body = response.body
@@ -80,7 +72,20 @@ module Async
 									response = nil
 									
 									body.call(stream)
+								elsif body and request.connect?
+									stream = write_tunnel_body(request.version)
+									
+									# Same as above:
+									request = nil
+									response = nil
+									
+									body.call(stream)
 								else
+									head = request.head?
+									
+									request = nil unless body
+									response = nil
+									
 									write_body(@version, body, head)
 								end
 							else

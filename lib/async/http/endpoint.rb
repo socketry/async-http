@@ -29,10 +29,10 @@ module Async
 	module HTTP
 		# Represents a way to connect to a remote HTTP server.
 		class Endpoint < Async::IO::Endpoint
-			def self.parse(string, **options)
+			def self.parse(string, endpoint = nil, **options)
 				url = URI.parse(string).normalize
 				
-				return self.new(url, nil, **options)
+				return self.new(url, endpoint, **options)
 			end
 			
 			# @option scheme [String] the scheme to use, overrides the URL scheme.
@@ -46,7 +46,8 @@ module Async
 				raise ArgumentError, "URL must be absolute (include scheme, host): #{url}" unless url.absolute?
 				
 				@url = url
-				@endpoint = endpoint
+				
+				@endpoint = self.build_endpoint(endpoint)
 			end
 			
 			def to_url

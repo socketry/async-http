@@ -43,13 +43,14 @@ module Async
 				@available = Async::Notification.new
 				
 				@limit = limit
-				@active = 0
 				
 				@constructor = block
 			end
 			
 			# The number of allocated resources.
-			attr :active
+			def active
+				@resources.count
+			end
 			
 			# Whether there are resources which are currently in use.
 			def busy?
@@ -58,6 +59,11 @@ module Async
 				end
 				
 				return false
+			end
+			
+			# Wait until a pool resource has been freed.
+			def wait
+				@available.wait
 			end
 			
 			# All allocated resources.
@@ -92,8 +98,6 @@ module Async
 			def close
 				@resources.each_key(&:close)
 				@resources.clear
-				
-				@active = 0
 			end
 			
 			def to_s
@@ -120,8 +124,6 @@ module Async
 				Async.logger.debug(self) {"Retire #{resource}"}
 				
 				@resources.delete(resource)
-				
-				@active -= 1
 				
 				resource.close
 				
@@ -163,10 +165,8 @@ module Async
 					end
 				end
 				
-				if !@limit or @active < @limit
+				if !@limit or self.active < @limit
 					Async.logger.debug(self) {"No resources resources, allocating new one..."}
-					
-					@active += 1
 					
 					return create
 				end

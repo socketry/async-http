@@ -74,9 +74,30 @@ module Async
 					return buffer
 				end
 				
+				# Read at most `size` bytes from the stream. Will avoid reading from the underlying stream if possible.
+				def read_partial(size = nil)
+					if @buffer
+						buffer = @buffer
+						@buffer = nil
+					else
+						buffer = read_next
+					end
+					
+					if buffer and size
+						if buffer.bytesize > size
+							@buffer = buffer.byteslice(size, buffer.bytesize)
+							buffer = buffer.byteslice(0, size)
+						end
+					end
+					
+					return buffer
+				end
+				
 				def read_nonblock(length, buffer = nil)
 					@buffer ||= read_next
 					chunk = nil
+					
+					return nil if @buffer.nil?
 					
 					if @buffer.bytesize > length
 						chunk = @buffer.byteslice(0, length)

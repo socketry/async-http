@@ -48,6 +48,12 @@ module Async
 									# If this fails, this connection will be closed.
 									write_upgrade_body(protocol, body)
 								end
+							elsif request.connect?
+								task.async do |subtask|
+									subtask.annotate("Tunnelling body.")
+									
+									write_tunnel_body(@version, body)
+								end
 							else
 								task.async do |subtask|
 									subtask.annotate("Streaming body.")

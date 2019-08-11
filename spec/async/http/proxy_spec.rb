@@ -102,22 +102,26 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 					end
 					
 					writer = Async do
-						while chunk = stream.read_partial
-							upstream.write(chunk)
-							upstream.flush
+						begin
+							while chunk = stream.read_partial
+								upstream.write(chunk)
+								upstream.flush
+							end
+							
+							upstream.close_write
+						rescue Async::Wrapper::Cancelled
+							#ignore
 						end
-						
-						upstream.close_write
-					rescue Async::Wrapper::Cancelled
-						#ignore
 					end
 					
-					reader.wait
-					writer.wait
+					begin
+						reader.wait
+						writer.wait
 					
-				ensure
-					upstream.close
-					stream.close
+					ensure
+						upstream.close
+						stream.close
+					end
 				end
 			end
 		end

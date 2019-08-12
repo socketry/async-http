@@ -59,7 +59,15 @@ module Async
 			end
 			
 			def endpoint(url, **options)
-				Endpoint.parse(url, self, **options)
+				Endpoint.new(url, self, **options)
+			end
+			
+			def client_for(endpoint, *args)
+				endpoint = endpoint.dup
+				
+				endpoint.endpoint = self
+				
+				Client.new(endpoint, *args)
 			end
 		end
 	end

@@ -183,42 +183,6 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		end
 	end
 	
-	context 'CONNECT' do
-		let(:server) do
-			Async::HTTP::Server.for(endpoint, protocol) do |request|
-				puts "Hijack #{request.method}"
-				
-				if request.connect?
-					Async::HTTP::Body::Hijack.response(request, 200, {}) do |stream|
-						chunk = stream.read
-						puts "server: #{chunk}"
-						stream.write(chunk)
-						
-						stream.close
-					end
-				end
-			end
-		end
-		
-		let(:data) {"Hello World!"}
-		
-		it "can connect and hijack connection" do
-			hijack = Async::HTTP::Body::Hijack.new do |stream|
-				stream.write(data)
-				stream.close_write
-				
-				chunk = stream.read
-				puts "client: #{chunk}"
-				
-				#expect(stream.read).to be == data
-			end
-			
-			response = client.connect("127.0.0.1:1234", [], hijack)
-			
-			expect(response).to be_success
-		end
-	end
-	
 	context 'hijack with nil response' do
 		let(:server) do
 			Async::HTTP::Server.for(endpoint, protocol) do |request|

@@ -47,7 +47,11 @@ module Async
 				
 				@url = url
 				
-				@endpoint = self.build_endpoint(endpoint)
+				if endpoint
+					@endpoint = self.build_endpoint(endpoint)
+				else
+					@endpoint = nil
+				end
 			end
 			
 			def to_url
@@ -109,8 +113,8 @@ module Async
 				@options[:scheme] || @url.scheme
 			end
 			
-			def authority
-				if default_port?
+			def authority(ignore_default_port = true)
+				if ignore_default_port and default_port?
 					@url.hostname
 				else
 					"#{@url.hostname}:#{port}"
@@ -187,6 +191,10 @@ module Async
 			
 			def endpoint
 				@endpoint ||= build_endpoint
+			end
+			
+			def endpoint= endpoint
+				@endpoint = self.build_endpoint(endpoint)
 			end
 			
 			def bind(*args, &block)

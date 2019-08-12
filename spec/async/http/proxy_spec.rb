@@ -28,6 +28,35 @@ require_relative 'server_context'
 RSpec.shared_examples_for Async::HTTP::Proxy do
 	include_context Async::HTTP::Server
 	
+	context 'CONNECT' do
+		let(:server) do
+			Async::HTTP::Server.for(endpoint, protocol) do |request|
+				Async::HTTP::Body::Hijack.response(request, 200, {}) do |stream|
+					chunk = stream.read
+					stream.close_read
+					
+					stream.write(chunk)
+					stream.close
+				end
+			end
+		end
+		
+		let(:data) {"Hello World!"}
+		
+		it "can connect and hijack connection" do
+			input = Async::HTTP::Body::Writable.new
+			
+			response = client.connect("127.0.0.1:1234", [], input)
+			
+			expect(response).to be_success
+			
+			input.write(data)
+			input.close
+			
+			expect(response.read).to be == data
+		end
+	end
+	
 	context 'echo server' do
 		let(:server) do
 			Async::HTTP::Server.for(endpoint, protocol) do |request|
@@ -126,9 +155,9 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 			end
 		end
 		
-		it 'can get website' do
-			proxy = Async::HTTP::Proxy.tcp(client, "www.codeotaku.com", 80)
-			proxy_client = Async::HTTP::Client.new(proxy.endpoint("http://www.codeotaku.com"))
+		it 'can get insecure website' do
+			endpoint = Async::HTTP::Endpoint.parse("http://www.codeotaku.com")
+			proxy_client = client.proxy_for(endpoint)
 			
 			response = proxy_client.get("/index")
 			expect(response).to_not be_failure
@@ -141,8 +170,18 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 			expect(proxy_client.pool).to_not be_empty
 			proxy_client.close
 			expect(proxy_client.pool).to be_empty
+		end
+		
+		it 'can get secure website' do
+			endpoint = Async::HTTP::Endpoint.parse("https://www.codeotaku.com")
+			proxy_client = client.proxy_for(endpoint)
 			
-			proxy.close
+			response = proxy_client.get("/index")
+			
+			expect(response).to_not be_failure
+			expect(response.read).to_not be_empty
+			
+			proxy_client.close
 		end
 	end
 end

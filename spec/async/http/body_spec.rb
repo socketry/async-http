@@ -62,9 +62,7 @@ RSpec.shared_examples Async::HTTP::Body do
 		response = client.post("/", {}, output)
 		
 		expect(response).to be_success
-		
-		input = response.body
-		reversed = input.read
+		expect(response.read).to be == "!dlroW olleH"
 		
 		server_task.stop
 		client.close

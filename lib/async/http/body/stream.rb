@@ -46,32 +46,35 @@ module Async
 				# @param length [Integer] the amount of data to read
 				# @param buffer [String] the buffer which will receive the data
 				# @return a buffer containing the data
-				def read(length = nil, buffer = nil)
-					buffer ||= Async::IO::Buffer.new
-					buffer.clear
+				def read(size = nil, buffer = nil)
+					return '' if size == 0
 					
-					until buffer.bytesize == length
-						@buffer = read_next if @buffer.nil?
-						break if @buffer.nil?
-						
-						remaining_length = length - buffer.bytesize if length
-						
-						if remaining_length && remaining_length < @buffer.bytesize
-							# We know that we are not going to reuse the original buffer.
-							# But byteslice will generate a hidden copy. So let's freeze it first:
-							@buffer.freeze
-							
-							buffer << @buffer.byteslice(0, remaining_length)
-							@buffer = @buffer.byteslice(remaining_length, @buffer.bytesize)
-						else
-							buffer << @buffer
-							@buffer = nil
-						end
+					buffer ||= Async::IO::Buffer.new
+					if @buffer
+						buffer.replace(@buffer)
+						@buffer = nil
 					end
 					
-					return nil if buffer.empty? && length && length > 0
-					
-					return buffer
+					if size
+						while buffer.bytesize < size and chunk = read_next
+							buffer << chunk
+						end
+						
+						@buffer = buffer.byteslice(size, buffer.bytesize)
+						buffer = buffer.byteslice(0, size)
+						
+						if buffer.empty?
+							return nil
+						else
+							return buffer
+						end
+					else
+						while chunk = read_next
+							buffer << chunk
+						end
+						
+						return buffer
+					end
 				end
 				
 				# Read at most `size` bytes from the stream. Will avoid reading from the underlying stream if possible.
@@ -129,7 +132,6 @@ module Async
 					@input&.close
 				end
 				
-				# close must never be called on the input stream. huh?
 				def close_write
 					@output&.close
 				end

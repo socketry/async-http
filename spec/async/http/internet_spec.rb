@@ -36,6 +36,8 @@ RSpec.describe Async::HTTP::Internet, timeout: 5 do
 		response = subject.get("https://www.codeotaku.com/index", headers)
 		
 		expect(response).to be_success
+		
+		response.close
 	end
 	
 	let(:sample) {{"hello" => "world"}}

@@ -55,6 +55,8 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 					data_size += chunk.bytesize
 					chunk.clear
 				end
+				
+				response.finish
 			end
 			
 			size_mbytes = data_size / 1024**2
@@ -105,6 +107,8 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 			let(:response) {client.get("/")}
 			let(:expected) {"GET #{protocol::VERSION}"}
 			
+			after {response.finish}
+			
 			it "is successful" do
 				expect(response).to be_success
 				expect(response.read).to eq expected
@@ -149,6 +153,8 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		
 		context 'POST' do
 			let(:response) {client.post("/", {}, ["Hello", " ", "World"])}
+			
+			after {response.finish}
 			
 			it "is successful" do
 				expect(response).to be_success

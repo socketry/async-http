@@ -75,6 +75,10 @@ module Async
 			end
 			
 			def close
+				while @pool.busy?
+					@pool.wait
+				end
+				
 				@pool.close
 			end
 			

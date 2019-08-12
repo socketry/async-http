@@ -39,10 +39,6 @@ module Async
 			attr :client
 			
 			def close
-				while @client.pool.busy?
-					@client.pool.wait
-				end
-				
 				@client.close
 			end
 			

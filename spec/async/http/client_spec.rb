@@ -64,13 +64,12 @@ RSpec.describe Async::HTTP::Client, timeout: 5 do
 		end
 		
 		it "can request remote resource" do
-			response = client.get("/index")
-			expect(response).to be_success
+			2.times do
+				response = client.get("/index")
+				expect(response).to be_success
+				response.finish
+			end
 			
-			response = client.get("/index")
-			expect(response).to be_success
-			
-			response.finish
 			client.close
 		end
 		

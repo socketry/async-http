@@ -38,8 +38,8 @@ RSpec.shared_context Async::HTTP::Server do
 	end
 	
 	after(:each) do
-		server_task.stop
 		client.close
+		server_task.stop
 	end
 	
 	let(:server) do

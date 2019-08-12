@@ -24,7 +24,7 @@ require_relative 'stream'
 module Async
 	module HTTP
 		module Body
-			# A body which is designed for hijacked connections.
+			# A body which is designed for hijacked server responses - a response which uses a block to read and write the request and response bodies respectively.
 			class Hijack < ::Protocol::HTTP::Body::Readable
 				def self.response(request, status, headers, &block)
 					::Protocol::HTTP::Response[status, headers, self.wrap(request, &block)]

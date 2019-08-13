@@ -82,13 +82,6 @@ module Async
 				@pool.close
 			end
 			
-			# Create a client that will proxy requests through the current client:
-			def proxy_for(endpoint, headers = [])
-				proxy = Proxy.new(self, endpoint.authority(false), headers = [])
-				
-				return proxy.client_for(endpoint)
-			end
-			
 			def call(request)
 				request.scheme ||= self.scheme
 				request.authority ||= self.authority

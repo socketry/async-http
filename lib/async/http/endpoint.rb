@@ -193,10 +193,6 @@ module Async
 				@endpoint ||= build_endpoint
 			end
 			
-			def endpoint= endpoint
-				@endpoint = self.build_endpoint(endpoint)
-			end
-			
 			def bind(*args, &block)
 				endpoint.bind(*args, &block)
 			end

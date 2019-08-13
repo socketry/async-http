@@ -25,11 +25,51 @@ require_relative 'body/pipe'
 
 module Async
 	module HTTP
+		# Wraps a client, address and headers required to initiate a connectio to a remote host using the CONNECT verb.
+		# Behaves like a TCP endpoint for the purposes of connecting to a remote host.
 		class Proxy
+			module Client
+				def proxy(endpoint, headers = [])
+					Proxy.new(self, endpoint.authority(false), headers)
+				end
+				
+				# Create a client that will proxy requests through the current client.
+				def proxied_client(endpoint, headers = [])
+					proxy = self.proxy(endpoint, headers)
+					
+					return self.class.new(proxy.wrap_endpoint(endpoint))
+				end
+				
+				def proxied_endpoint(endpoint, headers = [])
+					proxy = self.proxyfor(endpoint, headers)
+					
+					return proxy.wrap_endpoint(endpoint)
+				end
+			end
+			
+			# Prepare and endpoint which can establish a TCP connection to the remote system.
+			# @param client [Async::HTTP::Client] the client which will be used as a proxy server.
+			# @param host [String] the hostname or address to connect to.
+			# @param port [String] the port number to connect to.
+			# @param headers [Array] an optional list of headers to use when establishing the connection.
+			# @see Async::IO::Endpoint#tcp
 			def self.tcp(client, host, port, headers = [])
 				self.new(client, "#{host}:#{port}", headers)
 			end
 			
+			# Construct a endpoint that will use the given client as a proxy for HTTP requests.
+			# @param client [Async::HTTP::Client] the client which will be used as a proxy server.
+			# @param endpoint [Async::HTTP::Endpoint] the endpoint to connect to.
+			# @param headers [Array] an optional list of headers to use when establishing the connection.
+			def self.endpoint(client, endpoint, headers = [])
+				proxy = self.new(client, endpoint.authority(false), headers)
+				
+				return proxy.endpoint(endpoint.url)
+			end
+			
+			# @param client [Async::HTTP::Client] the client which will be used as a proxy server.
+			# @param address [String] the address to connect to.
+			# @param headers [Array] an optional list of headers to use when establishing the connection.
 			def initialize(client, address, headers = [])
 				@client = client
 				@address = address
@@ -38,10 +78,13 @@ module Async
 			
 			attr :client
 			
+			# Close the underlying client connection.
 			def close
 				@client.close
 			end
 			
+			# Establish a TCP connection to the specified host.
+			# @return [Socket] a connected bi-directional socket.
 			def connect(&block)
 				input = Body::Writable.new
 				
@@ -58,17 +101,12 @@ module Async
 				end
 			end
 			
-			def endpoint(url, **options)
-				Endpoint.new(url, self, **options)
-			end
-			
-			def client_for(endpoint, *args)
-				endpoint = endpoint.dup
-				
-				endpoint.endpoint = self
-				
-				Client.new(endpoint, *args)
+			# @return [Async::HTTP::Endpoint] an endpoint that connects via the specified proxy.
+			def wrap_endpoint(endpoint)
+				Endpoint.new(endpoint.url, self, **endpoint.options)
 			end
 		end
+		
+		Client.prepend(Proxy::Client)
 	end
 end

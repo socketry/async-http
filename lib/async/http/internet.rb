@@ -34,7 +34,7 @@ module Async
 				endpoint = Endpoint.parse(url)
 				
 				client = @clients.fetch(endpoint) do
-					@clients[endpoint] = Client.new(endpoint)
+					@clients[endpoint] = self.client_for(endpoint)
 				end
 				
 				body = Body::Buffered.wrap(body)
@@ -42,6 +42,10 @@ module Async
 				request = ::Protocol::HTTP::Request.new(client.scheme, endpoint.authority, method, endpoint.path, nil, headers, body)
 				
 				return client.call(request)
+			end
+			
+			def client_for(endpoint)
+				Client.new(endpoint)
 			end
 			
 			def close

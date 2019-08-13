@@ -157,7 +157,7 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 		
 		it 'can get insecure website' do
 			endpoint = Async::HTTP::Endpoint.parse("http://www.codeotaku.com")
-			proxy_client = client.proxy_for(endpoint)
+			proxy_client = client.proxied_client(endpoint)
 			
 			response = proxy_client.get("/index")
 			expect(response).to_not be_failure
@@ -174,7 +174,7 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 		
 		it 'can get secure website' do
 			endpoint = Async::HTTP::Endpoint.parse("https://www.codeotaku.com")
-			proxy_client = client.proxy_for(endpoint)
+			proxy_client = client.proxied_client(endpoint)
 			
 			response = proxy_client.get("/index")
 			

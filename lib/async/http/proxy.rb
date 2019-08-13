@@ -41,7 +41,7 @@ module Async
 				end
 				
 				def proxied_endpoint(endpoint, headers = [])
-					proxy = self.proxyfor(endpoint, headers)
+					proxy = self.proxy(endpoint, headers)
 					
 					return proxy.wrap_endpoint(endpoint)
 				end

@@ -28,6 +28,24 @@ require_relative 'server_context'
 RSpec.shared_examples_for Async::HTTP::Proxy do
 	include_context Async::HTTP::Server
 	
+	describe '.proxied_endpoint' do
+		it "can construct valid endpoint" do
+			endpoint = Async::HTTP::Endpoint.parse("http://www.codeotaku.com")
+			proxied_endpoint = client.proxied_endpoint(endpoint)
+			
+			expect(proxied_endpoint).to be_kind_of(Async::HTTP::Endpoint)
+		end
+	end
+	
+	describe '.proxied_client' do
+		it "can construct valid client" do
+			endpoint = Async::HTTP::Endpoint.parse("http://www.codeotaku.com")
+			proxied_client = client.proxied_client(endpoint)
+			
+			expect(proxied_client).to be_kind_of(Async::HTTP::Client)
+		end
+	end
+	
 	context 'CONNECT' do
 		let(:server) do
 			Async::HTTP::Server.for(endpoint, protocol) do |request|

@@ -8,7 +8,7 @@ require 'async/http/body/delayed'
 require 'async/http/client'
 require 'async/http/endpoint'
 
-Async.run do
+Async do
 	endpoint = Async::HTTP::Endpoint.parse("http://localhost:9222")
 	client = Async::HTTP::Client.new(endpoint, Async::HTTP::Protocol::HTTP2)
 	

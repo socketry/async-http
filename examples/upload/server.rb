@@ -10,7 +10,7 @@ endpoint = Async::HTTP::Endpoint.parse('http://127.0.0.1:9222', reuse_port: true
 
 Async.logger.level = Logger::DEBUG
 
-Async.run do
+Async do
 	server = Async::HTTP::Server.for(endpoint, protocol) do |request|
 		Protocol::HTTP::Response[200, {}, request.body]
 	end

@@ -41,7 +41,7 @@ require 'async/http/internet'
 
 data = {'life' => 42}
 
-Async.run do
+Async do
 	# Make a new internet:
 	internet = Async::HTTP::Internet.new
 	
@@ -72,7 +72,7 @@ Here is an example showing how to download a file and save it to a local path:
 require 'async'
 require 'async/http/internet'
 
-Async.run do
+Async do
 	# Make a new internet:
 	internet = Async::HTTP::Internet.new
 	

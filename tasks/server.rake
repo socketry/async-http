@@ -17,7 +17,7 @@ task :google do
 	require 'async'
 	require 'pry'
 	
-	Async.run do
+	Async do
 		endpoint = Async::HTTP::Endpoint.parse("https://www.google.com")
 		peer = endpoint.connect
 		stream = Async::IO::Stream.new(peer)

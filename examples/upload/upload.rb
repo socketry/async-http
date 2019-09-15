@@ -4,7 +4,7 @@ require 'async'
 require 'async/http/body/file'
 require 'async/http/internet'
 
-Async.run do
+Async do
 	internet = Async::HTTP::Internet.new
 	
 	headers = [

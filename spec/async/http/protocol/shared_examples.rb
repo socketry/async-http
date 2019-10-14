@@ -45,7 +45,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 			end
 		end
 		
-		it "client can get resource" do |example|
+		it "client can download data quickly" do |example|
 			response = client.get("/")
 			expect(response).to be_success
 			

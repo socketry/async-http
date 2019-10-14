@@ -20,6 +20,7 @@
 
 require_relative '../server_context'
 
+require 'async'
 require 'async/clock'
 require 'async/http/client'
 require 'async/http/server'
@@ -28,6 +29,8 @@ require 'async/http/body/hijack'
 require 'tempfile'
 
 require 'protocol/http/body/file'
+
+require 'async/rspec/profile'
 
 RSpec.shared_examples_for Async::HTTP::Protocol do
 	include_context Async::HTTP::Server
@@ -132,15 +135,25 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 			end
 			
 			it "can handle many simultaneous requests", timeout: 120 do
+				# Prime the connection:
+				response = client.get("/")
+				expect(response).to be_success
+				expect(response.read).to eq expected
+				
+				GC.disable
+				
 				duration = Async::Clock.measure do
 					10.times do
-						responses = 100.times.collect do
-							client.get("/")
+						tasks = 100.times.collect do
+							Async do
+								client.get("/")
+							end
 						end
 						
 						puts "Pool: #{client.pool}"
 						
-						responses.each do |response|
+						tasks.each do |task|
+							response = task.wait
 							expect(response).to be_success
 							expect(response.read).to eq expected
 						end

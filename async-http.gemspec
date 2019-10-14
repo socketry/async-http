@@ -17,16 +17,16 @@ Gem::Specification.new do |spec|
 	spec.require_paths = ["lib"]
 	
 	spec.add_dependency("async", "~> 1.19")
-	spec.add_dependency("async-io", "~> 1.25")
+	spec.add_dependency("async-io", "~> 1.26")
 	
 	spec.add_dependency("protocol-http", "~> 0.12.0")
 	spec.add_dependency("protocol-http1", "~> 0.9.0")
-	spec.add_dependency("protocol-http2", "~> 0.9.0")
+	spec.add_dependency("protocol-http2", "~> 0.10.0")
 	
 	# spec.add_dependency("openssl")
 	
 	spec.add_development_dependency "async-rspec", "~> 1.10"
-	spec.add_development_dependency "async-container", "~> 0.14"
+	spec.add_development_dependency "async-container", "~> 0.14.0"
 	
 	spec.add_development_dependency "rack-test"
 	

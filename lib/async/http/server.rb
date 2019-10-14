@@ -44,7 +44,7 @@ module Async
 			attr :scheme
 			
 			def accept(peer, address, task: Task.current)
-				stream = Async::IO::Stream.new(peer)
+				stream = Async::IO::Stream.new(peer, deferred: true)
 				connection = @protocol.server(stream)
 				
 				Async.logger.debug(self) {"Incoming connnection from #{address.inspect} to #{@protocol}"}
@@ -62,6 +62,8 @@ module Async
 					# If this returns nil, we assume that the connection has been hijacked.
 					self.call(request)
 				end
+			ensure
+				stream.close
 			end
 			
 			def run

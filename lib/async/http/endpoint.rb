@@ -175,7 +175,7 @@ module Async
 			end
 			
 			def build_endpoint(endpoint = nil)
-				endpoint ||= Async::IO::Endpoint.tcp(self.hostname, port, tcp_options)
+				endpoint ||= Async::IO::Endpoint.tcp(self.hostname, port, **tcp_options)
 				
 				if secure?
 					# Wrap it in SSL:
@@ -205,7 +205,7 @@ module Async
 				return to_enum unless block_given?
 				
 				self.endpoint.each do |endpoint|
-					yield self.class.new(@url, endpoint, @options)
+					yield self.class.new(@url, endpoint, **@options)
 				end
 			end
 			

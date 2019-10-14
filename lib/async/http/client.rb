@@ -130,7 +130,7 @@ module Async
 				Pool.new(connection_limit) do
 					Async.logger.debug(self) {"Making connection to #{@endpoint.inspect}"}
 					
-					@protocol.client(IO::Stream.new(@endpoint.connect))
+					@protocol.client(IO::Stream.new(@endpoint.connect, deferred: true))
 				end
 			end
 		end

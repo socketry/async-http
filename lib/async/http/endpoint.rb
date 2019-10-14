@@ -161,21 +161,8 @@ module Async
 				end
 			end
 			
-			def tcp_options
-				options = @options.dup
-				
-				options.delete(:scheme)
-				options.delete(:port)
-				options.delete(:hostname)
-				options.delete(:ssl_context)
-				options.delete(:alpn_protocols)
-				options.delete(:protocol)
-				
-				return options
-			end
-			
 			def build_endpoint(endpoint = nil)
-				endpoint ||= Async::IO::Endpoint.tcp(self.hostname, port, **tcp_options)
+				endpoint ||= tcp_endpoint
 				
 				if secure?
 					# Wrap it in SSL:
@@ -204,7 +191,7 @@ module Async
 			def each
 				return to_enum unless block_given?
 				
-				self.endpoint.each do |endpoint|
+				self.tcp_endpoint.each do |endpoint|
 					yield self.class.new(@url, endpoint, **@options)
 				end
 			end
@@ -219,6 +206,25 @@ module Async
 			
 			def hash
 				self.key.hash
+			end
+			
+			protected
+			
+			def tcp_options
+				options = @options.dup
+				
+				options.delete(:scheme)
+				options.delete(:port)
+				options.delete(:hostname)
+				options.delete(:ssl_context)
+				options.delete(:alpn_protocols)
+				options.delete(:protocol)
+				
+				return options
+			end
+			
+			def tcp_endpoint
+				Async::IO::Endpoint.tcp(self.hostname, port, **tcp_options)
 			end
 		end
 	end

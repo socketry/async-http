@@ -70,8 +70,7 @@ module Async
 					end
 					
 					def reusable?
-						@stream && !@stream.closed?
-						# !(self.closed? || @stream.closed?)
+						@persistent && @stream && !@stream.closed?
 					end
 					
 					def close

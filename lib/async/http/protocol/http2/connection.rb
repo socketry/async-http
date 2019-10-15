@@ -74,12 +74,16 @@ module Async
 						@write_frame_guard.acquire do
 							super
 						end
+						
+						@stream.flush
 					end
 					
 					def write_frames(&block)
 						@write_frame_guard.acquire do
 							super
 						end
+						
+						@stream.flush
 					end
 					
 					def read_in_background(task: Task.current)
@@ -91,7 +95,7 @@ module Async
 									self.consume_window
 									self.read_frame
 								end
-							rescue EOFError, Errno::ECONNRESET, Errno::EPIPE, Async::Wrapper::Cancelled
+							rescue IOError, EOFError, Errno::ECONNRESET, Errno::EPIPE, Async::Wrapper::Cancelled
 								# Ignore.
 							ensure
 								close($!)

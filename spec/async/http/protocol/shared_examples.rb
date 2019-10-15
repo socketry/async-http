@@ -107,41 +107,40 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		end
 		
 		context 'GET' do
-			let(:response) {client.get("/")}
 			let(:expected) {"GET #{protocol::VERSION}"}
 			
-			after {response.finish}
-			
-			it "is successful" do
-				expect(response).to be_success
-				expect(response.read).to eq expected
-			end
-			
-			let(:tempfile) {Tempfile.new}
-			
-			it "can save to disk" do
-				response.save(tempfile.path)
-				expect(tempfile.read).to eq expected
+			context 'with response' do
+				let(:response) {client.get("/")}
+				after {response.finish}
 				
-				tempfile.close
-			end
-			
-			it "has remote-address header" do
-				expect(response.headers['remote-address']).to_not be_nil
-			end
-			
-			it "has protocol version" do
-				expect(response.version).to_not be_nil
-			end
-			
-			it "can handle many simultaneous requests", timeout: 120 do
-				# Prime the connection:
-				response = client.get("/")
-				expect(response).to be_success
-				expect(response.read).to eq expected
+				it "can finish gracefully" do
+					expect(response).to be_success
+				end
 				
-				GC.disable
+				it "is successful" do
+					expect(response).to be_success
+					expect(response.read).to eq expected
+				end
 				
+				let(:tempfile) {Tempfile.new}
+				
+				it "can save to disk" do
+					response.save(tempfile.path)
+					expect(tempfile.read).to eq expected
+					
+					tempfile.close
+				end
+				
+				it "has remote-address header" do
+					expect(response.headers['remote-address']).to_not be_nil
+				end
+				
+				it "has protocol version" do
+					expect(response.version).to_not be_nil
+				end
+			end
+			
+			it "can handle many simultaneous requests", timeout: 10 do |example|
 				duration = Async::Clock.measure do
 					10.times do
 						tasks = 100.times.collect do
@@ -149,8 +148,6 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 								client.get("/")
 							end
 						end
-						
-						puts "Pool: #{client.pool}"
 						
 						tasks.each do |task|
 							response = task.wait
@@ -160,7 +157,8 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 					end
 				end
 				
-				puts "Duration = #{duration.round(2)}"
+				example.reporter.message "Pool: #{client.pool}"
+				example.reporter.message "Duration = #{duration.round(2)}"
 			end
 		end
 		

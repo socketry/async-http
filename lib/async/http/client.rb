@@ -126,7 +126,7 @@ module Async
 			
 			protected
 			
-			def make_pool(connection_limit = nil)
+			def make_pool(connection_limit)
 				Pool.new(connection_limit) do
 					Async.logger.debug(self) {"Making connection to #{@endpoint.inspect}"}
 					

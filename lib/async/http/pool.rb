@@ -45,6 +45,7 @@ module Async
 				@limit = limit
 				
 				@constructor = block
+				@guard = Async::Semaphore.new(1)
 			end
 			
 			# The number of allocated resources.
@@ -54,7 +55,7 @@ module Async
 			
 			# Whether there are resources which are currently in use.
 			def busy?
-				@resources.collect do |_,usage|
+				@resources.collect do |_, usage|
 					return true if usage > 0
 				end
 				
@@ -138,6 +139,10 @@ module Async
 				
 				Async.logger.debug(self) {"Wait for resource #{resource}"}
 				
+				if resource.multiplex
+					@available.signal
+				end
+				
 				return resource
 			end
 			
@@ -165,10 +170,12 @@ module Async
 					end
 				end
 				
-				if !@limit or self.active < @limit
-					Async.logger.debug(self) {"No resources resources, allocating new one..."}
-					
-					return create
+				@guard.acquire do
+					if @limit.nil? or self.active < @limit
+						Async.logger.debug(self) {"No resources resources, allocating new one..."}
+						
+						return create
+					end
 				end
 				
 				return nil

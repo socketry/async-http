@@ -30,7 +30,7 @@ require 'async/container'
 require 'etc'
 require 'benchmark'
 
-RSpec.describe Async::HTTP::Server do
+RSpec.shared_examples_for 'wrk benchmark' do
 	let(:endpoint) {Async::HTTP::Endpoint.parse("http://127.0.0.1:9294")}
 	let(:url) {endpoint.url.to_s}
 	
@@ -43,6 +43,12 @@ RSpec.describe Async::HTTP::Server do
 	
 	let(:client) {Async::HTTP::Client.new(endpoint, protocol)}
 	
+	let(:bound_endpoint) do
+		Async::Reactor.run do
+			Async::IO::SharedEndpoint.bound(endpoint)
+		end.wait
+	end
+	
 	before(:all) do
 		GC.disable
 	end
@@ -51,37 +57,49 @@ RSpec.describe Async::HTTP::Server do
 		GC.enable
 	end
 	
-	describe "simple response" do
-		it "runs quickly" do
-			bound_endpoint = nil
-			
-			Async::Reactor.run do
-				bound_endpoint = Async::IO::SharedEndpoint.bound(endpoint)
-			end
-			
-			server = Async::HTTP::Server.new(
+	it "runs benchmark" do
+		server
+		
+		container = Async::Container.new
+		
+		container.run(count: concurrency) do
+			server.run
+		end
+		
+		bound_endpoint&.close
+		
+		if ab = `which ab`.chomp!
+			# puts [ab, "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, url].join(' ')
+			system(ab, "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, url)
+		end
+		
+		if wrk = `which wrk`.chomp!
+			system(wrk, "-c", concurrency.to_s, "-d", "2", "-t", concurrency.to_s, url)
+		end
+		
+		container.stop(false)
+	end
+end
+
+RSpec.describe Async::HTTP::Server do
+	describe Protocol::HTTP::Middleware::Okay do
+		let(:server) do
+			Async::HTTP::Server.new(
 				Protocol::HTTP::Middleware::Okay,
 				bound_endpoint, protocol, endpoint.scheme
 			)
-			
-			container = Async::Container.new
-			
-			container.run(count: concurrency) do
-				server.run
-			end
-			
-			bound_endpoint.close if bound_endpoint
-			
-			if ab = `which ab`.chomp!
-				# puts [ab, "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, url].join(' ')
-				system(ab, "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, url)
-			end
-			
-			if wrk = `which wrk`.chomp!
-				system(wrk, "-c", concurrency.to_s, "-d", "2", "-t", concurrency.to_s, url)
-			end
-			
-			container.stop(false)
 		end
+		
+		include_examples 'wrk benchmark'
+	end
+	
+	describe 'multiple chunks' do
+		let(:server) do
+			Async::HTTP::Server.for(bound_endpoint, protocol, endpoint.scheme) do
+				Protocol::HTTP::Response[200, {}, "Hello World".chars]
+			end
+		end
+		
+		include_examples 'wrk benchmark'
 	end
 end

@@ -43,9 +43,8 @@ module Async
 			attr :protocol
 			attr :scheme
 			
-			def accept(peer, address, task: Task.current)
-				stream = IO::Stream.new(peer, deferred: false)
-				connection = @protocol.server(stream)
+			def accept(peer, address, task: Task.curren)
+				connection = @protocol.server(peer)
 				
 				Async.logger.debug(self) {"Incoming connnection from #{address.inspect} to #{@protocol}"}
 				
@@ -63,7 +62,7 @@ module Async
 					self.call(request)
 				end
 			ensure
-				stream&.close
+				connection&.close
 			end
 			
 			def run

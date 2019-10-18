@@ -45,7 +45,9 @@ module Async
 					::Protocol::HTTP2::Settings::ENABLE_CONNECT_PROTOCOL => 1,
 				}
 				
-				def self.client(stream, settings = CLIENT_SETTINGS)
+				def self.client(peer, settings = CLIENT_SETTINGS)
+					stream = IO::Stream.new(peer, sync: true, deferred: true)
+					
 					client = Client.new(stream)
 					
 					client.send_connection_preface(settings)
@@ -54,7 +56,9 @@ module Async
 					return client
 				end
 				
-				def self.server(stream, settings = SERVER_SETTINGS)
+				def self.server(peer, settings = SERVER_SETTINGS)
+					stream = IO::Stream.new(peer, sync: true, deferred: true)
+					
 					server = Server.new(stream)
 					
 					server.read_connection_preface(settings)
@@ -72,12 +76,12 @@ module Async
 						::Protocol::HTTP2::Settings::ENABLE_PUSH => 1,
 					)
 					
-					def self.client(stream, settings = CLIENT_SETTINGS)
-						HTTP2.client(stream, settings)
+					def self.client(peer, settings = CLIENT_SETTINGS)
+						HTTP2.client(peer, settings)
 					end
 					
-					def self.server(stream, settings = SERVER_SETTINGS)
-						HTTP2.server(stream, settings)
+					def self.server(peer, settings = SERVER_SETTINGS)
+						HTTP2.server(peer, settings)
 					end
 					
 					def self.names

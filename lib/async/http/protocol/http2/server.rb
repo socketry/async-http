@@ -50,11 +50,14 @@ module Async
 					end
 					
 					def close(error = nil)
+						# This invokes Framer#close which closes the stream:
 						super
 						
-						# Stop the request loop:
-						@requests.enqueue nil
-						@requests = nil
+						if @requests
+							# Stop the request loop:
+							@requests.enqueue nil
+							@requests = nil
+						end
 					end
 					
 					def each

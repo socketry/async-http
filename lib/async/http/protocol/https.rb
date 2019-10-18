@@ -55,9 +55,9 @@ module Async
 					nil => HTTP11,
 				}
 				
-				def self.protocol_for(stream)
+				def self.protocol_for(peer)
 					# alpn_protocol is only available if openssl v1.0.2+
-					name = stream.io.alpn_protocol
+					name = peer.alpn_protocol
 					
 					Async.logger.debug(self) {"Negotiating protocol #{name.inspect}..."}
 					
@@ -68,12 +68,12 @@ module Async
 					end
 				end
 				
-				def self.client(stream)
-					protocol_for(stream).client(stream)
+				def self.client(peer)
+					protocol_for(peer).client(peer)
 				end
 				
-				def self.server(stream)
-					protocol_for(stream).server(stream)
+				def self.server(peer)
+					protocol_for(peer).server(peer)
 				end
 				
 				# Supported Application Layer Protocol Negotiation names:

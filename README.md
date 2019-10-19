@@ -98,7 +98,7 @@ require 'async/http/server'
 require 'async/http/client'
 require 'async/reactor'
 require 'async/http/endpoint'
-require 'async/http/response'
+require 'async/http/protocol/response'
 
 endpoint = Async::HTTP::Endpoint.parse('http://127.0.0.1:9294')
 

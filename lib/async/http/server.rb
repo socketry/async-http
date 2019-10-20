@@ -43,7 +43,7 @@ module Async
 			attr :protocol
 			attr :scheme
 			
-			def accept(peer, address, task: Task.curren)
+			def accept(peer, address, task: Task.current)
 				connection = @protocol.server(peer)
 				
 				Async.logger.debug(self) {"Incoming connnection from #{address.inspect} to #{@protocol}"}

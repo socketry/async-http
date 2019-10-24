@@ -140,7 +140,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 				end
 			end
 			
-			it "can handle many simultaneous requests", timeout: 10 do |example|
+			it "can handle many simultaneous requests", timeout: 30 do |example|
 				duration = Async::Clock.measure do
 					10.times do
 						tasks = 100.times.collect do

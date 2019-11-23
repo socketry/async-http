@@ -123,7 +123,7 @@ module Async
 			
 			# Return the path and query components of the given URL.
 			def path
-				buffer = @url.path || "/"
+				buffer = @url.path&.dup || "/"
 				
 				if query = @url.query
 					buffer << "?#{query}"

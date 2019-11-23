@@ -34,9 +34,10 @@ module Async
 			
 			def call(method, url, headers = [], body = nil)
 				endpoint = Endpoint.parse(url)
+				key = host_key(endpoint)
 				
-				client = @clients.fetch(endpoint) do
-					@clients[endpoint] = self.client_for(endpoint)
+				client = @clients.fetch(key) do
+					@clients[key] = self.client_for(endpoint)
 				end
 				
 				body = Body::Buffered.wrap(body)
@@ -59,6 +60,18 @@ module Async
 				define_method(verb.downcase) do |url, headers = [], body = nil|
 					self.call(verb, url.to_str, headers, body)
 				end
+			end
+			
+			private
+			
+			def host_key(endpoint)
+				url = endpoint.url.dup
+				
+				url.path = ""
+				url.fragment = nil
+				url.query = nil
+				
+				return url
 			end
 		end
 	end

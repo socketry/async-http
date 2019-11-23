@@ -118,8 +118,8 @@ RSpec.describe "http://www.google.com/search" do
 		expect(endpoint.hostname).to be == "www.google.com"
 	end
 	
-	it "should be eql? if host part is same" do
+	it "should not be equal if path is different" do
 		other = Async::HTTP::Endpoint.parse('http://www.google.com/search?q=ruby')
-		expect(endpoint).to be_eql other
+		expect(endpoint).to_not be_eql other
 	end
 end

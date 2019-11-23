@@ -199,7 +199,7 @@ module Async
 			end
 			
 			def key
-				[@url.scheme, @url.userinfo, @url.host, @url.port, @options]
+				[@url, @options]
 			end
 			
 			def eql? other

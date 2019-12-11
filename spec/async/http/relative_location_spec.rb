@@ -65,7 +65,7 @@ RSpec.describe Async::HTTP::RelativeLocation do
 			it 'should fail with maximum redirects' do
 				expect{
 					response = subject.get('/forever')
-				}.to raise_error(ArgumentError, /maximum/)
+				}.to raise_error(Async::HTTP::TooManyRedirects, /maximum/)
 			end
 		end
 		

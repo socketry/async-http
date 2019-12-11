@@ -26,6 +26,9 @@ require 'protocol/http/middleware'
 
 module Async
 	module HTTP
+		class TooManyRedirects < StandardError
+		end
+
 		# A client wrapper which transparently handles both relative and absolute redirects to a given maximum number of hops.
 		class RelativeLocation < ::Protocol::HTTP::Middleware
 			DEFAULT_METHOD = GET
@@ -69,7 +72,7 @@ module Async
 					end
 				end
 				
-				raise ArgumentError, "Redirected #{hops} times, exceeded maximum!"
+				raise TooManyRedirects, "Redirected #{hops} times, exceeded maximum!"
 			end
 		end
 	end

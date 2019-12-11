@@ -66,7 +66,7 @@ module Async
 					if protocol = HANDLERS[name]
 						return protocol
 					else
-						throw ArgumentError.new("Could not determine protocol for connection (#{name.inspect}).")
+						raise ArgumentError, "Could not determine protocol for connection (#{name.inspect})."
 					end
 				end
 				

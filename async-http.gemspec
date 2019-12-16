@@ -4,6 +4,7 @@ require_relative 'lib/async/http/version'
 Gem::Specification.new do |spec|
 	spec.name          = "async-http"
 	spec.version       = Async::HTTP::VERSION
+	spec.licenses      = ["MIT"]
 	spec.authors       = ["Samuel Williams"]
 	spec.email         = ["samuel.williams@oriontransfer.co.nz"]
 

@@ -28,8 +28,9 @@ require 'protocol/http/body/buffered'
 module Async
 	module HTTP
 		class Internet
-			def initialize
+			def initialize(**options)
 				@clients = {}
+				@options = options
 			end
 			
 			def call(method, url, headers = [], body = nil)
@@ -48,7 +49,7 @@ module Async
 			end
 			
 			def client_for(endpoint)
-				Client.new(endpoint)
+				Client.new(endpoint, **@options)
 			end
 			
 			def close

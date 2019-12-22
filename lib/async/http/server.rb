@@ -29,8 +29,8 @@ require 'protocol/http/middleware'
 module Async
 	module HTTP
 		class Server < ::Protocol::HTTP::Middleware
-			def self.for(*args, &block)
-				self.new(block, *args)
+			def self.for(*arguments, &block)
+				self.new(block, *arguments)
 			end
 			
 			def initialize(app, endpoint, protocol = endpoint.protocol, scheme = endpoint.scheme)

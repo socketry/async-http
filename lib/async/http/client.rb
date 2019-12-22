@@ -32,6 +32,9 @@ require_relative 'protocol'
 
 module Async
 	module HTTP
+		DEFAULT_RETRIES = 3
+		DEFAULT_CONNECTION_LIMIT = nil
+		
 		class Client < ::Protocol::HTTP::Methods
 			# Provides a robust interface to a server.
 			# * If there are no connections, it will create one.
@@ -42,7 +45,7 @@ module Async
 			# @param protocol [Protocol::HTTP1 | Protocol::HTTP2 | Protocol::HTTPS] the protocol to use.
 			# @param scheme [String] The default scheme to set to requests.
 			# @param authority [String] The default authority to set to requests.
-			def initialize(endpoint, protocol = endpoint.protocol, scheme = endpoint.scheme, authority = endpoint.authority, retries: 3, connection_limit: nil)
+			def initialize(endpoint, protocol = endpoint.protocol, scheme = endpoint.scheme, authority = endpoint.authority, retries: DEFAULT_RETRIES, connection_limit: DEFAULT_CONNECTION_LIMIT)
 				@endpoint = endpoint
 				@protocol = protocol
 				

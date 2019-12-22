@@ -62,6 +62,72 @@ end
 
 Consider using [async-rest](https://github.com/socketry/async-rest) instead.
 
+### Multiple Requests
+
+To issue multiple requests concurrently, you should use a barrier, e.g.
+
+```ruby
+#!/usr/bin/env ruby
+
+require 'async'
+require 'async/barrier'
+require 'async/http/internet'
+
+TOPICS = ["ruby", "python", "rust"]
+
+Async do
+	internet = Async::HTTP::Internet.new
+	barrier = Async::Barrier.new
+	
+	# Spawn an asynchronous task for each topic:
+	TOPICS.each do |topic|
+		barrier.async do
+			response = internet.get "https://www.google.com/search?q=#{topic}"
+			puts "Found #{topic}: #{response.read.scan(topic).size} times."
+		end
+	end
+	
+	# Ensure we wait for all requests to complete before continuing:
+	barrier.wait
+ensure
+	internet&.close
+end
+```
+
+#### Limiting Requests
+
+If you need to limit the number of simultaneous requests, use a semaphore.
+
+```ruby
+#!/usr/bin/env ruby
+
+require 'async'
+require 'async/barrier'
+require 'async/semaphore'
+require 'async/http/internet'
+
+TOPICS = ["ruby", "python", "rust"]
+
+Async do
+	internet = Async::HTTP::Internet.new
+	barrier = Async::Barrier.new
+	semaphore = Async::Semaphore.new(2, parent: barrier)
+	
+	# Spawn an asynchronous task for each topic:
+	TOPICS.each do |topic|
+		semaphore.async do
+			response = internet.get "https://www.google.com/search?q=#{topic}"
+			puts "Found #{topic}: #{response.read.scan(topic).size} times."
+		end
+	end
+	
+	# Ensure we wait for all requests to complete before continuing:
+	barrier.wait
+ensure
+	internet&.close
+end
+```
+
 ### Downloading a File
 
 Here is an example showing how to download a file and save it to a local path:

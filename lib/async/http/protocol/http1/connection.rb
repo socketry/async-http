@@ -62,12 +62,12 @@ module Async
 					
 					attr :count
 					
-					def multiplex
+					def concurrency
 						1
 					end
 					
 					# Can we use this connection to make requests?
-					def connected?
+					def viable?
 						@stream&.connected?
 					end
 					

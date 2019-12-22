@@ -25,8 +25,6 @@ require_relative 'http11'
 
 require_relative 'http2'
 
-require_relative '../pool'
-
 require 'openssl'
 
 unless OpenSSL::SSL::SSLContext.instance_methods.include? :alpn_protocols=

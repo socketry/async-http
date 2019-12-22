@@ -23,6 +23,8 @@
 require 'async/io/endpoint'
 require 'async/io/stream'
 
+require 'async/pool/controller'
+
 require 'protocol/http/body/streamable'
 require 'protocol/http/methods'
 
@@ -129,7 +131,7 @@ module Async
 			protected
 			
 			def make_pool(connection_limit)
-				Pool.new(connection_limit) do
+				Async::Pool::Controller.wrap(limit: connection_limit) do
 					Async.logger.debug(self) {"Making connection to #{@endpoint.inspect}"}
 					
 					@protocol.client(@endpoint.connect)

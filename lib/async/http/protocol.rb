@@ -35,10 +35,10 @@ module Async
 			
 			# A connection must implement the following interface:
 			# class Connection
-			# 	def multiplex -> can invoke call 1 or more times simultaneously.
+			# 	def concurrency -> can invoke call 1 or more times simultaneously.
 			# 	def reusable? -> can be used again/persistent connection.
 			
-			# 	def connected? -> Boolean
+			# 	def viable? -> Boolean
 			
 			# 	def call(request) -> Response
 			# 	def each -> (yield(request) -> Response)

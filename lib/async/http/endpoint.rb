@@ -37,6 +37,17 @@ module Async
 				return self.new(url, endpoint, **options)
 			end
 			
+			# Construct an endpoint with a specified scheme, hostname, and options.
+			def self.for(scheme, hostname, **options)
+				# TODO: Consider using URI.for once it becomes available:
+				uri_klass = URI.scheme_list[scheme.upcase] || URI::HTTP
+				
+				self.new(
+					uri_klass.new(scheme, nil, hostname, nil, nil, nil, nil, nil, nil),
+					**options
+				)
+			end
+			
 			# @option scheme [String] the scheme to use, overrides the URL scheme.
 			# @option hostname [String] the hostname to connect to (or bind to), overrides the URL hostname (used for SNI).
 			# @option port [Integer] the port to bind to, overrides the URL port.

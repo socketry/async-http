@@ -66,6 +66,13 @@ RSpec.describe Async::HTTP::Endpoint do
 		end
 	end
 	
+	describe '.for("http", "localhost")' do
+		subject {Async::HTTP::Endpoint.for("http", "localhost")}
+		
+		it {is_expected.to have_attributes(scheme: "http", hostname: "localhost")}
+		it {is_expected.to_not be_secure}
+	end
+	
 	describe '#secure?' do
 		subject {Async::HTTP::Endpoint.parse(description)}
 		

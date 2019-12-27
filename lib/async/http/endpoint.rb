@@ -81,7 +81,7 @@ module Async
 			end
 			
 			def secure?
-				['https', 'wss'].include?(@url.scheme)
+				['https', 'wss'].include?(self.scheme)
 			end
 			
 			def protocol

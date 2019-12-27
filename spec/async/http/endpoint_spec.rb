@@ -66,6 +66,24 @@ RSpec.describe Async::HTTP::Endpoint do
 		end
 	end
 	
+	describe '#secure?' do
+		subject {Async::HTTP::Endpoint.parse(description)}
+		
+		context 'http://localhost' do
+			it { is_expected.to_not be_secure }
+		end
+		
+		context 'https://localhost' do
+			it { is_expected.to be_secure }
+		end
+		
+		context 'with scheme: https' do
+			subject {Async::HTTP::Endpoint.parse("http://localhost", scheme: 'https')}
+			
+			it { is_expected.to be_secure }
+		end
+	end
+	
 	describe '#localhost?' do
 		subject {Async::HTTP::Endpoint.parse(description)}
 		

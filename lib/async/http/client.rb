@@ -69,8 +69,8 @@ module Async
 				@endpoint.secure?
 			end
 			
-			def self.open(*args, &block)
-				client = self.new(*args)
+			def self.open(*arguments, **options, &block)
+				client = self.new(*arguments, **options)
 				
 				return client unless block_given?
 				

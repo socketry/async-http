@@ -169,7 +169,8 @@ module Async
 					end
 					
 					context.set_params(
-						verify_mode: self.ssl_verify_mode
+						verify_mode: self.ssl_verify_mode,
+						min_version: ::OpenSSL::SSL::TLS1_2_VERSION,
 					)
 				end
 			end

@@ -163,14 +163,13 @@ module Async
 			end
 			
 			def ssl_context
-				@options[:ssl_context] || ::OpenSSL::SSL::SSLContext.new.tap do |context|
+				@options[:ssl_context] || OpenSSL::SSL::SSLContext.new.tap do |context|
 					if alpn_protocols = self.alpn_protocols
 						context.alpn_protocols = alpn_protocols
 					end
 					
 					context.set_params(
-						verify_mode: self.ssl_verify_mode,
-						min_version: ::OpenSSL::SSL::TLS1_2_VERSION,
+						verify_mode: self.ssl_verify_mode
 					)
 				end
 			end

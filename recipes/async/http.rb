@@ -1,5 +1,5 @@
 
-recipe :fetch, description: "Fetch the specified URL and print the response." do |method:, url:|
+recipe :fetch, description: "Fetch the specified URL and print the response." do |url, method:|
 	require 'async/http/internet'
 	require 'kernel/sync'
 	
@@ -68,11 +68,11 @@ recipe :fetch, description: "Fetch the specified URL and print the response." do
 	end
 end
 
-recipe :get, description: "GET the specified URL and print the response." do |url:|
-	call :fetch, "method=GET", "url=#{url}"
+recipe :get, description: "GET the specified URL and print the response." do |url|
+	call :fetch, url, "method=GET"
 end
 
-recipe :head, description: "HEAD the specified URL and print the response." do |url:|
-	call :fetch, "method=HEAD", "url=#{url}"
+recipe :head, description: "HEAD the specified URL and print the response." do |url|
+	call :fetch, url, "method=HEAD"
 end
 

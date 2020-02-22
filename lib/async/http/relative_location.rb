@@ -32,8 +32,9 @@ module Async
 		# A client wrapper which transparently handles both relative and absolute redirects to a given maximum number of hops.
 		class RelativeLocation < ::Protocol::HTTP::Middleware
 			DEFAULT_METHOD = GET
-			
-			def initialize(app, maximum_hops = 4)
+
+			# maximum_hops is the max number of redirects. Set to 0 to allow 1 request with no redirects.
+			def initialize(app, maximum_hops = 3)
 				super(app)
 				
 				@maximum_hops = maximum_hops
@@ -48,11 +49,11 @@ module Async
 				# We need to cache the body as it might be submitted multiple times.
 				request.finish
 				
-				while hops < @maximum_hops
+				while hops <= @maximum_hops
 					response = super(request)
-					hops += 1
-						
+
 					if response.redirection?
+						hops += 1
 						response.finish
 						
 						location = response.headers['location']

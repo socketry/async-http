@@ -45,10 +45,10 @@ RSpec.describe Async::HTTP::RelativeLocation do
 			let(:server) do
 				Async::HTTP::Server.for(endpoint) do |request|
 					case request.path
+					when '/home'
+						Protocol::HTTP::Response[301, {'location' => '/'}, []]
 					when '/'
 						Protocol::HTTP::Response[301, {'location' => '/index.html'}, []]
-					when '/forever'
-						Protocol::HTTP::Response[301, {'location' => '/forever'}, []]
 					when '/index.html'
 						Protocol::HTTP::Response[200, {}, [request.method]]
 					end
@@ -61,11 +61,22 @@ RSpec.describe Async::HTTP::RelativeLocation do
 				expect(response).to be_success
 				expect(response.read).to be == "GET"
 			end
-			
-			it 'should fail with maximum redirects' do
-				expect{
-					response = subject.get('/forever')
-				}.to raise_error(Async::HTTP::TooManyRedirects, /maximum/)
+
+			context 'limiting redirects' do
+				subject {described_class.new(client, 1)}
+
+				it 'should allow the maximum number of redirects' do
+					response = subject.get('/')
+
+					response.finish
+					expect(response).to be_success
+				end
+
+				it 'should fail with maximum redirects' do
+					expect{
+						response = subject.get('/home')
+					}.to raise_error(Async::HTTP::TooManyRedirects, /maximum/)
+				end
 			end
 		end
 		

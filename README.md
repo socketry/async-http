@@ -2,7 +2,7 @@
 
 An asynchronous client and server implementation of HTTP/1.0, HTTP/1.1 and HTTP/2 including TLS. Support for streaming requests and responses. Built on top of [async] and [async-io]. [falcon] provides a rack-compatible server.
 
-[![Build Status](https://secure.travis-ci.org/socketry/async-http.svg)](http://travis-ci.org/socketry/async-http)
+[![Build Status](https://travis-ci.com/socketry/async-http.svg?branch=master)](https://travis-ci.com/socketry/async-http)
 [![Code Climate](https://codeclimate.com/github/socketry/async-http.svg)](https://codeclimate.com/github/socketry/async-http)
 [![Coverage Status](https://coveralls.io/repos/socketry/async-http/badge.svg)](https://coveralls.io/r/socketry/async-http)
 

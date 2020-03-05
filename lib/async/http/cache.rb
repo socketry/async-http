@@ -94,14 +94,22 @@ module Async
 			end
 			
 			def cachable?(request)
+				# We don't support caching requests which have a body:
 				if request.body
 					return false
 				end
 				
+				# We can't cache upgraded requests:
+				if request.protocol
+					return false
+				end
+				
+				# We only support caching GET and HEAD requests:
 				if request.method == 'GET' || request.method == 'HEAD'
 					return true
 				end
 				
+				# Otherwise, we can't cache it:
 				return false
 			end
 			

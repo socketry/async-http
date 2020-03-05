@@ -129,12 +129,12 @@ module Async
 				key = self.key(request)
 				
 				if response = @responses[key]
-					Async.logger.info(self) {"Cache hit for #{key}..."}
+					Async.logger.debug(self) {"Cache hit for #{key}..."}
 					@count += 1
 					
 					if response.expired?
-						Async.logger.info(self) {"Cache expired for #{key}..."}
 						@responses.delete(key)
+						Async.logger.debug(self) {"Cache expired for #{key}..."}
 					else
 						# Create a dup of the response:
 						return response.dup
@@ -142,10 +142,9 @@ module Async
 				end
 				
 				if cachable?(request)
-					Async.logger.info(self) {"Wrapping #{key}..."}
+					Async.logger.debug(self) {"Updating cache for #{key}..."}
 					return wrap(request, key, super)
 				else
-					Async.logger.info(self) {"Cache miss for #{key}..."}
 					return super
 				end
 			end

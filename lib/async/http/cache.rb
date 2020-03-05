@@ -25,7 +25,7 @@ require 'protocol/http/headers'
 require 'protocol/http/middleware'
 require 'async/clock'
 
-require_relative 'body/cachable'
+require 'protocol/http/body/cacheable'
 
 module Async
 	module HTTP
@@ -94,17 +94,27 @@ module Async
 			end
 			
 			def cachable?(request)
-				request.method == 'GET' || request.method == 'HEAD'
+				if request.body
+					return false
+				end
+				
+				if request.method == 'GET' || request.method == 'HEAD'
+					return true
+				end
+				
+				return false
 			end
 			
 			def wrap(request, key, response)
-				Body::Cachable.wrap(response) do |body|
+				Body::Cacheable.wrap(response) do |response, body|
 					response = Response.new(response, body)
 					
 					if response.cachable?
 						@responses[key] = response
 					end
 				end
+				
+				return response
 			end
 			
 			def call(request)

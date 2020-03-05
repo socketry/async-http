@@ -37,7 +37,7 @@ RSpec.describe Async::HTTP::Cache, timeout: 5 do
 	
 	let(:server) do
 		Async::HTTP::Server.for(endpoint, protocol) do |request|
-			Protocol::HTTP::Response[200, [['cache-control', 'max-age=1, public']], []]
+			Protocol::HTTP::Response[200, [['cache-control', 'max-age=1, public']], ['Hello', ' ', 'World']]
 		end
 	end
 	
@@ -45,11 +45,23 @@ RSpec.describe Async::HTTP::Cache, timeout: 5 do
 	
 	it "should cache GET requests" do
 		response = subject.get("/")
-		response.finish
+		expect(response.read).to be == "Hello World"
 		
-		response = subject.get("/")
-		response.finish
+		10.times do
+			response = subject.get("/")
+			expect(response.read).to be == "Hello World"
+		end
 		
-		expect(subject).to have_attributes(count: 1)
+		expect(subject).to have_attributes(count: 10)
+	end
+	
+	it "should not cache POST requests" do
+		response = subject.post("/")
+		expect(response.read).to be == "Hello World"
+		
+		response = subject.post("/")
+		expect(response.read).to be == "Hello World"
+		
+		expect(subject).to have_attributes(count: 0)
 	end
 end

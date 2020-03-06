@@ -31,6 +31,8 @@ module Async
 	module HTTP
 		class Cache < ::Protocol::HTTP::Middleware
 			CACHE_CONTROL  = 'cache-control'
+			SET_COOKIE = 'set-cookie'
+			CONTENT_TYPE = 'content-type'
 			
 			class Response < ::Protocol::HTTP::Response
 				def initialize(response, body)
@@ -48,6 +50,14 @@ module Async
 				end
 				
 				def cachable?
+					if length = @body.length and length > 1024*128
+						return false
+					end
+					
+					if set_cookie = @headers[SET_COOKIE]
+						return false
+					end
+					
 					if cache_control = @headers[CACHE_CONTROL]
 						if cache_control.private?
 							return false
@@ -79,12 +89,13 @@ module Async
 				end
 			end
 			
-			def initialize(app, responses = {})
+			def initialize(app, store: nil, maximum_length: 1024*256)
 				super(app)
 				
 				@count = 0
 				
-				@responses = {}
+				@responses = store || Hash.new
+				@maximum_length = maximum_length
 			end
 			
 			attr :count
@@ -114,6 +125,16 @@ module Async
 			end
 			
 			def wrap(request, key, response)
+				if body = response.body
+					if length = body.length
+						# Don't cache responses bigger than 128Kb:
+						return response if length > @maximum_length
+					else
+						# Don't cache responses without length:
+						return response
+					end
+				end
+				
 				Body::Cacheable.wrap(response) do |response, body|
 					response = Response.new(response, body)
 					
@@ -127,8 +148,9 @@ module Async
 			
 			def call(request)
 				key = self.key(request)
+				cache_control = request.headers[CACHE_CONTROL]
 				
-				if response = @responses[key]
+				if response = @responses[key] and !cache_control&.no_cache?
 					Async.logger.debug(self) {"Cache hit for #{key}..."}
 					@count += 1
 					
@@ -141,7 +163,7 @@ module Async
 					end
 				end
 				
-				if cachable?(request)
+				if cachable?(request) and !cache_control&.no_store?
 					Async.logger.debug(self) {"Updating cache for #{key}..."}
 					return wrap(request, key, super)
 				else

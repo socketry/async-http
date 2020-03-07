@@ -33,6 +33,7 @@ module Async
 			CACHE_CONTROL  = 'cache-control'
 			SET_COOKIE = 'set-cookie'
 			CONTENT_TYPE = 'content-type'
+			AUTHORIZATION = 'authorization'
 			
 			class Response < ::Protocol::HTTP::Response
 				def initialize(response, body)
@@ -115,6 +116,10 @@ module Async
 					return false
 				end
 				
+				if request.headers[AUTHORIZATION]
+					return false
+				end
+				
 				# We only support caching GET and HEAD requests:
 				if request.method == 'GET' || request.method == 'HEAD'
 					return true
@@ -125,6 +130,10 @@ module Async
 			end
 			
 			def wrap(request, key, response)
+				if response.status != 200
+					return false
+				end
+				
 				if body = response.body
 					if length = body.length
 						# Don't cache responses bigger than 128Kb:

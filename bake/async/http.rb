@@ -80,4 +80,3 @@ end
 def head(url)
 	self.fetch(url, method: "HEAD")
 end
-

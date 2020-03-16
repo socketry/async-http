@@ -105,6 +105,12 @@ module Async
 							
 							return headers
 						end
+						
+						def close(error)
+							@request = nil
+							
+							super
+						end
 					end
 					
 					def initialize(stream)

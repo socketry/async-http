@@ -110,7 +110,10 @@ module Async
 						def close(error)
 							super
 							
-							@response.promises.enqueue nil
+							if @response
+								@response.promises.enqueue nil
+								@response = nil
+							end
 							
 							@exception = error
 							

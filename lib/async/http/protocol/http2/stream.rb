@@ -201,7 +201,7 @@ module Async
 						end
 					end
 					
-					def receive_headers(frame)
+					def process_headers(frame)
 						if @headers.nil?
 							@headers = ::Protocol::HTTP::Headers.new
 							self.receive_initial_headers(super, frame.end_stream?)

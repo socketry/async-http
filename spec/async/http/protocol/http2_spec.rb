@@ -34,6 +34,19 @@ RSpec.describe Async::HTTP::Protocol::HTTP2, timeout: 2 do
 		end
 	end
 	
+	context 'closed streams' do
+		include_context Async::HTTP::Server
+		
+		it 'should delete stream after response stream is closed' do
+			response = client.get("/")
+			connection = response.connection
+			
+			response.read
+			
+			expect(connection.streams).to be_empty
+		end
+	end
+	
 	context 'host header' do
 		include_context Async::HTTP::Server
 		

@@ -27,7 +27,7 @@ module Async
 	module HTTP
 		module Protocol
 			module HTTP2
-				# Typically used on the client side  for writing a request and reading the incoming response.
+				# Typically used on the client side for writing a request and reading the incoming response.
 				class Response < Protocol::Response
 					class Stream < HTTP2::Stream
 						def initialize(*)
@@ -50,7 +50,7 @@ module Async
 						end
 						
 						def accept_push_promise_stream(promised_stream_id, headers)
-							stream = @connection.accept_push_promise_stream(promised_stream_id, &Stream.method(:accept))
+							stream = @connection.accept_push_promise_stream(promised_stream_id, &Stream.method(:create))
 							
 							stream.response.build_request(headers)
 							

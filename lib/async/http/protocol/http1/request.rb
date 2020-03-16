@@ -41,6 +41,10 @@ module Async
 						super(nil, authority, method, path, version, headers, body, protocol)
 					end
 					
+					def connection
+						@connection
+					end
+					
 					def hijack?
 						true
 					end

@@ -127,8 +127,11 @@ module Async
 					end
 					
 					attr :stream
-					
 					attr :request
+					
+					def connection
+						@stream.connection
+					end
 					
 					def wait
 						@stream.wait

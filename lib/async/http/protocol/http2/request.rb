@@ -115,6 +115,10 @@ module Async
 					
 					attr :stream
 					
+					def connection
+						@stream.connection
+					end
+					
 					def valid?
 						@scheme and @method and @path
 					end

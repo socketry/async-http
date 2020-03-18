@@ -51,6 +51,10 @@ module Async
 						@write_frame_guard = Async::Semaphore.new(1)
 					end
 					
+					def to_s
+						"\#<#{self.class} #{@streams.count} active streams>"
+					end
+					
 					attr :stream
 					
 					def http1?

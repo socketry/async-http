@@ -129,6 +129,9 @@ module Async
 							
 							while chunk = @body&.read
 								self.write(chunk)
+								# TODO this reduces memory usage?
+								# chunk.clear unless chunk.frozen?
+								# GC.start
 							end
 							
 							self.close_write

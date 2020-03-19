@@ -98,6 +98,8 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 					Protocol::HTTP::Response[200, {
 						'remote-address' => request.remote_address.inspect
 					}, ["#{request.method} #{request.version}"]]
+				else
+					Protocol::HTTP::Response[200, {}, ["Hello World"]]
 				end
 			end
 		end
@@ -159,6 +161,17 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 				
 				example.reporter.message "Pool: #{client.pool}"
 				example.reporter.message "Duration = #{duration.round(2)}"
+			end
+		end
+		
+		context 'HEAD' do
+			let(:response) {client.head("/")}
+			after {response.finish}
+			
+			it "is successful and without body" do
+				expect(response).to be_success
+				expect(response.body).to be_nil
+				expect(response.read).to be_nil
 			end
 		end
 		

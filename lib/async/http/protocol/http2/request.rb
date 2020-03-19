@@ -166,7 +166,7 @@ module Async
 					def send_response(response)
 						if response.nil?
 							@stream.send_headers(nil, NO_RESPONSE, ::Protocol::HTTP2::END_STREAM)
-						elsif response.body?
+						elsif response.body? && !self.head?
 							pseudo_headers = [
 								[STATUS, response.status],
 							]
@@ -192,6 +192,9 @@ module Async
 							], response.headers)
 							
 							@stream.send_headers(nil, headers, ::Protocol::HTTP2::END_STREAM)
+							
+							# If the response had a body but it was not sent, close it (e.g. HEAD request).
+							response.body&.close
 						end
 					end
 				end

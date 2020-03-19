@@ -17,7 +17,7 @@ end
 private
 
 def server
-	require 'async/reactor'
+	require 'async'
 	require 'async/container'
 	require 'async/http/server'
 	require 'async/io/host_endpoint'

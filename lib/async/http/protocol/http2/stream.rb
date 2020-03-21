@@ -34,12 +34,24 @@ module Async
 							super(length)
 							
 							@stream = stream
+							@remaining = length
 						end
 						
 						def read
 							if chunk = super
 								# If we read a chunk fron the stream, we want to extend the window if required so more data will be provided.
 								@stream.request_window_update
+							end
+							
+							# We track the expected length and check we got what we were expecting.
+							if @remaining
+								if chunk
+									@remaining -= chunk.bytesize
+								elsif @remaining > 0
+									raise EOFError, "Expected #{self.length} bytes, #{@remaining} bytes short!"
+								elsif @remaining < 0
+									raise EOFError, "Expected #{self.length} bytes, #{@remaining} bytes over!"
+								end
 							end
 							
 							return chunk

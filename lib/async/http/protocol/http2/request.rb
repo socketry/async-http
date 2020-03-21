@@ -165,36 +165,31 @@ module Async
 					
 					def send_response(response)
 						if response.nil?
-							@stream.send_headers(nil, NO_RESPONSE, ::Protocol::HTTP2::END_STREAM)
-						elsif response.body? && !self.head?
-							pseudo_headers = [
-								[STATUS, response.status],
-							]
-							
-							if protocol = response.protocol
-								pseudo_headers << [PROTOCOL, protocol]
-							end
-							
-							if length = response.body.length
-								pseudo_headers << [CONTENT_LENGTH, length]
-							end
-							
-							headers = ::Protocol::HTTP::Headers::Merged.new(
-								pseudo_headers,
-								response.headers
-							)
-							
+							return @stream.send_headers(nil, NO_RESPONSE, ::Protocol::HTTP2::END_STREAM)
+						end
+						
+						protocol_headers = [
+							[STATUS, response.status],
+						]
+						
+						if protocol = response.protocol
+							protocol_headers << [PROTOCOL, protocol]
+						end
+						
+						if length = response.body&.length
+							protocol_headers << [CONTENT_LENGTH, length]
+						end
+						
+						headers = ::Protocol::HTTP::Headers::Merged.new(protocol_headers, response.headers)
+						
+						if body = response.body and !self.head?
 							@stream.send_headers(nil, headers)
-							@stream.send_body(response.body)
+							@stream.send_body(body)
 						else
-							headers = ::Protocol::HTTP::Headers::Merged.new([
-								[STATUS, response.status],
-							], response.headers)
+							# Ensure the response body is closed if we are ending the stream:
+							response.close
 							
 							@stream.send_headers(nil, headers, ::Protocol::HTTP2::END_STREAM)
-							
-							# If the response had a body but it was not sent, close it (e.g. HEAD request).
-							response.body&.close
 						end
 					end
 				end

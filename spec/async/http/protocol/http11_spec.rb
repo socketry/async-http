@@ -39,7 +39,8 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 2 do
 				
 				expect(response).to be_success
 				expect(response.version).to be == "HTTP/1.1"
-				expect(response.body).to be nil
+				expect(response.body).to be_empty
+				
 				response.read
 			end
 		end

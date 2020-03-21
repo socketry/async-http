@@ -75,13 +75,15 @@ module Async
 							
 							@response.headers = @headers
 							
-							unless @response.valid?
-								send_reset_stream(::Protocol::HTTP2::Error::PROTOCOL_ERROR)
-							else
-								# We only construct the input/body if data is coming.
-								unless end_stream
+							if @response.valid?
+								if !end_stream
+									# We only construct the input/body if data is coming.
 									@response.body = prepare_input(@length)
+								elsif @response.head?
+									@response.body = ::Protocol::HTTP::Body::Head.new(@length)
 								end
+							else
+								send_reset_stream(::Protocol::HTTP2::Error::PROTOCOL_ERROR)
 							end
 							
 							self.notify!
@@ -138,6 +140,10 @@ module Async
 					
 					def wait
 						@stream.wait
+					end
+					
+					def head?
+						@request&.head?
 					end
 					
 					def valid?

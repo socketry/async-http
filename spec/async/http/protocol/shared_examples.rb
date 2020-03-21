@@ -86,7 +86,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		end
 	end
 	
-	context 'working server' do
+	context 'with working server' do
 		let(:server) do
 			Async::HTTP::Server.for(endpoint, protocol) do |request|
 				if request.method == 'POST'
@@ -108,7 +108,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 			expect(server.scheme).to be == "http"
 		end
 		
-		context 'GET' do
+		context 'using GET method' do
 			let(:expected) {"GET #{protocol::VERSION}"}
 			
 			context 'with response' do
@@ -122,6 +122,10 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 				it "is successful" do
 					expect(response).to be_success
 					expect(response.read).to eq expected
+				end
+				
+				it "provides content length" do
+					expect(response.body.length).to_not be_nil
 				end
 				
 				let(:tempfile) {Tempfile.new}
@@ -170,7 +174,9 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 			
 			it "is successful and without body" do
 				expect(response).to be_success
-				expect(response.body).to be_nil
+				expect(response.body).to_not be_nil
+				expect(response.body).to be_empty
+				expect(response.body.length).to_not be_nil
 				expect(response.read).to be_nil
 			end
 		end

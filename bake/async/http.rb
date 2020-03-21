@@ -21,7 +21,7 @@ def fetch(url, method:)
 	format_body = proc do |body, terminal|
 		if body
 			if length = body.length
-				terminal.print(:body, "body with length", :length, length, "B")
+				terminal.print(:body, "body with length ", :length, length, "B")
 			else
 				terminal.print(:body, "body without length")
 			end

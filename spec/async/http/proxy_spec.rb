@@ -180,11 +180,11 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 			response = proxy_client.get("/index")
 			expect(response).to_not be_failure
 			
-			# If a connection is persistent, it will go back into the pool when the response is closed.
-			expect(response.read).to_not be_empty
-			expect(response.body).to be_nil
+			# The response would be a redirect:
+			expect(response).to be_redirection
+			response.finish
 			
-			# The proxy.connnect response is not being released correctly - after pipe is done.
+			# The proxy.connnect response is not being released correctly - after pipe is done:
 			expect(proxy_client.pool).to_not be_empty
 			proxy_client.close
 			expect(proxy_client.pool).to be_empty

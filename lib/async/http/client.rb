@@ -103,12 +103,10 @@ module Async
 					# As we cache pool, it's possible these pool go bad (e.g. closed by remote host). In this case, we need to try again. It's up to the caller to impose a timeout on this. If this is the last attempt, we force a new connection.
 					connection = @pool.acquire
 					
-					response = request.call(connection)
+					response = make_response(request, connection)
 					
-					# The connection won't be released until the body is completely read/released.
-					::Protocol::HTTP::Body::Streamable.wrap(response) do
-						@pool.release(connection)
-					end
+					# This signals that the ensure block below should not try to release the connection, because it's bound into the response which will be returned:
+					connection = nil
 					
 					return response
 				rescue Protocol::RequestFailed
@@ -120,7 +118,7 @@ module Async
 					else
 						raise
 					end
-				rescue
+				rescue Errno::ECONNRESET, Errno::EPIPE, IOError
 					@pool.release(connection) if connection
 					
 					if request.idempotent? and attempt < @retries
@@ -128,10 +126,23 @@ module Async
 					else
 						raise
 					end
+				ensure
+					@pool.release(connection) if connection
 				end
 			end
 			
 			protected
+			
+			def make_response(request, connection)
+				response = request.call(connection)
+				
+				# The connection won't be released until the body is completely read/released.
+				::Protocol::HTTP::Body::Streamable.wrap(response) do
+					@pool.release(connection)
+				end
+				
+				return response
+			end
 			
 			def make_pool(connection_limit)
 				Async::Pool::Controller.wrap(limit: connection_limit) do

@@ -27,7 +27,6 @@ matrix:
     - rvm: 2.7
       os: osx
   allow_failures:
-    - rvm: truffleruby
     - rvm: ruby-head
     - rvm: jruby-head
     - rvm: truffleruby

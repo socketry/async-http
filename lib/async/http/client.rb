@@ -111,7 +111,10 @@ module Async
 					return response
 				rescue Protocol::RequestFailed
 					# This is a specific case where the entire request wasn't sent before a failure occurred. So, we can even resend non-idempotent requests.
-					@pool.release(connection) if connection
+					if connection
+						@pool.release(connection)
+						connection = nil
+					end
 					
 					if attempt < @retries
 						retry
@@ -119,7 +122,10 @@ module Async
 						raise
 					end
 				rescue Errno::ECONNRESET, Errno::EPIPE, IOError
-					@pool.release(connection) if connection
+					if connection
+						@pool.release(connection)
+						connection = nil
+					end
 					
 					if request.idempotent? and attempt < @retries
 						retry

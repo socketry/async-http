@@ -2,7 +2,7 @@
 
 require 'async'
 require 'async/clock'
-require 'async/semaphore'
+require 'async/barrier'
 require_relative '../../lib/async/http/endpoint'
 require_relative '../../lib/async/http/client'
 
@@ -18,7 +18,7 @@ Async do
 	Async.logger.info(self) {"Saving download to #{Dir.pwd}"}
 	
 	begin
-		response = client.get(endpoint.path, headers)
+		response = client.head(endpoint.path, headers)
 		content_length = nil
 		
 		if response.success?
@@ -53,10 +53,10 @@ Async do
 	
 	Async.logger.info(self) {"Breaking download into #{parts.size} parts..."}
 	
-	semaphore = Async::Semaphore.new(8)
+	barrier = Async::Barrier.new
 	
 	while !parts.empty?
-		semaphore.async do
+		barrier.async do
 			part = parts.shift
 			
 			Async.logger.info(self) {"Issuing range request range: bytes=#{part.min}-#{part.max}"}
@@ -77,6 +77,8 @@ Async do
 			end
 		end
 	end
+	
+	barrier.wait
 ensure
 	client&.close
 end

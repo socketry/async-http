@@ -15,7 +15,6 @@ script: bundle exec rspec
 
 matrix:
   include:
-    - rvm: 2.4
     - rvm: 2.5
     - rvm: 2.6
     - rvm: 2.7

@@ -11,6 +11,8 @@ addons:
     packages:
     - wrk
 
+script: bundle exec rspec
+
 matrix:
   include:
     - rvm: 2.4

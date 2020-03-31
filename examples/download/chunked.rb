@@ -3,6 +3,7 @@
 require 'async'
 require 'async/clock'
 require 'async/barrier'
+require 'async/semaphore'
 require_relative '../../lib/async/http/endpoint'
 require_relative '../../lib/async/http/client'
 
@@ -53,7 +54,8 @@ Async do
 	
 	Async.logger.info(self) {"Breaking download into #{parts.size} parts..."}
 	
-	barrier = Async::Barrier.new
+	semaphore = Async::Semaphore.new(8)
+	barrier = Async::Barrier.new(parent: semaphore)
 	
 	while !parts.empty?
 		barrier.async do

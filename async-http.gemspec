@@ -18,24 +18,22 @@ Gem::Specification.new do |spec|
 	spec.require_paths = ["lib"]
 	
 	spec.add_dependency("async", "~> 1.23")
-	spec.add_dependency("async-io", "~> 1.27.0")
+	spec.add_dependency("async-io", "~> 1.28")
 	spec.add_dependency("async-pool", "~> 0.2")
 	
 	spec.add_dependency("protocol-http", "~> 0.15.1")
 	spec.add_dependency("protocol-http1", "~> 0.10.0")
-	spec.add_dependency("protocol-http2", "~> 0.11.0")
+	spec.add_dependency("protocol-http2", "~> 0.12.0")
 	
 	# spec.add_dependency("openssl")
-	
-	spec.add_development_dependency "bake-bundler"
 	
 	spec.add_development_dependency "async-rspec", "~> 1.10"
 	spec.add_development_dependency "async-container", "~> 0.14.0"
 	
 	spec.add_development_dependency "rack-test"
 	
-	spec.add_development_dependency "bake"
 	spec.add_development_dependency "covered"
 	spec.add_development_dependency "bundler"
+	spec.add_development_dependency "bake-bundler"
 	spec.add_development_dependency "rspec", "~> 3.6"
 end

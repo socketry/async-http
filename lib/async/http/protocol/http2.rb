@@ -36,19 +36,19 @@ module Async
 				CLIENT_SETTINGS = {
 					::Protocol::HTTP2::Settings::ENABLE_PUSH => 0,
 					::Protocol::HTTP2::Settings::MAXIMUM_FRAME_SIZE => 0x100000,
-					::Protocol::HTTP2::Settings::INITIAL_WINDOW_SIZE => 0xF00000,
+					::Protocol::HTTP2::Settings::INITIAL_WINDOW_SIZE => 0x800000,
 				}
 				
 				SERVER_SETTINGS = {
 					# We choose a lower maximum concurrent streams to avoid overloading a single connection/thread.
 					::Protocol::HTTP2::Settings::MAXIMUM_CONCURRENT_STREAMS => 128,
 					::Protocol::HTTP2::Settings::MAXIMUM_FRAME_SIZE => 0x100000,
-					::Protocol::HTTP2::Settings::INITIAL_WINDOW_SIZE => 0xF00000,
+					::Protocol::HTTP2::Settings::INITIAL_WINDOW_SIZE => 0x800000,
 					::Protocol::HTTP2::Settings::ENABLE_CONNECT_PROTOCOL => 1,
 				}
 				
 				def self.client(peer, settings = CLIENT_SETTINGS)
-					stream = IO::Stream.new(peer, sync: true, deferred: true)
+					stream = IO::Stream.new(peer, sync: true)
 					
 					client = Client.new(stream)
 					
@@ -59,7 +59,7 @@ module Async
 				end
 				
 				def self.server(peer, settings = SERVER_SETTINGS)
-					stream = IO::Stream.new(peer, sync: true, deferred: true)
+					stream = IO::Stream.new(peer, sync: true)
 					
 					server = Server.new(stream)
 					

@@ -8,6 +8,8 @@ require_relative "../../lib/async/http"
 URL = "https://www.google.com/search"
 ENDPOINT = Async::HTTP::Endpoint.parse(URL)
 
+# Console.logger.enable(Async::IO::Stream, Console::Logger::DEBUG)
+
 class Google < Protocol::HTTP::Middleware
 	def search(term)
 		Async.logger.info(self) {"Searching for #{term}..."}
@@ -18,7 +20,7 @@ end
 
 terms = %w{thoughtful fear size payment lethal modern recognise face morning sulky mountainous contain science snow uncle skirt truthful door travel snails closed rotten halting creator teeny-tiny beautiful cherries unruly level follow strip team things suggest pretty warm end cannon bad pig consider airport strengthen youthful fog three walk furry pickle moaning fax book ruddy sigh plate cakes shame stem faulty bushes dislike train sleet one colour behavior bitter suit count loutish squeak learn watery orange idiotic seat wholesale omniscient nostalgic arithmetic instruct committee puffy program cream cake whistle rely encourage war flagrant amusing fluffy prick utter wacky occur daily son check}
 
-if count = ENV['COUNT']&.to_i
+if count = ENV.fetch('COUNT', 20)&.to_i
 	terms = terms.first(count)
 end
 
@@ -36,10 +38,10 @@ Async do |task|
 			end
 		end.map(&:wait).to_h
 		
-		pp counts
+		Async.logger.info(self, name: 'counts') {counts}
 	end
 	
-	pp duration
+	Async.logger.info(self, name: 'duration') {duration}
 ensure
 	google.close
 end

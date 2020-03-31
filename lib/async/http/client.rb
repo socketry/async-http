@@ -121,7 +121,7 @@ module Async
 					else
 						raise
 					end
-				rescue Errno::ECONNRESET, Errno::EPIPE, IOError
+				rescue IOError, EOFError, Errno::ECONNRESET, Errno::EPIPE
 					if connection
 						@pool.release(connection)
 						connection = nil

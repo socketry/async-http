@@ -1,6 +1,5 @@
 
 require 'rack'
-require 'pry'
 
 class Echo
 	def initialize(app)

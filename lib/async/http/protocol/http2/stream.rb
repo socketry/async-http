@@ -87,6 +87,7 @@ module Async
 							@stream = nil
 							
 							@task&.stop
+							@task = nil
 						end
 						
 						def write(chunk)
@@ -115,7 +116,7 @@ module Async
 									self.close_write
 								end
 								
-								@stream = nil
+								self.stop(error)
 							end
 						end
 						

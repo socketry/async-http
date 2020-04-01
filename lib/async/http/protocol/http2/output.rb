@@ -38,11 +38,14 @@ module Async
 					def initialize(stream, body)
 						@stream = stream
 						@body = body
+						@task = nil
 						
 						@window_updated = Async::Condition.new
 					end
 					
 					def start(parent: Task.current)
+						raise "Task already started!" if @task
+						
 						if @body.respond_to?(:call)
 							@task = parent.async(&self.method(:stream))
 						else
@@ -50,12 +53,8 @@ module Async
 						end
 					end
 					
-					def stop(error)
-						# Ensure that invoking #close doesn't try to close the stream.
-						@stream = nil
-						
-						@task&.stop
-						@task = nil
+					def window_updated(size)
+						@window_updated.signal
 					end
 					
 					def write(chunk)
@@ -72,30 +71,13 @@ module Async
 						end
 					end
 					
-					def window_updated(size)
-						@window_updated.signal
-					end
-					
 					def close(error = nil)
-						if @stream
-							if error
-								@stream.close(error)
-							else
-								self.close_write
-							end
-						end
-						
-						if @task
-							if @task.current?
-								# Ignore
-							else
-								@task.stop
-							end
-						end
+						@stream.finish_output(error)
 					end
 					
-					def close_write
-						@stream.send_data(nil, ::Protocol::HTTP2::END_STREAM)
+					def stop(error)
+						@task&.stop
+						@task = nil
 					end
 					
 					private
@@ -121,9 +103,7 @@ module Async
 							# GC.start
 						end
 						
-						self.close_write
-					rescue Async::Stop
-						# Ignore.
+						@stream.finish_output
 					ensure
 						@body&.close($!)
 						@body = nil

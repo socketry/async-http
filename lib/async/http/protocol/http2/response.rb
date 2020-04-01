@@ -109,7 +109,7 @@ module Async
 							end
 						end
 						
-						def close(error)
+						def closed(error)
 							super
 							
 							if @response

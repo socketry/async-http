@@ -106,7 +106,7 @@ module Async
 							return headers
 						end
 						
-						def close(error)
+						def closed(error)
 							@request = nil
 							
 							super

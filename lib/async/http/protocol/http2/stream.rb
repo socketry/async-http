@@ -137,6 +137,17 @@ module Async
 						@output = Output.for(self, body)
 					end
 					
+					# Called when the output terminates normally.
+					def finish_output(error = nil)
+						@output = nil
+						
+						if error
+							send_reset_stream(::Protocol::HTTP2::Error::INTERNAL_ERROR)
+						else
+							send_data(nil, ::Protocol::HTTP2::END_STREAM)
+						end
+					end
+					
 					def window_updated(size)
 						super
 						
@@ -147,7 +158,7 @@ module Async
 					# - A frame is received which causes this stream to enter the closed state. This method will be invoked from the background reader task.
 					# - A frame is sent which causes this stream to enter the closed state. This method will be invoked from that task.
 					# While the input stream is relatively straight forward, the output stream can trigger the second case above
-					def close!(error = nil)
+					def closed(error)
 						super
 						
 						if @input
@@ -156,7 +167,7 @@ module Async
 						end
 						
 						if @output
-							@output.close(error)
+							@output.stop(error)
 							@output = nil
 						end
 						

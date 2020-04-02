@@ -136,8 +136,11 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 				host, port = request.path.split(":", 2)
 				endpoint = Async::IO::Endpoint.tcp(host, port)
 				
+				Async.logger.debug(self) {"Making connection to #{endpoint}..."}
+				
 				Async::HTTP::Body::Hijack.response(request, 200, {}) do |stream|
 					upstream = Async::IO::Stream.new(endpoint.connect)
+					Async.logger.debug(self) {"Connected to #{upstream}..."}
 					
 					reader = Async do
 						while chunk = upstream.read_partial
@@ -145,39 +148,38 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 							stream.flush
 						end
 						
+					ensure
+						Async.logger.debug(self) {"Finished reading from upstream..."}
 						stream.close_write
 					end
 					
 					writer = Async do
-						begin
-							while chunk = stream.read_partial
-								upstream.write(chunk)
-								upstream.flush
-							end
-							
-							upstream.close_write
-						rescue Async::Wrapper::Cancelled
-							#ignore
+						while chunk = stream.read_partial
+							upstream.write(chunk)
+							upstream.flush
 						end
-					end
-					
-					begin
-						reader.wait
-						writer.wait
-					
+						
+					rescue Async::Wrapper::Cancelled
+						#ignore
 					ensure
-						upstream.close
-						stream.close
+						Async.logger.debug(self) {"Finished writing to upstream..."}
+						upstream.close_write
 					end
+					
+					reader.wait
+					writer.wait
+				ensure
+					upstream.close
+					stream.close
 				end
 			end
 		end
 		
 		it 'can get insecure website' do
-			endpoint = Async::HTTP::Endpoint.parse("http://www.codeotaku.com")
+			endpoint = Async::HTTP::Endpoint.parse("http://www.google.com")
 			proxy_client = client.proxied_client(endpoint)
 			
-			response = proxy_client.get("/index")
+			response = proxy_client.get("/search")
 			expect(response).to_not be_failure
 			
 			# The response would be a redirect:
@@ -191,10 +193,10 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 		end
 		
 		it 'can get secure website' do
-			endpoint = Async::HTTP::Endpoint.parse("https://www.codeotaku.com")
+			endpoint = Async::HTTP::Endpoint.parse("https://www.google.com")
 			proxy_client = client.proxied_client(endpoint)
 			
-			response = proxy_client.get("/index")
+			response = proxy_client.get("/search")
 			
 			expect(response).to_not be_failure
 			expect(response.read).to_not be_empty

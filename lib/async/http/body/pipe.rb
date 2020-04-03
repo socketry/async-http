@@ -22,21 +22,18 @@
 
 require_relative 'writable'
 
-require 'forwardable'
-
 module Async
 	module HTTP
 		module Body
 			class Pipe
-				extend Forwardable
-				
+				# If the input stream is closed first, it's likely the output stream will also be closed.
 				def initialize(input, output = Writable.new, task: Task.current)
 					@input = input
 					@output = output
 					
 					head, tail = IO::Socket.pair(Socket::AF_UNIX, Socket::SOCK_STREAM)
 					
-					@head = Async::IO::Stream.new(head)
+					@head = IO::Stream.new(head)
 					@tail = tail
 					
 					@reader = nil
@@ -90,6 +87,7 @@ module Async
 					end
 				ensure
 					@writer = nil
+					
 					@output.close($!)
 					
 					@head.close if @reader.nil?

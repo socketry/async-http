@@ -71,10 +71,15 @@ module Async
 						end
 					end
 					
+					# This method should only be called from within the context of the output task.
 					def close(error = nil)
-						@stream.finish_output(error)
+						if @stream
+							@stream.finish_output(error)
+							@stream = nil
+						end
 					end
 					
+					# This method should only be called from within the context of the HTTP/2 stream.
 					def stop(error)
 						@task&.stop
 						@task = nil
@@ -103,7 +108,7 @@ module Async
 							# GC.start
 						end
 						
-						@stream.finish_output
+						self.close
 					ensure
 						@body&.close($!)
 						@body = nil

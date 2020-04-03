@@ -92,9 +92,9 @@ module Async
 						@stream.flush
 					end
 					
-					def read_in_background(task: Task.current)
-						task.async do |nested_task|
-							nested_task.annotate("#{version} reading data for #{self.class}.")
+					def read_in_background(parent: Task.current)
+						parent.async do |task|
+							task.annotate("#{version} reading data for #{self.class}.")
 							
 							begin
 								while !self.closed?
@@ -104,7 +104,10 @@ module Async
 							rescue IOError, EOFError, Errno::ECONNRESET, Errno::EPIPE, Async::Wrapper::Cancelled
 								# Ignore.
 							ensure
-								close($!)
+								# Don't call #close twice.
+								if @reader
+									self.close($!)
+								end
 							end
 						end
 					end

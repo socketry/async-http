@@ -67,6 +67,15 @@ def fetch(url, method:)
 		end
 		
 		response.finish
+		
+		if trailers = response.headers.trailers
+			trailers.each do |key, value|
+				terminal.print_line(
+					:key, key.rjust(align), :reset, ": ", :value, value.inspect
+				)
+			end
+		end
+		
 		internet.close
 	end
 end

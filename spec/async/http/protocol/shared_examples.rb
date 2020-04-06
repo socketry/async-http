@@ -86,6 +86,63 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		end
 	end
 	
+	context 'with trailers', if: described_class.bidirectional? do
+		let(:server) do
+			Async::HTTP::Server.for(endpoint, protocol) do |request|
+				if trailers = request.headers['trailers']
+					expect(request.headers).to_not include('etag')
+					request.finish
+					expect(request.headers).to include('etag')
+					
+					Protocol::HTTP::Response[200, [], "request trailers"]
+				else
+					headers = Protocol::HTTP::Headers.new
+					headers.add('etag') {'abcd'}
+					
+					body = Async::HTTP::Body::Writable.new
+					
+					Async do |task|
+						body.write("response trailers")
+						task.sleep(0.01)
+						body.close
+					end
+					
+					Protocol::HTTP::Response[200, headers, body]
+				end
+			end
+		end
+		
+		it "can send request trailers" do
+			headers = Protocol::HTTP::Headers.new
+			headers.add('etag') {'abcd'}
+			body = Async::HTTP::Body::Writable.new
+			
+			Async do |task|
+				body.write("Hello")
+				task.sleep(0.01)
+				body.close
+			end
+			
+			response = client.post("/", headers, body)
+			expect(response.read).to be == "request trailers"
+			
+			expect(response).to be_success
+		end
+		
+		it "can receive response trailers" do
+			response = client.get("/")
+			expect(response.headers).to include('trailers')
+			headers = response.headers
+			expect(headers).to_not include('etag')
+			
+			expect(response.read).to be == "response trailers"
+			expect(response).to be_success
+			
+			# It was sent as a trailer.
+			expect(headers).to include('etag')
+		end
+	end
+	
 	context 'with working server' do
 		let(:server) do
 			Async::HTTP::Server.for(endpoint, protocol) do |request|

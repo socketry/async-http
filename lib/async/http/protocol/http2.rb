@@ -33,6 +33,10 @@ module Async
 					true
 				end
 				
+				def self.trailers?
+					true
+				end
+				
 				CLIENT_SETTINGS = {
 					::Protocol::HTTP2::Settings::ENABLE_PUSH => 0,
 					::Protocol::HTTP2::Settings::MAXIMUM_FRAME_SIZE => 0x100000,

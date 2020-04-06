@@ -184,7 +184,7 @@ module Async
 						
 						if body = response.body and !self.head?
 							@stream.send_headers(nil, headers)
-							@stream.send_body(body)
+							@stream.send_body(body, response.trailers)
 						else
 							# Ensure the response body is closed if we are ending the stream:
 							response.close

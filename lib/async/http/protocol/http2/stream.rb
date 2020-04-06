@@ -60,17 +60,15 @@ module Async
 						end
 					end
 					
-					def add_trailer(key, value)
-						if @trailers.include(key)
-							add_header(key, value)
-						else
-							raise ::Protocol::HTTP2::HeaderError, "Cannot add trailer #{key} as it was not specified in trailers!"
-						end
-					end
-					
 					def receive_trailing_headers(headers, end_stream)
+						@headers.trailers!
+						
 						headers.each do |key, value|
-							add_trailer(key, value)
+							if @trailers.include?(key)
+								add_header(key, value)
+							else
+								raise ::Protocol::HTTP2::HeaderError, "Cannot add trailer #{key} as it was not specified as a trailer!"
+							end
 						end
 					end
 					
@@ -83,6 +81,12 @@ module Async
 							self.receive_trailing_headers(super, frame.end_stream?)
 						else
 							raise ::Protocol::HTTP2::HeaderError, "Unable to process headers!"
+						end
+						
+						# TODO this might need to be in an ensure block:
+						if @input and frame.end_stream?
+							@input.close($!)
+							@input = nil
 						end
 					rescue ::Protocol::HTTP2::HeaderError => error
 						Async.logger.error(self, error)
@@ -133,18 +137,27 @@ module Async
 					end
 					
 					# Set the body and begin sending it.
-					def send_body(body)
-						@output = Output.for(self, body)
+					def send_body(body, trailers = nil)
+						@output = Output.new(self, body, trailers)
+						
+						@output.start
 					end
 					
 					# Called when the output terminates normally.
 					def finish_output(error = nil)
+						trailers = @output&.trailers
+						
 						@output = nil
 						
 						if error
 							send_reset_stream(::Protocol::HTTP2::Error::INTERNAL_ERROR)
 						else
-							send_data(nil, ::Protocol::HTTP2::END_STREAM)
+							# Write trailers?
+							if trailers
+								send_headers(nil, trailers, ::Protocol::HTTP2::END_STREAM)
+							else
+								send_data(nil, ::Protocol::HTTP2::END_STREAM)
+							end
 						end
 					end
 					
@@ -168,6 +181,9 @@ module Async
 						
 						if @output
 							@output.stop(error)
+							
+							Async.logger.warn(self) {"Closed output: #{@output}"}
+							
 							@output = nil
 						end
 						

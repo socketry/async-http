@@ -84,11 +84,12 @@ module Async
 									body.call(stream)
 								else
 									head = request.head?
+									trailers = response.trailers
 									
 									request = nil unless body
 									response = nil
 									
-									write_body(@version, body, head)
+									write_body(@version, body, head, trailers)
 								end
 							else
 								# If the request failed to generate a response, it was an internal server error:

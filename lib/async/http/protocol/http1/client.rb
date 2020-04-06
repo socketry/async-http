@@ -61,7 +61,7 @@ module Async
 									subtask.annotate("Streaming body.")
 									
 									# Once we start writing the body, we can't recover if the request fails. That's because the body might be generated dynamically, streaming, etc.
-									write_body(@version, body)
+									write_body(@version, body, false, request.trailers)
 								end
 							end
 						elsif protocol = request.protocol

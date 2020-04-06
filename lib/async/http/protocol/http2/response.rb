@@ -221,7 +221,7 @@ module Async
 								raise RequestFailed
 							end
 							
-							@stream.send_body(request.body)
+							@stream.send_body(request.body, request.trailers)
 						end
 					end
 				end

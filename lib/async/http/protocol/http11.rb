@@ -32,6 +32,10 @@ module Async
 					true
 				end
 				
+				def self.trailers?
+					true
+				end
+				
 				def self.client(peer)
 					stream = IO::Stream.new(peer, sync: false)
 					

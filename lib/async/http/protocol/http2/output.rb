@@ -27,14 +27,6 @@ module Async
 		module Protocol
 			module HTTP2
 				class Output
-					def self.for(stream, body, trailers)
-						output = self.new(stream, body, trailers)
-						
-						output.start
-						
-						return output
-					end
-					
 					def initialize(stream, body, trailers = nil)
 						@stream = stream
 						@body = body

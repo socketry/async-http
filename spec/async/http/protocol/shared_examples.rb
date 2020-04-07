@@ -97,13 +97,14 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 					Protocol::HTTP::Response[200, [], "request trailers"]
 				else
 					headers = Protocol::HTTP::Headers.new
-					headers.add('etag') {'abcd'}
+					headers.add('trailers', 'etag')
 					
 					body = Async::HTTP::Body::Writable.new
 					
 					Async do |task|
 						body.write("response trailers")
 						task.sleep(0.01)
+						headers.add('etag', 'abcd')
 						body.close
 					end
 					
@@ -114,12 +115,13 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		
 		it "can send request trailers" do
 			headers = Protocol::HTTP::Headers.new
-			headers.add('etag') {'abcd'}
+			headers.add('trailers', 'etag')
 			body = Async::HTTP::Body::Writable.new
 			
 			Async do |task|
 				body.write("Hello")
 				task.sleep(0.01)
+				headers.add('etag', 'abcd')
 				body.close
 			end
 			

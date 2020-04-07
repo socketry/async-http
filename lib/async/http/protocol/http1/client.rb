@@ -39,6 +39,8 @@ module Async
 							raise RequestFailed
 						end
 						
+						request.headers.trailers!
+						
 						if request.body?
 							body = request.body
 							

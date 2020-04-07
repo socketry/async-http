@@ -61,6 +61,7 @@ module Async
 							
 							if response
 								write_response(@version, response.status, response.headers)
+								response.headers.trailers!
 								
 								body = response.body
 								

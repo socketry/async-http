@@ -31,18 +31,18 @@ module Async
 		# Behaves like a TCP endpoint for the purposes of connecting to a remote host.
 		class Proxy
 			module Client
-				def proxy(endpoint, headers = [])
+				def proxy(endpoint, headers = nil)
 					Proxy.new(self, endpoint.authority(false), headers)
 				end
 				
 				# Create a client that will proxy requests through the current client.
-				def proxied_client(endpoint, headers = [])
+				def proxied_client(endpoint, headers = nil)
 					proxy = self.proxy(endpoint, headers)
 					
 					return self.class.new(proxy.wrap_endpoint(endpoint))
 				end
 				
-				def proxied_endpoint(endpoint, headers = [])
+				def proxied_endpoint(endpoint, headers = nil)
 					proxy = self.proxy(endpoint, headers)
 					
 					return proxy.wrap_endpoint(endpoint)
@@ -55,7 +55,7 @@ module Async
 			# @param port [String] the port number to connect to.
 			# @param headers [Array] an optional list of headers to use when establishing the connection.
 			# @see Async::IO::Endpoint#tcp
-			def self.tcp(client, host, port, headers = [])
+			def self.tcp(client, host, port, headers = nil)
 				self.new(client, "#{host}:#{port}", headers)
 			end
 			
@@ -63,7 +63,7 @@ module Async
 			# @param client [Async::HTTP::Client] the client which will be used as a proxy server.
 			# @param endpoint [Async::HTTP::Endpoint] the endpoint to connect to.
 			# @param headers [Array] an optional list of headers to use when establishing the connection.
-			def self.endpoint(client, endpoint, headers = [])
+			def self.endpoint(client, endpoint, headers = nil)
 				proxy = self.new(client, endpoint.authority(false), headers)
 				
 				return proxy.endpoint(endpoint.url)
@@ -72,10 +72,10 @@ module Async
 			# @param client [Async::HTTP::Client] the client which will be used as a proxy server.
 			# @param address [String] the address to connect to.
 			# @param headers [Array] an optional list of headers to use when establishing the connection.
-			def initialize(client, address, headers = [])
+			def initialize(client, address, headers = nil)
 				@client = client
 				@address = address
-				@headers = headers
+				@headers = ::Protocol::HTTP::Headers[headers].freeze
 			end
 			
 			attr :client

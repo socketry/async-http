@@ -59,7 +59,7 @@ module Async
 			end
 			
 			::Protocol::HTTP::Methods.each do |name, verb|
-				define_method(verb.downcase) do |url, headers = [], body = nil|
+				define_method(verb.downcase) do |url, headers = nil, body = nil|
 					self.call(verb, url.to_str, headers, body)
 				end
 			end

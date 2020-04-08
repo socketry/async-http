@@ -180,9 +180,6 @@ module Async
 						
 						if @output
 							@output.stop(error)
-							
-							Async.logger.warn(self) {"Closed output: #{@output}"}
-							
 							@output = nil
 						end
 						

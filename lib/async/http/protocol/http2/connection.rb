@@ -101,7 +101,7 @@ module Async
 									self.consume_window
 									self.read_frame
 								end
-							rescue IOError, EOFError, Errno::ECONNRESET, Errno::EPIPE, Async::Wrapper::Cancelled
+							rescue SocketError, IOError, EOFError, Errno::ECONNRESET, Errno::EPIPE, Async::Wrapper::Cancelled
 								# Ignore.
 							ensure
 								# Don't call #close twice.

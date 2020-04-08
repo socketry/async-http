@@ -215,13 +215,16 @@ module Async
 						if request.body.nil?
 							@stream.send_headers(nil, headers, ::Protocol::HTTP2::END_STREAM)
 						else
+							# This function informs the headers object that any subsequent headers are going to be trailers. Therefore, it must be called *before* sending the headers, to avoid any race conditions.
+							trailers = request.headers.trailers!
+							
 							begin
 								@stream.send_headers(nil, headers)
 							rescue
 								raise RequestFailed
 							end
 							
-							@stream.send_body(request.body, request.trailers)
+							@stream.send_body(request.body, trailers)
 						end
 					end
 				end

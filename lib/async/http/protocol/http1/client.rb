@@ -31,6 +31,8 @@ module Async
 					def call(request, task: Task.current)
 						Async.logger.debug(self) {"#{request.method} #{request.path} #{request.headers.inspect}"}
 						
+						trailers = request.headers.trailers!
+						
 						# We carefully interpret https://tools.ietf.org/html/rfc7230#section-6.3.1 to implement this correctly.
 						begin
 							write_request(request.authority, request.method, request.path, @version, request.headers)
@@ -38,8 +40,6 @@ module Async
 							# If we fail to fully write the request and body, we can retry this request.
 							raise RequestFailed
 						end
-						
-						request.headers.trailers!
 						
 						if request.body?
 							body = request.body
@@ -63,7 +63,7 @@ module Async
 									subtask.annotate("Streaming body.")
 									
 									# Once we start writing the body, we can't recover if the request fails. That's because the body might be generated dynamically, streaming, etc.
-									write_body(@version, body, false, request.trailers)
+									write_body(@version, body, false, trailers)
 								end
 							end
 						elsif protocol = request.protocol

@@ -33,7 +33,7 @@ module Async
 				@options = options
 			end
 			
-			def call(method, url, headers = [], body = nil)
+			def call(method, url, headers = nil, body = nil)
 				endpoint = Endpoint.parse(url)
 				key = host_key(endpoint)
 				
@@ -42,6 +42,7 @@ module Async
 				end
 				
 				body = Body::Buffered.wrap(body)
+				headers = ::Protocol::HTTP::Headers[headers]
 				
 				request = ::Protocol::HTTP::Request.new(client.scheme, endpoint.authority, method, endpoint.path, nil, headers, body)
 				

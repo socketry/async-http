@@ -60,8 +60,9 @@ module Async
 							return if @stream.nil? or @stream.closed?
 							
 							if response
+								trailers = response.headers.trailers!
+								
 								write_response(@version, response.status, response.headers)
-								response.headers.trailers!
 								
 								body = response.body
 								
@@ -85,7 +86,6 @@ module Async
 									body.call(stream)
 								else
 									head = request.head?
-									trailers = response.trailers
 									
 									request = nil unless body
 									response = nil

@@ -61,8 +61,6 @@ module Async
 					end
 					
 					def receive_trailing_headers(headers, end_stream)
-						@headers.trailers!
-						
 						headers.each do |key, value|
 							if @trailers.include?(key)
 								add_header(key, value)
@@ -76,6 +74,7 @@ module Async
 						if @headers.nil?
 							@headers = ::Protocol::HTTP::Headers.new
 							self.receive_initial_headers(super, frame.end_stream?)
+							
 							@trailers = @headers[TRAILERS]
 						elsif @trailers and frame.end_stream?
 							self.receive_trailing_headers(super, frame.end_stream?)

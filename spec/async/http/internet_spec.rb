@@ -49,11 +49,4 @@ RSpec.describe Async::HTTP::Internet, timeout: 5 do
 		expect(response).to be_success
 		expect{JSON.parse(response.read)}.to_not raise_error
 	end
-	
-	it "can fetch hashicorp jobs" do
-		response = subject.get('https://www.hashicorp.com/jobs')
-		
-		expect(response).to be_success
-		response.close
-	end
 end

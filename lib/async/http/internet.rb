@@ -54,8 +54,11 @@ module Async
 			end
 			
 			def close
-				@clients.each_value(&:close)
+				# The order of operations here is to avoid a race condition between iterating over clients (#close may yield) and creating new clients.
+				clients = @clients.values
 				@clients.clear
+				
+				clients.each(&:close)
 			end
 			
 			::Protocol::HTTP::Methods.each do |name, verb|

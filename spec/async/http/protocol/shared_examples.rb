@@ -167,6 +167,21 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 			expect(server.scheme).to be == "http"
 		end
 		
+		it "disconnects slow clients" do
+			response = client.get("/")
+			response.read
+			
+			# We expect this connection to be closed:
+			connection = response.connection
+			
+			reactor.sleep(1.0)
+			
+			response = client.get("/")
+			response.read
+			
+			expect(connection).to_not be_reusable
+		end
+		
 		context 'using GET method' do
 			let(:expected) {"GET #{protocol::VERSION}"}
 			

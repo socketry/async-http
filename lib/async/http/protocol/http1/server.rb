@@ -45,7 +45,9 @@ module Async
 						
 						return request
 					rescue Async::TimeoutError
-						fail_request(408)
+						# For an interesting discussion about this behaviour, see https://trac.nginx.org/nginx/ticket/1005
+						# If you enable this, you will see some spec failures...
+						# fail_request(408)
 						raise
 					rescue
 						fail_request(400)

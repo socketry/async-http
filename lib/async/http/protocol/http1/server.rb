@@ -56,6 +56,8 @@ module Async
 					
 					# Server loop.
 					def each(task: Task.current)
+						task.annotate("#{version} reading requests for #{self.class}.")
+						
 						while request = next_request
 							response = yield(request, self)
 							

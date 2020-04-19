@@ -52,17 +52,18 @@ module Async
 					end
 					
 					def close(error = nil)
-						# This invokes Framer#close which closes the stream:
-						super
-						
 						if @requests
 							# Stop the request loop:
-							@requests.enqueue nil
+							@requests.enqueue(nil)
 							@requests = nil
 						end
+						
+						super
 					end
 					
-					def each
+					def each(task: Task.current)
+						task.annotate("#{version} reading requests for #{self.class}.")
+						
 						# It's possible the connection has died before we get here...
 						@requests&.async do |task, request|
 							task.annotate("Incoming request: #{request.method} #{request.path.inspect}.")
@@ -80,6 +81,8 @@ module Async
 								request.send_response(response)
 							end
 						end
+						
+						# Maybe we should add some synchronisation here - i.e. only exit once all requests are finished.
 					end
 				end
 			end

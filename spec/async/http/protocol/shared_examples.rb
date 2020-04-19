@@ -180,6 +180,10 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 			response.read
 			
 			expect(connection).to_not be_reusable
+			
+			# client.close
+			# reactor.sleep(0.1)
+			# reactor.print_hierarchy
 		end
 		
 		context 'using GET method' do

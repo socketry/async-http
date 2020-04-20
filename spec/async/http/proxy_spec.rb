@@ -142,23 +142,25 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 					upstream = Async::IO::Stream.new(endpoint.connect)
 					Async.logger.debug(self) {"Connected to #{upstream}..."}
 					
-					reader = Async do
+					reader = Async do |task|
+						task.annotate "Upstream reader."
+						
 						while chunk = upstream.read_partial
 							stream.write(chunk)
 							stream.flush
 						end
-						
 					ensure
 						Async.logger.debug(self) {"Finished reading from upstream..."}
 						stream.close_write
 					end
 					
-					writer = Async do
+					writer = Async do |task|
+						task.annotate "Upstream writer."
+						
 						while chunk = stream.read_partial
 							upstream.write(chunk)
 							upstream.flush
 						end
-						
 					rescue Async::Wrapper::Cancelled
 						#ignore
 					ensure

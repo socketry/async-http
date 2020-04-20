@@ -83,7 +83,7 @@ module Async
 			
 			def close
 				while @pool.busy?
-					Async.logger.warn(self) {"Waiting for pool to drain: #{@pool}"}
+					Async.logger.warn(self) {"Waiting for #{@protocol} pool to drain: #{@pool}"}
 					@pool.wait
 				end
 				

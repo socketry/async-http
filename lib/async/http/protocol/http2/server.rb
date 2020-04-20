@@ -62,7 +62,7 @@ module Async
 					end
 					
 					def each(task: Task.current)
-						task.annotate("#{version} reading requests for #{self.class}.")
+						task.annotate("Reading #{version} requests for #{self.class}.")
 						
 						# It's possible the connection has died before we get here...
 						@requests&.async do |task, request|

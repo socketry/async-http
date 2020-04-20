@@ -66,7 +66,7 @@ module Async
 					end
 					
 					def start_connection
-						@reader ||= read_in_background
+						@reader || read_in_background
 					end
 					
 					def close(error = nil)
@@ -93,7 +93,11 @@ module Async
 					end
 					
 					def read_in_background(parent: Task.current)
+						raise RuntimeError, "Connection is closed!" if closed?
+						
 						parent.async do |task|
+							@reader = task
+							
 							task.annotate("#{version} reading data for #{self.class}.")
 							
 							begin
@@ -130,7 +134,7 @@ module Async
 					end
 					
 					def reusable?
-						!(self.closed? || @stream.closed?)
+						!self.closed?
 					end
 					
 					def version

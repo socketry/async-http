@@ -60,7 +60,7 @@ module Async
 				def reader(task)
 					@reader = task
 					
-					task.annotate "pipe reader"
+					task.annotate "#{self.class} reader."
 					
 					while chunk = @input.read
 						@head.write(chunk)
@@ -80,7 +80,7 @@ module Async
 				def writer(task)
 					@writer = task
 					
-					task.annotate "pipe writer"
+					task.annotate "#{self.class} writer."
 					
 					while chunk = @head.read_partial
 						@output.write(chunk)

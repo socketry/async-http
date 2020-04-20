@@ -70,7 +70,16 @@ module Async
 					end
 					
 					def close(error = nil)
-						@reader = nil
+						if @reader
+							@reader = nil
+							
+							# unless @reader.current?
+							# 	@reader.stop
+							# 	@reader.wait
+							# end
+							
+							Async::Task.current.sleep(0.1)
+						end
 						
 						super
 					end

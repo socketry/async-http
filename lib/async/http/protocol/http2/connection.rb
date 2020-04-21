@@ -70,10 +70,6 @@ module Async
 					end
 					
 					def close(error = nil)
-						if @stream.connected?
-							@stream.close_write
-						end
-						
 						@reader = nil
 						
 						super

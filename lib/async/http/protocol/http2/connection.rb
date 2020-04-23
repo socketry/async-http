@@ -95,7 +95,7 @@ module Async
 					def read_in_background(parent: Task.current)
 						raise RuntimeError, "Connection is closed!" if closed?
 						
-						parent.async do |task|
+						parent.async(transient: true) do |task|
 							@reader = task
 							
 							task.annotate("#{version} reading data for #{self.class}.")

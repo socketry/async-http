@@ -17,7 +17,7 @@ Gem::Specification.new do |spec|
 	spec.executables   = spec.files.grep(%r{^bin/}) {|f| File.basename(f)}
 	spec.require_paths = ["lib"]
 	
-	spec.add_dependency("async", "~> 1.23")
+	spec.add_dependency("async", "~> 1.25")
 	spec.add_dependency("async-io", "~> 1.28")
 	spec.add_dependency("async-pool", "~> 0.2")
 	

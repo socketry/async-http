@@ -189,6 +189,27 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		context 'using GET method' do
 			let(:expected) {"GET #{protocol::VERSION}"}
 			
+			it "can handle many simultaneous requests", timeout: nil do |example|
+				duration = Async::Clock.measure do
+					10.times do
+						tasks = 100.times.collect do
+							Async do
+								client.get("/")
+							end
+						end
+						
+						tasks.each do |task|
+							response = task.wait
+							expect(response).to be_success
+							expect(response.read).to eq expected
+						end
+					end
+				end
+				
+				example.reporter.message "Pool: #{client.pool}"
+				example.reporter.message "Duration = #{duration.round(2)}"
+			end
+			
 			context 'with response' do
 				let(:response) {client.get("/")}
 				after {response.finish}
@@ -222,27 +243,6 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 				it "has protocol version" do
 					expect(response.version).to_not be_nil
 				end
-			end
-			
-			it "can handle many simultaneous requests", timeout: 30 do |example|
-				duration = Async::Clock.measure do
-					10.times do
-						tasks = 100.times.collect do
-							Async do
-								client.get("/")
-							end
-						end
-						
-						tasks.each do |task|
-							response = task.wait
-							expect(response).to be_success
-							expect(response.read).to eq expected
-						end
-					end
-				end
-				
-				example.reporter.message "Pool: #{client.pool}"
-				example.reporter.message "Duration = #{duration.round(2)}"
 			end
 		end
 		

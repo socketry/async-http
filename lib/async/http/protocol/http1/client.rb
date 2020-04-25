@@ -69,7 +69,7 @@ module Async
 						elsif protocol = request.protocol
 							write_upgrade_body(protocol)
 						else
-							write_empty_body(request.body)
+							write_body(@version, body, false, trailers)
 						end
 						
 						return Response.read(self, request)

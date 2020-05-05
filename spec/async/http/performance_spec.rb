@@ -30,7 +30,7 @@ require 'async/container'
 require 'etc'
 require 'benchmark'
 
-RSpec.shared_examples_for 'wrk benchmark' do
+RSpec.shared_examples_for 'client benchmark' do
 	let(:endpoint) {Async::HTTP::Endpoint.parse("http://127.0.0.1:9294")}
 	let(:url) {endpoint.url.to_s}
 	
@@ -70,7 +70,7 @@ RSpec.shared_examples_for 'wrk benchmark' do
 		
 		if ab = `which ab`.chomp!
 			# puts [ab, "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, url].join(' ')
-			system(ab, "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, url)
+			system(ab, "-k", "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, url)
 		end
 		
 		if wrk = `which wrk`.chomp!
@@ -90,7 +90,7 @@ RSpec.describe Async::HTTP::Server do
 			)
 		end
 		
-		include_examples 'wrk benchmark'
+		include_examples 'client benchmark'
 	end
 	
 	describe 'multiple chunks' do
@@ -100,6 +100,6 @@ RSpec.describe Async::HTTP::Server do
 			end
 		end
 		
-		include_examples 'wrk benchmark'
+		include_examples 'client benchmark'
 	end
 end

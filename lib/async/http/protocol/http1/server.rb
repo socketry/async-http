@@ -94,12 +94,12 @@ module Async
 									request = nil unless body
 									response = nil
 									
-									write_body(@version, body, head, trailers)
+									write_body(request.version, body, head, trailers)
 								end
 							else
 								# If the request failed to generate a response, it was an internal server error:
 								write_response(@version, 500, {})
-								write_body(@version, nil)
+								write_body(request.version, nil)
 							end
 							
 							# Gracefully finish reading the request body if it was not already done so.

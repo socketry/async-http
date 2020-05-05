@@ -23,6 +23,8 @@ require_relative 'writable_examples'
 require 'async/http/body/slowloris'
 
 RSpec.describe Async::HTTP::Body::Slowloris do
+	include_context Async::RSpec::Reactor
+	
 	it_behaves_like Async::HTTP::Body::Writable
 	
 	it "closes body with error if throughput is not maintained" do

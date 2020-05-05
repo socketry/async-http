@@ -31,8 +31,6 @@ require 'async/io/ssl_socket'
 require 'async/rspec/ssl'
 
 RSpec.shared_examples_for Async::HTTP::Body::Writable do
-	include_context Async::RSpec::Reactor
-	
 	it "can write and read data" do
 		3.times do |i|
 			subject.write("Hello World #{i}")

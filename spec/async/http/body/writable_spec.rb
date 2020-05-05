@@ -21,5 +21,7 @@
 require_relative 'writable_examples'
 
 RSpec.describe Async::HTTP::Body::Writable do
+	include_context Async::RSpec::Reactor
+	
 	it_behaves_like Async::HTTP::Body::Writable
 end

@@ -68,6 +68,10 @@ module Async
 					@closed
 				end
 				
+				def ready?
+					!@queue.empty?
+				end
+				
 				# Has the producer called #finish and has the reader consumed the nil token?
 				def empty?
 					@finished

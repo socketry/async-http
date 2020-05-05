@@ -59,6 +59,12 @@ module Async
 					end
 				end
 				
+				def ready?
+					if @stream
+						@stream.output.ready?
+					end
+				end
+				
 				# Read the next available chunk.
 				def read
 					unless @task

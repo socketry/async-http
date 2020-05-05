@@ -32,6 +32,10 @@ module Async
 					@delay = delay
 				end
 				
+				def ready?
+					false
+				end
+				
 				def read
 					Async::Task.current.sleep(@delay)
 					

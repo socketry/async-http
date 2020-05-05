@@ -1,19 +1,19 @@
 PATH
   remote: .
   specs:
-    async-http (0.52.0)
+    async-http (0.52.1)
       async (~> 1.25)
       async-io (~> 1.28)
       async-pool (~> 0.2)
-      protocol-http (~> 0.18.0)
-      protocol-http1 (~> 0.12.0)
+      protocol-http (~> 0.19.0)
+      protocol-http1 (~> 0.13.0)
       protocol-http2 (~> 0.14.0)
 
 GEM
   remote: https://rubygems.org/
   specs:
     ast (2.4.0)
-    async (1.25.2)
+    async (1.26.0)
       console (~> 1.0)
       nio4r (~> 2.3)
       timers (~> 4.1)
@@ -55,9 +55,9 @@ GEM
     process-terminal (0.2.0)
       ffi
     protocol-hpack (1.4.2)
-    protocol-http (0.18.0)
-    protocol-http1 (0.12.0)
-      protocol-http (~> 0.18)
+    protocol-http (0.19.0)
+    protocol-http1 (0.13.0)
+      protocol-http (~> 0.19)
     protocol-http2 (0.14.0)
       protocol-hpack (~> 1.4)
       protocol-http (~> 0.18)

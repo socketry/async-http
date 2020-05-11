@@ -65,13 +65,13 @@ RSpec.describe Async::HTTP::Server, timeout: 5 do
 			
 			client = Async::HTTP::Client.new(client_endpoint)
 			
-			Async::Reactor.run do |task|
+			Async do |task|
 				server_task = task.async do
 					server.run
 				end
 				
 				response = client.get("/")
-				
+					
 				expect(response).to be_success
 				expect(response.read).to be == "Hello World"
 				

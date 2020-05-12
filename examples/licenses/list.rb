@@ -7,13 +7,28 @@ require 'async/http/internet'
 class RateLimitingError < StandardError; end
 
 @internet = Async::HTTP::Internet.new
-HEADERS = {'user-agent' => 'fetch-github-licenses'}
+
+@user = ENV['GITHUB_USER']
+@token = ENV['GITHUB_TOKEN']
+
+unless @user && @token
+	fail "export GITHUB_USER and GITHUB_TOKEN!"
+end
+
+GITHUB_HEADERS = {
+	'user-agent' => 'fetch-github-licenses',
+	'authorization' => Protocol::HTTP::Header::Authorization.basic(@user, @token)
+}
+
+RUBYGEMS_HEADERS = {
+	'user-agent' => 'fetch-github-licenses'
+}
 
 def fetch_github_license(homepage_uri)
 	%r{github.com/(?<owner>.+?)/(?<repo>.+)} =~ homepage_uri
 	return nil unless repo
 
-	response = @internet.get("https://api.github.com/repos/#{owner}/#{repo}/license", HEADERS)
+	response = @internet.get("https://api.github.com/repos/#{owner}/#{repo}/license", GITHUB_HEADERS)
 	
 	case response.status
 	when 200
@@ -28,7 +43,7 @@ ensure
 end
 
 def fetch_rubygem_license(name, version)
-	response = @internet.get("https://rubygems.org/api/v2/rubygems/#{name}/versions/#{version}.json", HEADERS)
+	response = @internet.get("https://rubygems.org/api/v2/rubygems/#{name}/versions/#{version}.json", RUBYGEMS_HEADERS)
 	
 	case response.status
 	when 200
@@ -44,6 +59,7 @@ def fetch_rubygem_license(name, version)
 rescue RateLimitingError
 	response.finish
 	
+	Async.logger.warn(name) {"Rate limited..."}
 	Async::Task.current.sleep(1.0)
 	
 	retry
@@ -66,5 +82,9 @@ Sync do |parent|
 	
 	tasks.each do |task|
 		output << task.wait
+	end
+	
+	@internet.instance_variable_get(:@clients).each do |name, client|
+		puts client.pool
 	end
 end

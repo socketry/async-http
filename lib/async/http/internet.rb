@@ -33,6 +33,10 @@ module Async
 				@options = options
 			end
 			
+			# A cache of clients.
+			# @attribute [Hash(URI, Client)]
+			attr :clients
+			
 			def call(method, url, headers = nil, body = nil)
 				endpoint = Endpoint.parse(url)
 				key = host_key(endpoint)

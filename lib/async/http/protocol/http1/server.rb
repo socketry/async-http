@@ -91,10 +91,10 @@ module Async
 								else
 									head = request.head?
 									
+									write_body(request.version, body, head, trailers)
+
 									request = nil unless body
 									response = nil
-									
-									write_body(request.version, body, head, trailers)
 								end
 							else
 								# If the request failed to generate a response, it was an internal server error:

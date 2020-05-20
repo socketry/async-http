@@ -39,7 +39,7 @@ module Async
 			# @parameter headers [Hash | Protocol::HTTP::Headers] The headers to send with the request.
 			# @parameter body [String | Protocol::HTTP::Body] The body to send with the request.
 			def call(method, url, headers = nil, body = nil)
-				endpoint = Endpoint.parse(url)
+				endpoint = Endpoint[url]
 				client = self.client_for(endpoint)
 				
 				body = Body::Buffered.wrap(body)
@@ -60,7 +60,7 @@ module Async
 			
 			::Protocol::HTTP::Methods.each do |name, verb|
 				define_method(verb.downcase) do |url, headers = nil, body = nil|
-					self.call(verb, url.to_str, headers, body)
+					self.call(verb, url, headers, body)
 				end
 			end
 			

@@ -33,6 +33,16 @@ module Async
 				)
 			end
 			
+			# Coerce the given object into an endpoint.
+			# @parameter url [String | Endpoint] The URL or endpoint to convert.
+			def self.[](url)
+				if url.is_a?(Endpoint)
+					return url
+				else
+					Endpoint.parse(url.to_str)
+				end
+			end
+			
 			# @option scheme [String] the scheme to use, overrides the URL scheme.
 			# @option hostname [String] the hostname to connect to (or bind to), overrides the URL hostname (used for SNI).
 			# @option port [Integer] the port to bind to, overrides the URL port.

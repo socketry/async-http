@@ -193,8 +193,8 @@ module Async
 				@endpoint ||= build_endpoint
 			end
 			
-			def bind(*args, &block)
-				endpoint.bind(*args, &block)
+			def bind(*arguments, &block)
+				endpoint.bind(*arguments, &block)
 			end
 			
 			def connect(&block)

@@ -37,8 +37,8 @@ module Async
 				
 				# In order for this implementation to work correctly, you need to use a LimitedQueue.
 				# @param minimum_throughput [Integer] the minimum bytes per second otherwise this body will be forcefully closed.
-				def initialize(*args, minimum_throughput: 1024, **options)
-					super(*args, **options)
+				def initialize(*arguments, minimum_throughput: 1024, **options)
+					super(*arguments, **options)
 					
 					@minimum_throughput = minimum_throughput
 					

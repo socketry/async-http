@@ -56,7 +56,7 @@ module Async
 					
 					# Server loop.
 					def each(task: Task.current)
-						task.annotate("Reading #{version} requests for #{self.class}.")
+						task.annotate("Reading #{self.version} requests for #{self.class}.")
 						
 						while request = next_request
 							response = yield(request, self)
@@ -90,11 +90,12 @@ module Async
 									body.call(stream)
 								else
 									head = request.head?
+									version = request.version
 									
-									write_body(request.version, body, head, trailers)
-
 									request = nil unless body
 									response = nil
+									
+									write_body(version, body, head, trailers)
 								end
 							else
 								# If the request failed to generate a response, it was an internal server error:

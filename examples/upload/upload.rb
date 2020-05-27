@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'async'
-require 'async/http/body/file'
+require 'protocol/http/body/file'
 require 'async/http/internet'
 
 Async do
@@ -11,9 +11,9 @@ Async do
 		['accept', 'text/plain'],
 	]
 	
-	body = Async::HTTP::Body::File.open("data.txt")
+	body = Protocol::HTTP::Body::File.open(File.join(__dir__, "data.txt"))
 	
-	response = internet.post("https://www.codeotaku.com/journal/2018-10/async-http-client-for-ruby/echo", headers, body)
+	response = internet.post("https://utopia-falcon-heroku.herokuapp.com/echo/index", headers, body)
 	
 	# response.read -> string
 	# response.each {|chunk| ...}

@@ -1,6 +1,8 @@
 
 $LOAD_PATH.unshift File.expand_path("../../lib", __dir__)
 
+require 'logger'
+
 require 'async'
 require 'async/http/server'
 require 'async/http/endpoint'

@@ -3,7 +3,7 @@
 $LOAD_PATH.unshift File.expand_path("../../lib", __dir__)
 
 require 'async'
-require 'async/http/body/file'
+require 'protocol/http/body/file'
 require 'async/http/body/delayed'
 require 'async/http/client'
 require 'async/http/endpoint'
@@ -16,7 +16,7 @@ Async do
 		['accept', 'text/plain'],
 	]
 	
-	body = Async::HTTP::Body::Delayed.new(Async::HTTP::Body::File.open("data.txt", block_size: 32))
+	body = Async::HTTP::Body::Delayed.new(Protocol::HTTP::Body::File.open(File.join(__dir__, "data.txt"), block_size: 32))
 	
 	response = client.post(endpoint.path, headers, body)
 	

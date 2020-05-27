@@ -20,12 +20,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative 'wrapper'
+require 'protocol/http/body/wrapper'
 
 module Async
 	module HTTP
 		module Body
-			class Delayed < Async::HTTP::Body::Wrapper
+			class Delayed < Protocol::HTTP::Body::Wrapper
 				def initialize(body, delay = 0.01)
 					super(body)
 					

@@ -22,6 +22,9 @@
 
 require_relative 'writable'
 
+require 'async/io/socket'
+require 'async/io/stream'
+
 module Async
 	module HTTP
 		module Body
@@ -37,7 +40,7 @@ module Async
 					@tail = tail
 					
 					@reader = nil
-					@writer = nil
+					@writer = :uninitialized
 					
 					task.async(&self.method(:reader))
 					task.async(&self.method(:writer))

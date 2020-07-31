@@ -233,6 +233,29 @@ Async do
 end
 ```
 
+### Timeouts
+
+Here's a basic example with a timeout:
+
+```ruby
+#!/usr/bin/env ruby
+
+require 'async/http/internet'
+
+Async do |task|
+	internet = Async::HTTP::Internet.new
+	
+	# Request will timeout after 2 seconds
+	task.with_timeout(2) do
+		response = internet.get "https://httpbin.org/delay/10"
+	end
+rescue Async::TimeoutError
+	puts "The request timed out"
+ensure
+	internet&.close
+end
+```
+
 ## Performance
 
 On a 4-core 8-thread i7, running `ab` which uses discrete (non-keep-alive) connections:

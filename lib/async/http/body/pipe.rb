@@ -20,6 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+require 'async/io/socket'
+require 'async/io/stream'
+
 require_relative 'writable'
 
 module Async
@@ -39,8 +42,8 @@ module Async
 					@reader = nil
 					@writer = nil
 					
-					task.async(&self.method(:reader))
-					task.async(&self.method(:writer))
+					task.async(transient: true, &self.method(:reader))
+					task.async(transient: true, &self.method(:writer))
 				end
 				
 				def to_io

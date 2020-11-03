@@ -61,8 +61,6 @@ RSpec.describe Async::HTTP::Body::Pipe do
 		context 'when reading does not block' do
 			let(:input_write_duration) { 0 }
 
-			# Passes but raises 'IOError: closed stream' in the background, see
-			# explanation in https://github.com/socketry/async-http/pull/56
 			include_examples :returns_io_socket
 		end
 	end

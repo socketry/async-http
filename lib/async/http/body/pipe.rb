@@ -72,10 +72,9 @@ module Async
 					
 					@head.close_write
 				ensure
-					@reader = nil
 					@input.close($!)
 					
-					@head.close if @writer.nil?
+					close_head if @writer&.finished?
 				end
 				
 				# Read from the head of the pipe and write to the @output stream.
@@ -89,11 +88,16 @@ module Async
 						@output.write(chunk)
 					end
 				ensure
-					@writer = nil
-					
 					@output.close($!)
 					
-					@head.close if @reader.nil?
+					close_head if @reader&.finished?
+				end
+
+				def close_head
+					@head.close
+					# Both tasks are done, don't keep references.
+					@reader = nil
+					@writer = nil
 				end
 			end
 		end

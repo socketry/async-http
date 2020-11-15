@@ -27,7 +27,8 @@ require 'async/http/endpoint'
 require 'async/io/ssl_socket'
 
 require 'async/rspec/reactor'
-require 'async/rspec/ssl'
+
+require 'localhost/authority'
 
 RSpec.shared_examples Async::HTTP::Body do
 	let(:client) {Async::HTTP::Client.new(client_endpoint, described_class)}
@@ -120,29 +121,10 @@ end
 
 RSpec.describe Async::HTTP::Protocol::HTTPS, timeout: 2 do
 	include_context Async::RSpec::Reactor
-	include_context Async::RSpec::SSL::ValidCertificate
+	let(:authority) {Localhost::Authority.new}
 	
-	let(:server_context) do
-		OpenSSL::SSL::SSLContext.new.tap do |context|
-			context.cert = certificate
-			
-			context.alpn_select_cb = lambda do |protocols|
-				protocols.first
-			end
-			
-			context.key = key
-		end
-	end
-
-	let(:client_context) do
-		OpenSSL::SSL::SSLContext.new.tap do |context|
-			context.cert_store = certificate_store
-			
-			context.alpn_protocols = ['h2']
-			
-			context.verify_mode = OpenSSL::SSL::VERIFY_PEER
-		end
-	end
+	let(:server_context) {authority.server_context}
+	let(:client_context) {authority.client_context}
 	
 	# Shared port for localhost network tests.
 	let(:server_endpoint) {Async::HTTP::Endpoint.parse("https://localhost:9296", ssl_context: server_context)}

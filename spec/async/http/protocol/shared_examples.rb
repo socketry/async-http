@@ -303,6 +303,22 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		end
 	end
 	
+	context 'content length' do
+		let(:server) do
+			Async::HTTP::Server.for(endpoint, protocol) do |request|
+				Protocol::HTTP::Response[200, [], ["Content Length: #{request.body.length}"]]
+			end
+		end
+		
+		it "can send push promises" do
+			response = client.post("/test", [], ["Hello World!"])
+			expect(response).to be_success
+			
+			expect(response.body.length).to be == 18
+			expect(response.read).to be == "Content Length: 12"
+		end
+	end
+	
 	context 'hijack with nil response' do
 		let(:server) do
 			Async::HTTP::Server.for(endpoint, protocol) do |request|

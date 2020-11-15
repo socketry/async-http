@@ -30,6 +30,15 @@ module Async
 		# Wraps a client, address and headers required to initiate a connectio to a remote host using the CONNECT verb.
 		# Behaves like a TCP endpoint for the purposes of connecting to a remote host.
 		class Proxy
+			class ConnectFailure < StandardError
+				def initialize(response)
+					super "Failed to connect: #{response.status}"
+					@response = response
+				end
+				
+				attr :response
+			end
+			
 			module Client
 				def proxy(endpoint, headers = nil)
 					Proxy.new(self, endpoint.authority(false), headers)
@@ -92,14 +101,21 @@ module Async
 				
 				response = @client.connect(@address.to_s, @headers, input)
 				
-				pipe = Body::Pipe.new(response.body, input)
-				
-				return pipe.to_io unless block_given?
-				
-				begin
-					yield pipe.to_io
-				ensure
-					pipe.close
+				if response.success?
+					pipe = Body::Pipe.new(response.body, input)
+					
+					return pipe.to_io unless block_given?
+					
+					begin
+						yield pipe.to_io
+					ensure
+						pipe.close
+					end
+				else
+					# This ensures we don't leave a response dangling:
+					response.close
+					
+					raise ConnectFailure, response
 				end
 			end
 			

@@ -133,12 +133,12 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 			Async::HTTP::Server.for(endpoint, protocol) do |request|
 				expect(request.method).to be == "CONNECT"
 				
+				unless authorization_lambda.call(request)
+					next Protocol::HTTP::Response[407, [], nil]
+				end
+				
 				host, port = request.path.split(":", 2)
 				endpoint = Async::IO::Endpoint.tcp(host, port)
-				
-				unless authorization_lambda.call(request)
-					next Protocol::HTTP::Response[407, {}, []]
-				end
 				
 				Async.logger.debug(self) {"Making connection to #{endpoint}..."}
 				
@@ -228,6 +228,7 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 					
 					expect(response).to_not be_failure
 					expect(response.read).to_not be_empty
+					
 					proxy_client.close
 				end
 			end
@@ -237,10 +238,11 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 					endpoint = Async::HTTP::Endpoint.parse("https://www.google.com")
 					proxy_client = client.proxied_client(endpoint)
 					
-					response = proxy_client.get('/search')
+					expect do
+						# Why is this response not 407? Because the response should come from the proxied connection, but that connection failed to be established. Because of that, there is no response. If we respond here with 407, it would be indistinguisable from the remote server returning 407. That would be an odd case, but none-the-less a valid one.
+						response = proxy_client.get('/search')
+					end.to raise_error(Async::HTTP::Proxy::ConnectFailure)
 					
-					expect(response.read).to be_empty
-					expect(response.status).to be 407
 					proxy_client.close
 				end
 			end

@@ -85,14 +85,14 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 			expect(client.get("/", {}).read).to be == "Hello World"
 		end
 	end
-
+	
 	context 'empty body' do
 		let(:server) do
 			Async::HTTP::Server.for(endpoint, protocol) do |request|
 				Protocol::HTTP::Response[204]
 			end
 		end
-
+		
 		it 'properly handles no content responses' do
 			expect(client.get("/", {}).read).to be_nil
 		end

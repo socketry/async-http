@@ -74,11 +74,6 @@ module Async
 					def reusable?
 						@persistent && @stream && !@stream.closed?
 					end
-					
-					def close
-						Async.logger.debug(self) {"Closing connection"}
-						super
-					end
 				end
 			end
 		end

@@ -135,7 +135,7 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 				
 				host, port = request.path.split(":", 2)
 				endpoint = Async::IO::Endpoint.tcp(host, port)
-
+				
 				unless authorization_lambda.call(request)
 					next Protocol::HTTP::Response[407, {}, []]
 				end
@@ -180,7 +180,7 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 				end
 			end
 		end
-
+		
 		let(:authorization_lambda) { ->(request) { true } }
 		
 		it 'can get insecure website' do
@@ -211,34 +211,34 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 			
 			proxy_client.close
 		end
-
+		
 		context 'authorization header required' do
 			let(:authorization_lambda) do
 				->(request) {request.headers['proxy-authorization'] == 'supersecretpassword' }
 			end
-
+			
 			context 'request includes headers' do
 				let(:headers) { [['Proxy-Authorization', 'supersecretpassword']] }
-
+				
 				it 'succeeds' do
 					endpoint = Async::HTTP::Endpoint.parse("https://www.google.com")
 					proxy_client = client.proxied_client(endpoint, headers)
-			
+					
 					response = proxy_client.get('/search')
-
+					
 					expect(response).to_not be_failure
 					expect(response.read).to_not be_empty
 					proxy_client.close
 				end
 			end
-
+			
 			context 'request does not include headers' do
 				it 'does not succeed' do
 					endpoint = Async::HTTP::Endpoint.parse("https://www.google.com")
 					proxy_client = client.proxied_client(endpoint)
-			
+					
 					response = proxy_client.get('/search')
-
+					
 					expect(response.read).to be_empty
 					expect(response.status).to be 407
 					proxy_client.close

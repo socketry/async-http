@@ -80,7 +80,7 @@ module Async
 									response = nil
 									
 									body.call(stream)
-								elsif body and request.connect?
+								elsif request.connect? and response.success?
 									stream = write_tunnel_body(request.version)
 									
 									# Same as above:

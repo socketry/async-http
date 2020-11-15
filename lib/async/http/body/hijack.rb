@@ -44,6 +44,11 @@ module Async
 					@stream = nil
 				end
 				
+				# We prefer streaming directly as it's the lowest overhead.
+				def stream?
+					true
+				end
+				
 				def call(stream)
 					return @block.call(stream)
 				end

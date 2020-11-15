@@ -92,10 +92,11 @@ module Async
 					
 					close_head if @reader&.finished?
 				end
-
+				
 				def close_head
 					@head.close
-					# Both tasks are done, don't keep references.
+					
+					# Both tasks are done, don't keep references:
 					@reader = nil
 					@writer = nil
 				end

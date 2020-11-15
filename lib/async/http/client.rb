@@ -25,7 +25,7 @@ require 'async/io/stream'
 
 require 'async/pool/controller'
 
-require 'protocol/http/body/streamable'
+require 'protocol/http/body/completable'
 require 'protocol/http/methods'
 
 require_relative 'protocol'
@@ -143,7 +143,7 @@ module Async
 				response = request.call(connection)
 				
 				# The connection won't be released until the body is completely read/released.
-				::Protocol::HTTP::Body::Streamable.wrap(response) do
+				::Protocol::HTTP::Body::Completable.wrap(response) do
 					@pool.release(connection)
 				end
 				

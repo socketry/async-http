@@ -139,7 +139,7 @@ module Async
 				end
 				
 				# Close the input and output bodies.
-				def close
+				def close(error = nil)
 					self.close_read
 					self.close_write
 				ensure

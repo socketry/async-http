@@ -42,7 +42,7 @@ module Async
 					def start(parent: Task.current)
 						raise "Task already started!" if @task
 						
-						if @body.respond_to?(:call)
+						if @body.stream?
 							@task = parent.async(&self.method(:stream))
 						else
 							@task = parent.async(&self.method(:passthrough))

@@ -114,6 +114,22 @@ RSpec.describe Async::HTTP::Protocol::HTTP2, timeout: 2 do
 		end
 	end
 	
+	context 'content length' do
+		include_context Async::HTTP::Server
+		
+		let(:server) do
+			Async::HTTP::Server.for(endpoint, protocol) do |request|
+				Protocol::HTTP::Response[200, [], ["Content Length: #{request.body.length}"]]
+			end
+		end
+		
+		it "can send push promises" do
+			response = client.post("/test", [], ["Hello World!"])
+			expect(response).to be_success
+			expect(response.read).to be == "Content Length: 12"
+		end
+	end
+	
 	context 'push promises' do
 		include_context Async::HTTP::Server
 		

@@ -215,6 +215,11 @@ module Async
 						if request.body.nil?
 							@stream.send_headers(nil, headers, ::Protocol::HTTP2::END_STREAM)
 						else
+							if length = request.body.length
+								# This puts it at the end of the pseudo-headers:
+								pseudo_headers << [CONTENT_LENGTH, length]
+							end
+							
 							# This function informs the headers object that any subsequent headers are going to be trailers. Therefore, it must be called *before* sending the headers, to avoid any race conditions.
 							trailers = request.headers.trailers!
 							

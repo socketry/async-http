@@ -62,8 +62,11 @@ RSpec.shared_examples_for 'client benchmark' do
 		
 		container = Async::Container.new
 		
-		container.run(count: concurrency) do
-			server.run
+		container.run(count: concurrency) do |instance|
+			Async do
+				instance.ready!
+				server.run
+			end
 		end
 		
 		bound_endpoint&.close
@@ -77,7 +80,7 @@ RSpec.shared_examples_for 'client benchmark' do
 			system(wrk, "-c", concurrency.to_s, "-d", "2", "-t", concurrency.to_s, url)
 		end
 		
-		container.stop(false)
+		container.stop
 	end
 end
 

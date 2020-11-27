@@ -107,6 +107,13 @@ module Async
 								end
 							rescue SocketError, IOError, EOFError, Errno::ECONNRESET, Errno::EPIPE, Async::Wrapper::Cancelled
 								# Ignore.
+							rescue ::Protocol::HTTP2::GoawayError => error
+								# Error is raised if a response is actively reading from the
+								# connection. The connection is silently closed if GOAWAY is
+								# received outside the request/response cycle.
+								if @reader
+									self.close(error)
+								end
 							ensure
 								# Don't call #close twice.
 								if @reader

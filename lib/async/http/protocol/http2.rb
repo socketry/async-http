@@ -76,24 +76,6 @@ module Async
 				def self.names
 					["h2"]
 				end
-				
-				module WithPush
-					CLIENT_SETTINGS = HTTP2::CLIENT_SETTINGS.merge(
-						::Protocol::HTTP2::Settings::ENABLE_PUSH => 1,
-					)
-					
-					def self.client(peer, settings = CLIENT_SETTINGS)
-						HTTP2.client(peer, settings)
-					end
-					
-					def self.server(peer, settings = SERVER_SETTINGS)
-						HTTP2.server(peer, settings)
-					end
-					
-					def self.names
-						HTTP2.names
-					end
-				end
 			end
 		end
 	end

@@ -39,18 +39,6 @@ module Async
 						
 						attr :request
 						
-						# Create a fake request on the server, with the given headers.
-						def create_push_promise_stream(headers)
-							stream = @connection.create_push_promise_stream(&Stream.method(:create))
-							
-							stream.headers = ::Protocol::HTTP::Headers.new
-							
-							# This will ultimately enqueue the request to be processed by the server:
-							stream.receive_initial_headers(headers, false)
-							
-							return stream
-						end
-						
 						def receive_initial_headers(headers, end_stream)
 							headers.each do |key, value|
 								if key == SCHEME
@@ -131,32 +119,6 @@ module Async
 					
 					def hijack?
 						false
-					end
-					
-					def push?
-						@stream.connection.enable_push?
-					end
-					
-					# @return [Stream] the promised stream, on which to send data.
-					def push(path, headers = nil, scheme = @scheme, authority = @authority)
-						raise ArgumentError, "Missing scheme!" unless scheme
-						raise ArgumentError, "Missing authority!" unless authority
-						
-						push_headers = [
-							[SCHEME, scheme],
-							[METHOD, ::Protocol::HTTP::Methods::GET],
-							[PATH, path],
-							[AUTHORITY, authority]
-						]
-						
-						if headers
-							push_headers = Headers::Merged.new(
-								push_headers,
-								headers
-							)
-						end
-						
-						@stream.send_push_promise(push_headers)
 					end
 					
 					NO_RESPONSE = [

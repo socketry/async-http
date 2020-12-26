@@ -50,13 +50,7 @@ module Async
 						end
 						
 						def accept_push_promise_stream(promised_stream_id, headers)
-							stream = @connection.accept_push_promise_stream(promised_stream_id, &Stream.method(:create))
-							
-							stream.response.build_request(headers)
-							
-							@response.promises.enqueue(stream.response)
-							
-							return stream
+							raise ProtocolError, "Cannot accept push promise stream!"
 						end
 						
 						# This should be invoked from the background reader, and notifies the task waiting for the headers that we are done.
@@ -113,7 +107,6 @@ module Async
 							super
 							
 							if @response
-								@response.promises.enqueue nil
 								@response = nil
 							end
 							
@@ -128,7 +121,6 @@ module Async
 						
 						@stream = stream
 						@request = nil
-						@promises = nil
 					end
 					
 					attr :stream
@@ -148,10 +140,6 @@ module Async
 					
 					def valid?
 						!!@status
-					end
-					
-					def promises
-						@promises ||= Async::Queue.new
 					end
 					
 					def build_request(headers)

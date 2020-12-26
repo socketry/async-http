@@ -113,47 +113,4 @@ RSpec.describe Async::HTTP::Protocol::HTTP2, timeout: 2 do
 			expect(response.stream.connection).to be_reusable
 		end
 	end
-	
-	context 'push promises' do
-		include_context Async::HTTP::Server
-		
-		let(:protocol) {described_class::WithPush}
-		
-		let(:server) do
-			Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
-				if request.path == "/index.html"
-					stream = request.push('/index.css')
-					
-					expect(stream.headers).to_not be_nil
-				end
-				
-				Protocol::HTTP::Response[200, {}, ["Path: #{request.path}"]]
-			end
-		end
-		
-		it "can send push promises" do
-			response = client.get("/index.html")
-			expect(response).to be_success
-			expect(response.read).to be == "Path: /index.html"
-			
-			promise = response.promises.dequeue
-			expect(promise.request.path).to be == '/index.css'
-			
-			expect(promise.request.headers).to_not be_nil
-			expect(promise.headers).to_not be_nil
-			
-			promise.wait # Wait for the promise to complete
-			expect(promise).to be_success
-			expect(promise.read).to be == "Path: /index.css"
-		end
-		
-		it "doesn't sent push promises" do
-			response = client.get("/index.aspx")
-			expect(response).to be_success
-			expect(response.read).to be == "Path: /index.aspx"
-			
-			promise = response.promises.dequeue
-			expect(promise).to be_nil
-		end
-	end
 end

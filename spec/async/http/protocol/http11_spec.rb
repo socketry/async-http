@@ -28,7 +28,7 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 2 do
 		include_context Async::HTTP::Server
 		
 		let(:server) do
-			Async::HTTP::Server.for(endpoint, protocol) do |request|
+			Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
 				Protocol::HTTP::Response[200, {}, ["Hello", "World"]]
 			end
 		end
@@ -50,7 +50,7 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 2 do
 		include_context Async::HTTP::Server
 		
 		let(:server) do
-			Async::HTTP::Server.for(endpoint, protocol) do |request|
+			Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
 				peer = request.hijack!
 				
 				peer.write(

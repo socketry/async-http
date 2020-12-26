@@ -29,7 +29,7 @@ RSpec.shared_context Async::HTTP::Server do
 	let(:endpoint) {Async::HTTP::Endpoint.parse('http://127.0.0.1:9294', timeout: 0.8, reuse_port: true)}
 	
 	let(:retries) {1}
-	let!(:client) {Async::HTTP::Client.new(endpoint, protocol, retries: retries)}
+	let!(:client) {Async::HTTP::Client.new(endpoint, protocol: protocol, retries: retries)}
 	
 	let!(:server_task) do
 		server_task = reactor.async do
@@ -43,7 +43,7 @@ RSpec.shared_context Async::HTTP::Server do
 	end
 	
 	let(:server) do
-		Async::HTTP::Server.for(endpoint, protocol) do |request|
+		Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
 			Protocol::HTTP::Response[200, {}, []]
 		end
 	end

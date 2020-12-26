@@ -48,7 +48,7 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 	
 	context 'CONNECT' do
 		let(:server) do
-			Async::HTTP::Server.for(endpoint, protocol) do |request|
+			Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
 				Async::HTTP::Body::Hijack.response(request, 200, {}) do |stream|
 					chunk = stream.read
 					stream.close_read
@@ -77,7 +77,7 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 	
 	context 'echo server' do
 		let(:server) do
-			Async::HTTP::Server.for(endpoint, protocol) do |request|
+			Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
 				expect(request.path).to be == "localhost:1"
 				
 				Async::HTTP::Body::Hijack.response(request, 200, {}) do |stream|
@@ -130,7 +130,7 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 	
 	context 'proxied client' do
 		let(:server) do
-			Async::HTTP::Server.for(endpoint, protocol) do |request|
+			Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
 				expect(request.method).to be == "CONNECT"
 				
 				unless authorization_lambda.call(request)

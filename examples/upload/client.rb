@@ -10,7 +10,7 @@ require 'async/http/endpoint'
 
 Async do
 	endpoint = Async::HTTP::Endpoint.parse("http://localhost:9222")
-	client = Async::HTTP::Client.new(endpoint, Async::HTTP::Protocol::HTTP2)
+	client = Async::HTTP::Client.new(endpoint, protocol: Async::HTTP::Protocol::HTTP2)
 	
 	headers = [
 		['accept', 'text/plain'],

@@ -29,7 +29,7 @@ def server
 	Async.logger.info(self){"Starting server..."}
 	
 	container.run(count: 1) do
-		server = Async::HTTP::Server.for(endpoint, Async::HTTP::Protocol::HTTP2, "https") do |request|
+		server = Async::HTTP::Server.for(endpoint, protocol: Async::HTTP::Protocol::HTTP2, scheme: "https") do |request|
 			Protocol::HTTP::Response[200, {'content-type' => 'text/plain'}, ["Hello World"]]
 		end
 		

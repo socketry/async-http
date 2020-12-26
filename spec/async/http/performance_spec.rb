@@ -41,7 +41,7 @@ RSpec.shared_examples_for 'client benchmark' do
 	# TODO making this higher causes issues in connect - what's the issue?
 	let(:repeats) {200}
 	
-	let(:client) {Async::HTTP::Client.new(endpoint, protocol)}
+	let(:client) {Async::HTTP::Client.new(endpoint, protocol: protocol)}
 	
 	let(:bound_endpoint) do
 		Async::Reactor.run do
@@ -89,7 +89,7 @@ RSpec.describe Async::HTTP::Server do
 		let(:server) do
 			Async::HTTP::Server.new(
 				Protocol::HTTP::Middleware::Okay,
-				bound_endpoint, protocol, endpoint.scheme
+				bound_endpoint, protocol: protocol, scheme: endpoint.scheme
 			)
 		end
 		
@@ -98,7 +98,7 @@ RSpec.describe Async::HTTP::Server do
 	
 	describe 'multiple chunks' do
 		let(:server) do
-			Async::HTTP::Server.for(bound_endpoint, protocol, endpoint.scheme) do
+			Async::HTTP::Server.for(bound_endpoint, protocol: protocol, scheme: endpoint.scheme) do
 				Protocol::HTTP::Response[200, {}, "Hello World".chars]
 			end
 		end

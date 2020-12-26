@@ -59,7 +59,7 @@ RSpec.describe Async::HTTP::Server, timeout: 5 do
 		let(:client_endpoint) {Async::HTTP::Endpoint.parse("https://localhost:6779", ssl_context: client_context)}
 		
 		it "client can get a resource via https" do
-			server = Async::HTTP::Server.for(server_endpoint, Async::HTTP::Protocol::HTTP1) do |request|
+			server = Async::HTTP::Server.for(server_endpoint, protocol: Async::HTTP::Protocol::HTTP1) do |request|
 				Protocol::HTTP::Response[200, {}, ['Hello World']]
 			end
 			

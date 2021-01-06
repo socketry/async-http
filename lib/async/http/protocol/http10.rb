@@ -37,13 +37,13 @@ module Async
 				end
 				
 				def self.client(peer)
-					stream = IO::Stream.new(peer, sync: false)
+					stream = IO::Stream.new(peer, sync: true)
 					
 					return HTTP1::Client.new(stream, VERSION)
 				end
 				
 				def self.server(peer)
-					stream = IO::Stream.new(peer, sync: false)
+					stream = IO::Stream.new(peer, sync: true)
 					
 					return HTTP1::Server.new(stream, VERSION)
 				end

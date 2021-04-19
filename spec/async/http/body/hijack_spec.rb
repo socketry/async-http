@@ -29,7 +29,7 @@ RSpec.describe Async::HTTP::Body::Hijack do
 		let(:stream) {Async::HTTP::Body::Writable.new}
 		
 		subject do
-			described_class.new do |stream|
+			described_class.wrap do |stream|
 				3.times do 
 					stream.write(content)
 				end

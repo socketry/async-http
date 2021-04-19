@@ -32,13 +32,13 @@ module Async
 					::Protocol::HTTP::Response[status, headers, self.wrap(request, &block)]
 				end
 				
-				def self.wrap(request, &block)
-					self.new(request.body, &block)
+				def self.wrap(request = nil, &block)
+					self.new(block, request&.body)
 				end
 				
-				def initialize(input = nil, &block)
-					@input = input
+				def initialize(block, input = nil)
 					@block = block
+					@input = input
 					
 					@task = nil
 					@stream = nil

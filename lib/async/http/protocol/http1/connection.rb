@@ -48,7 +48,7 @@ module Async
 					
 					def read_line?
 						@stream.read_until(CRLF)
-					rescue Errno::ECONNRESET
+					rescue Errno::ECONNRESET, IOError
 						return nil
 					end
 					

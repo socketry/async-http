@@ -14,3 +14,5 @@ end
 # gem "protocol-http1", path: "../protocol-http1"
 # gem "protocol-http2", path: "../protocol-http2"
 # gem "protocol-hpack", path: "../protocol-hpack"
+
+gem "thread-local"

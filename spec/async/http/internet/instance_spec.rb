@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-#
 # Copyright, 2018, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,14 +18,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative '../internet'
-require 'thread/local'
+require 'async/http/internet/instance'
+require 'async/reactor'
 
-module Async
-	module HTTP
-		class Internet
-			# Provide access to a shared thread-local instance.
-			extend ::Thread::Local
+RSpec.describe Async::HTTP::Internet, timeout: 5 do
+	describe '.instance' do
+		it "returns an internet instance" do
+			expect(Async::HTTP::Internet.instance).to be_kind_of(Async::HTTP::Internet)
 		end
 	end
 end

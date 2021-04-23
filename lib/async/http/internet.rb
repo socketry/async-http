@@ -22,8 +22,10 @@
 
 require_relative 'client'
 require_relative 'endpoint'
+
 require 'protocol/http/middleware'
 require 'protocol/http/body/buffered'
+require 'protocol/http/accept_encoding'
 
 module Async
 	module HTTP
@@ -48,13 +50,15 @@ module Async
 				body = Body::Buffered.wrap(body)
 				headers = ::Protocol::HTTP::Headers[headers]
 				
-				request = ::Protocol::HTTP::Request.new(client.scheme, endpoint.authority, method, endpoint.path, nil, headers, body)
+				request = ::Protocol::HTTP::Request.new(endpoint.scheme, endpoint.authority, method, endpoint.path, nil, headers, body)
 				
 				return client.call(request)
 			end
 			
 			def client_for(endpoint)
-				Client.new(endpoint, **@options)
+				::Protocol::HTTP::AcceptEncoding.new(
+					Client.new(endpoint, **@options)
+				)
 			end
 			
 			def close

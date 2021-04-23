@@ -38,14 +38,14 @@ data = {'life' => 42}
 Async do
 	# Make a new internet:
 	internet = Async::HTTP::Internet.new
-	
+
 	# Prepare the request:
 	headers = [['accept', 'application/json']]
 	body = [JSON.dump(data)]
-	
+
 	# Issues a POST request:
 	response = internet.post("https://httpbin.org/anything", headers, body)
-	
+
 	# Save the response body to a local file:
 	pp JSON.parse(response.read)
 ensure
@@ -72,7 +72,7 @@ TOPICS = ["ruby", "python", "rust"]
 Async do
 	internet = Async::HTTP::Internet.new
 	barrier = Async::Barrier.new
-	
+
 	# Spawn an asynchronous task for each topic:
 	TOPICS.each do |topic|
 		barrier.async do
@@ -80,7 +80,7 @@ Async do
 			puts "Found #{topic}: #{response.read.scan(topic).size} times."
 		end
 	end
-	
+
 	# Ensure we wait for all requests to complete before continuing:
 	barrier.wait
 ensure
@@ -106,7 +106,7 @@ Async do
 	internet = Async::HTTP::Internet.new
 	barrier = Async::Barrier.new
 	semaphore = Async::Semaphore.new(2, parent: barrier)
-	
+
 	# Spawn an asynchronous task for each topic:
 	TOPICS.each do |topic|
 		semaphore.async do
@@ -114,11 +114,29 @@ Async do
 			puts "Found #{topic}: #{response.read.scan(topic).size} times."
 		end
 	end
-	
+
 	# Ensure we wait for all requests to complete before continuing:
 	barrier.wait
 ensure
 	internet&.close
+end
+```
+
+### Persistent Connections
+
+To keep connections alive, install the `thread-local` gem,
+require `async/http/internet/instance`, and use the `instance`, e.g.
+
+``` ruby
+#!/usr/bin/env ruby
+
+require 'async'
+require 'async/http/internet/instance'
+
+Async do
+  internet = Async::HTTP::Internet.instance
+	response = internet.get "https://www.google.com/search?q=test"
+	puts "Found #{response.read.size} results."
 end
 ```
 
@@ -135,10 +153,10 @@ require 'async/http/internet'
 Async do
 	# Make a new internet:
 	internet = Async::HTTP::Internet.new
-	
+
 	# Issues a GET request to Google:
 	response = internet.get("https://www.google.com/search?q=kittens")
-	
+
 	# Save the response body to a local file:
 	response.save("/tmp/search.html")
 ensure
@@ -168,17 +186,17 @@ end
 
 server = Async::HTTP::Server.new(app, endpoint)
 client = Async::HTTP::Client.new(endpoint)
-	
+
 Async do |task|
 	server_task = task.async do
 		server.run
 	end
-	
+
 	response = client.get("/")
-	
+
 	puts response.status
 	puts response.read
-	
+
 	server_task.stop
 end
 ```
@@ -201,14 +219,14 @@ trusted_fingerprints = {
 
 Async do
 	endpoint = Async::HTTP::Endpoint.parse("https://www.codeotaku.com/index")
-	
+
 	# This is a quick hack/POC:
 	ssl_context = endpoint.ssl_context
-	
+
 	ssl_context.verify_callback = proc do |verified, store_context|
 		certificate = store_context.current_cert
 		fingerprint = OpenSSL::Digest::SHA1.new(certificate.to_der).to_s
-		
+
 		if trusted_fingerprints.include? fingerprint
 			true
 		else
@@ -216,13 +234,13 @@ Async do
 			false
 		end
 	end
-	
+
 	endpoint = endpoint.with(ssl_context: ssl_context)
-	
+
 	client = Async::HTTP::Client.new(endpoint)
-	
+
 	response = client.get(endpoint.path)
-	
+
 	pp response.status, response.headers.fields, response.read
 end
 ```
@@ -238,7 +256,7 @@ require 'async/http/internet'
 
 Async do |task|
 	internet = Async::HTTP::Internet.new
-	
+
 	# Request will timeout after 2 seconds
 	task.with_timeout(2) do
 		response = internet.get "https://httpbin.org/delay/10"
@@ -258,7 +276,7 @@ On a 4-core 8-thread i7, running `ab` which uses discrete (non-keep-alive) conne
     This is ApacheBench, Version 2.3 <$Revision: 1757674 $>
     Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
     Licensed to The Apache Software Foundation, http://www.apache.org/
-    
+
     Benchmarking 127.0.0.1 (be patient)
     Completed 5000 requests
     Completed 10000 requests
@@ -271,15 +289,15 @@ On a 4-core 8-thread i7, running `ab` which uses discrete (non-keep-alive) conne
     Completed 45000 requests
     Completed 50000 requests
     Finished 50000 requests
-    
-    
+
+
     Server Software:        
     Server Hostname:        127.0.0.1
     Server Port:            9294
-    
+
     Document Path:          /
     Document Length:        13 bytes
-    
+
     Concurrency Level:      8
     Time taken for tests:   1.869 seconds
     Complete requests:      50000
@@ -290,14 +308,14 @@ On a 4-core 8-thread i7, running `ab` which uses discrete (non-keep-alive) conne
     Time per request:       0.299 [ms] (mean)
     Time per request:       0.037 [ms] (mean, across all concurrent requests)
     Transfer rate:          1280.29 [Kbytes/sec] received
-    
+
     Connection Times (ms)
                   min  mean[+/-sd] median   max
     Connect:        0    0   0.0      0       0
     Processing:     0    0   0.2      0       6
     Waiting:        0    0   0.2      0       6
     Total:          0    0   0.2      0       6
-    
+
     Percentage of the requests served within a certain time (ms)
       50%      0
       66%      0

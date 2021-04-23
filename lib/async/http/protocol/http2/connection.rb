@@ -38,7 +38,7 @@ module Async
 				
 				CONTENT_LENGTH = 'content-length'.freeze
 				CONNECTION = 'connection'.freeze
-				TRAILERS = 'trailers'.freeze
+				TRAILER = 'trailer'.freeze
 				
 				module Connection
 					def initialize(*)

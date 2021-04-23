@@ -145,12 +145,12 @@ module Async
 						headers = ::Protocol::HTTP::Headers::Merged.new(protocol_headers, response.headers)
 						
 						if body = response.body and !self.head?
-							# This function informs the headers object that any subsequent headers are going to be trailers. Therefore, it must be called *before* sending the headers, to avoid any race conditions.
-							trailers = response.headers.trailers!
+							# This function informs the headers object that any subsequent headers are going to be trailer. Therefore, it must be called *before* sending the headers, to avoid any race conditions.
+							trailer = response.headers.trailer!
 							
 							@stream.send_headers(nil, headers)
 							
-							@stream.send_body(body, trailers)
+							@stream.send_body(body, trailer)
 						else
 							# Ensure the response body is closed if we are ending the stream:
 							response.close

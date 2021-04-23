@@ -27,17 +27,17 @@ module Async
 		module Protocol
 			module HTTP2
 				class Output
-					def initialize(stream, body, trailers = nil)
+					def initialize(stream, body, trailer = nil)
 						@stream = stream
 						@body = body
-						@trailers = trailers
+						@trailer = trailer
 						
 						@task = nil
 						
 						@window_updated = Async::Condition.new
 					end
 					
-					attr :trailers
+					attr :trailer
 					
 					def start(parent: Task.current)
 						raise "Task already started!" if @task

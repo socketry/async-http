@@ -98,23 +98,23 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		end
 	end
 	
-	context 'with trailers', if: described_class.bidirectional? do
+	context 'with trailer', if: described_class.bidirectional? do
 		let(:server) do
 			Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
-				if trailers = request.headers['trailers']
+				if trailer = request.headers['trailer']
 					expect(request.headers).to_not include('etag')
 					request.finish
 					expect(request.headers).to include('etag')
 					
-					Protocol::HTTP::Response[200, [], "request trailers"]
+					Protocol::HTTP::Response[200, [], "request trailer"]
 				else
 					headers = Protocol::HTTP::Headers.new
-					headers.add('trailers', 'etag')
+					headers.add('trailer', 'etag')
 					
 					body = Async::HTTP::Body::Writable.new
 					
 					Async do |task|
-						body.write("response trailers")
+						body.write("response trailer")
 						task.sleep(0.01)
 						headers.add('etag', 'abcd')
 						body.close
@@ -125,9 +125,9 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 			end
 		end
 		
-		it "can send request trailers" do
+		it "can send request trailer" do
 			headers = Protocol::HTTP::Headers.new
-			headers.add('trailers', 'etag')
+			headers.add('trailer', 'etag')
 			body = Async::HTTP::Body::Writable.new
 			
 			Async do |task|
@@ -138,18 +138,18 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 			end
 			
 			response = client.post("/", headers, body)
-			expect(response.read).to be == "request trailers"
+			expect(response.read).to be == "request trailer"
 			
 			expect(response).to be_success
 		end
 		
-		it "can receive response trailers" do
+		it "can receive response trailer" do
 			response = client.get("/")
-			expect(response.headers).to include('trailers')
+			expect(response.headers).to include('trailer')
 			headers = response.headers
 			expect(headers).to_not include('etag')
 			
-			expect(response.read).to be == "response trailers"
+			expect(response.read).to be == "response trailer"
 			expect(response).to be_success
 			
 			# It was sent as a trailer.

@@ -64,7 +64,7 @@ module Async
 							return if @stream.nil? or @stream.closed?
 							
 							if response
-								trailers = response.headers.trailers!
+								trailer = response.headers.trailer!
 								
 								write_response(@version, response.status, response.headers)
 								
@@ -95,7 +95,7 @@ module Async
 									request = nil unless body
 									response = nil
 									
-									write_body(version, body, head, trailers)
+									write_body(version, body, head, trailer)
 								end
 							else
 								# If the request failed to generate a response, it was an internal server error:

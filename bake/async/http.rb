@@ -68,8 +68,8 @@ def fetch(url, method:)
 		
 		response.finish
 		
-		if trailers = response.headers.trailers
-			trailers.each do |key, value|
+		if trailer = response.headers.trailer
+			trailer.each do |key, value|
 				terminal.print_line(
 					:key, key.rjust(align), :reset, ": ", :value, value.inspect
 				)

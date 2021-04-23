@@ -33,7 +33,7 @@ module Async
 					true
 				end
 				
-				def self.trailers?
+				def self.trailer?
 					true
 				end
 				

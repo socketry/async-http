@@ -208,8 +208,8 @@ module Async
 								pseudo_headers << [CONTENT_LENGTH, length]
 							end
 							
-							# This function informs the headers object that any subsequent headers are going to be trailers. Therefore, it must be called *before* sending the headers, to avoid any race conditions.
-							trailers = request.headers.trailers!
+							# This function informs the headers object that any subsequent headers are going to be trailer. Therefore, it must be called *before* sending the headers, to avoid any race conditions.
+							trailer = request.headers.trailer!
 							
 							begin
 								@stream.send_headers(nil, headers)
@@ -217,7 +217,7 @@ module Async
 								raise RequestFailed
 							end
 							
-							@stream.send_body(request.body, trailers)
+							@stream.send_body(request.body, trailer)
 						end
 					end
 				end

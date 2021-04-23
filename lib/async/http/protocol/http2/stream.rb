@@ -34,7 +34,7 @@ module Async
 						super
 						
 						@headers = nil
-						@trailers = nil
+						@trailer = nil
 						
 						# Input buffer, reading request body, or response body (receive_data):
 						@length = nil
@@ -62,7 +62,7 @@ module Async
 					
 					def receive_trailing_headers(headers, end_stream)
 						headers.each do |key, value|
-							if @trailers.include?(key)
+							if @trailer.include?(key)
 								add_header(key, value)
 							else
 								raise ::Protocol::HTTP2::HeaderError, "Cannot add trailer #{key} as it was not specified as a trailer!"
@@ -75,8 +75,8 @@ module Async
 							@headers = ::Protocol::HTTP::Headers.new
 							self.receive_initial_headers(super, frame.end_stream?)
 							
-							@trailers = @headers[TRAILERS]
-						elsif @trailers and frame.end_stream?
+							@trailer = @headers[TRAILER]
+						elsif @trailer and frame.end_stream?
 							self.receive_trailing_headers(super, frame.end_stream?)
 						else
 							raise ::Protocol::HTTP2::HeaderError, "Unable to process headers!"
@@ -136,24 +136,24 @@ module Async
 					end
 					
 					# Set the body and begin sending it.
-					def send_body(body, trailers = nil)
-						@output = Output.new(self, body, trailers)
+					def send_body(body, trailer = nil)
+						@output = Output.new(self, body, trailer)
 						
 						@output.start
 					end
 					
 					# Called when the output terminates normally.
 					def finish_output(error = nil)
-						trailers = @output&.trailers
+						trailer = @output&.trailer
 						
 						@output = nil
 						
 						if error
 							send_reset_stream(::Protocol::HTTP2::Error::INTERNAL_ERROR)
 						else
-							# Write trailers?
-							if trailers
-								send_headers(nil, trailers, ::Protocol::HTTP2::END_STREAM)
+							# Write trailer?
+							if trailer
+								send_headers(nil, trailer, ::Protocol::HTTP2::END_STREAM)
 							else
 								send_data(nil, ::Protocol::HTTP2::END_STREAM)
 							end

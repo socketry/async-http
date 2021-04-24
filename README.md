@@ -122,6 +122,24 @@ ensure
 end
 ```
 
+### Persistent Connections
+
+To keep connections alive, install the `thread-local` gem,
+require `async/http/internet/instance`, and use the `instance`, e.g.
+
+``` ruby
+#!/usr/bin/env ruby
+
+require 'async'
+require 'async/http/internet/instance'
+
+Async do
+  internet = Async::HTTP::Internet.instance
+	response = internet.get "https://www.google.com/search?q=test"
+	puts "Found #{response.read.size} results."
+end
+```
+
 ### Downloading a File
 
 Here is an example showing how to download a file and save it to a local path:

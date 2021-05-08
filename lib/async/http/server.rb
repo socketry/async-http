@@ -48,7 +48,7 @@ module Async
 			def accept(peer, address, task: Task.current)
 				connection = @protocol.server(peer)
 				
-				Async.logger.debug(self) {"Incoming connnection from #{address.inspect} to #{@protocol}"}
+				Console.logger.debug(self) {"Incoming connnection from #{address.inspect} to #{@protocol}"}
 				
 				connection.each do |request|
 					# We set the default scheme unless it was otherwise specified.
@@ -58,7 +58,7 @@ module Async
 					# This is a slight optimization to avoid having to get the address from the socket.
 					request.remote_address = address
 					
-					# Async.logger.debug(self) {"Incoming request from #{address.inspect}: #{request.method} #{request.path}"}
+					# Console.logger.debug(self) {"Incoming request from #{address.inspect}: #{request.method} #{request.path}"}
 					
 					# If this returns nil, we assume that the connection has been hijacked.
 					self.call(request)

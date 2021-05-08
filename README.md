@@ -230,7 +230,7 @@ Async do
 		if trusted_fingerprints.include? fingerprint
 			true
 		else
-			Async.logger.warn("Untrusted Certificate Fingerprint"){fingerprint}
+			Console.logger.warn("Untrusted Certificate Fingerprint"){fingerprint}
 			false
 		end
 	end

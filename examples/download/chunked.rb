@@ -16,7 +16,7 @@ Async do
 	headers = {'user-agent' => 'curl/7.69.1', 'accept' => '*/*'}
 	
 	file = File.open("products.csv", "w")
-	Async.logger.info(self) {"Saving download to #{Dir.pwd}"}
+	Console.logger.info(self) {"Saving download to #{Dir.pwd}"}
 	
 	begin
 		response = client.head(endpoint.path, headers)
@@ -35,7 +35,7 @@ Async do
 		response&.close
 	end
 	
-	Async.logger.info(self) {"Content length: #{content_length/(1024**2)}MiB"}
+	Console.logger.info(self) {"Content length: #{content_length/(1024**2)}MiB"}
 	
 	parts = []
 	offset = 0
@@ -52,7 +52,7 @@ Async do
 		offset += chunk_size
 	end
 	
-	Async.logger.info(self) {"Breaking download into #{parts.size} parts..."}
+	Console.logger.info(self) {"Breaking download into #{parts.size} parts..."}
 	
 	semaphore = Async::Semaphore.new(8)
 	barrier = Async::Barrier.new(parent: semaphore)
@@ -61,7 +61,7 @@ Async do
 		barrier.async do
 			part = parts.shift
 			
-			Async.logger.info(self) {"Issuing range request range: bytes=#{part.min}-#{part.max}"}
+			Console.logger.info(self) {"Issuing range request range: bytes=#{part.min}-#{part.max}"}
 			
 			response = client.get(endpoint.path, [
 				["range", "bytes=#{part.min}-#{part.max-1}"],
@@ -69,13 +69,13 @@ Async do
 			])
 			
 			if response.success?
-				Async.logger.info(self) {"Got response: #{response}... writing data for #{part}."}
+				Console.logger.info(self) {"Got response: #{response}... writing data for #{part}."}
 				written = file.pwrite(response.read, part.min)
 				
 				amount += written
 				
 				duration = Async::Clock.now - start_time
-				Async.logger.info(self) {"Rate: #{((amount.to_f/(1024**2))/duration).round(2)}MiB/s"}
+				Console.logger.info(self) {"Rate: #{((amount.to_f/(1024**2))/duration).round(2)}MiB/s"}
 			end
 		end
 	end

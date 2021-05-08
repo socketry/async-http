@@ -29,7 +29,7 @@ module Async
 				class Client < Connection
 					# Used by the client to send requests to the remote server.
 					def call(request, task: Task.current)
-						Async.logger.debug(self) {"#{request.method} #{request.path} #{request.headers.inspect}"}
+						Console.logger.debug(self) {"#{request.method} #{request.path} #{request.headers.inspect}"}
 						
 						trailer = request.headers.trailer!
 						

@@ -26,7 +26,7 @@ def server
 	
 	container = Async::Container.new
 	
-	Async.logger.info(self){"Starting server..."}
+	Console.logger.info(self){"Starting server..."}
 	
 	container.run(count: 1) do
 		server = Async::HTTP::Server.for(endpoint, protocol: Async::HTTP::Protocol::HTTP2, scheme: "https") do |request|

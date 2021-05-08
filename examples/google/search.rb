@@ -12,7 +12,7 @@ ENDPOINT = Async::HTTP::Endpoint.parse(URL)
 
 class Google < Protocol::HTTP::Middleware
 	def search(term)
-		Async.logger.info(self) {"Searching for #{term}..."}
+		Console.logger.info(self) {"Searching for #{term}..."}
 		
 		self.get("/search?q=#{term}", {"user-agent" => "Hi Google!"})
 	end
@@ -38,10 +38,10 @@ Async do |task|
 			end
 		end.map(&:wait).to_h
 		
-		Async.logger.info(self, name: 'counts') {counts}
+		Console.logger.info(self, name: 'counts') {counts}
 	end
 	
-	Async.logger.info(self, name: 'duration') {duration}
+	Console.logger.info(self, name: 'duration') {duration}
 ensure
 	google.close
 end

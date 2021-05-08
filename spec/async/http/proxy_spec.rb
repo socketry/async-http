@@ -140,11 +140,11 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 				host, port = request.path.split(":", 2)
 				endpoint = Async::IO::Endpoint.tcp(host, port)
 				
-				Async.logger.debug(self) {"Making connection to #{endpoint}..."}
+				Console.logger.debug(self) {"Making connection to #{endpoint}..."}
 				
 				Async::HTTP::Body::Hijack.response(request, 200, {}) do |stream|
 					upstream = Async::IO::Stream.new(endpoint.connect)
-					Async.logger.debug(self) {"Connected to #{upstream}..."}
+					Console.logger.debug(self) {"Connected to #{upstream}..."}
 					
 					reader = Async do |task|
 						task.annotate "Upstream reader."
@@ -154,7 +154,7 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 							stream.flush
 						end
 					ensure
-						Async.logger.debug(self) {"Finished reading from upstream..."}
+						Console.logger.debug(self) {"Finished reading from upstream..."}
 						stream.close_write
 					end
 					
@@ -168,7 +168,7 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 					rescue Async::Wrapper::Cancelled
 						#ignore
 					ensure
-						Async.logger.debug(self) {"Finished writing to upstream..."}
+						Console.logger.debug(self) {"Finished writing to upstream..."}
 						upstream.close_write
 					end
 					

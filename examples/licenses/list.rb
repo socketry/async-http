@@ -59,7 +59,7 @@ def fetch_rubygem_license(name, version)
 rescue RateLimitingError
 	response.finish
 	
-	Async.logger.warn(name) {"Rate limited..."}
+	Console.logger.warn(name) {"Rate limited..."}
 	Async::Task.current.sleep(1.0)
 	
 	retry

@@ -20,7 +20,7 @@
 
 require 'async/http/server'
 
-# Async.logger.level = Logger::DEBUG
+# Console.logger.level = Logger::DEBUG
 
 RSpec.shared_context Async::HTTP::Server do
 	include_context Async::RSpec::Reactor

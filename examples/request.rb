@@ -4,11 +4,10 @@
 # $LOAD_PATH.unshift(File.expand_path("../../http-protocol/lib", __dir__))
 
 require 'async'
-require 'async/logger'
 require 'async/http/client'
 require 'async/http/endpoint'
 
-# Async.logger.level = Logger::DEBUG
+# Console.logger.level = Logger::DEBUG
 
 Async do |task|
 	endpoint = Async::HTTP::Endpoint.parse("https://www.google.com")

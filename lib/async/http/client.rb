@@ -83,7 +83,7 @@ module Async
 			
 			def close
 				while @pool.busy?
-					Async.logger.warn(self) {"Waiting for #{@protocol} pool to drain: #{@pool}"}
+					Console.logger.warn(self) {"Waiting for #{@protocol} pool to drain: #{@pool}"}
 					@pool.wait
 				end
 				
@@ -152,7 +152,7 @@ module Async
 			
 			def make_pool(connection_limit)
 				Async::Pool::Controller.wrap(limit: connection_limit) do
-					Async.logger.debug(self) {"Making connection to #{@endpoint.inspect}"}
+					Console.logger.debug(self) {"Making connection to #{@endpoint.inspect}"}
 					
 					@protocol.client(@endpoint.connect)
 				end

@@ -39,6 +39,20 @@ RSpec.describe Async::HTTP::Internet, timeout: 5 do
 		
 		response.close
 	end
+
+	it 'can fetch remote website when given custom endpoint instead of url' do
+		ssl_context = OpenSSL::SSL::SSLContext.new
+		ssl_context.set_params(verify_mode: OpenSSL::SSL::VERIFY_NONE)
+
+		# example of site with invalid certificate that will fail to be fetched without custom SSL options
+		endpoint = Async::HTTP::Endpoint.parse('https://expired.badssl.com', ssl_context: ssl_context)
+
+		response = subject.get(endpoint, headers)
+
+		expect(response).to be_success
+
+		response.close
+	end
 	
 	let(:sample) {{"hello" => "world"}}
 	let(:body) {[JSON.dump(sample)]}

@@ -39,8 +39,12 @@ module Async
 			# @attribute [Hash(URI, Client)]
 			attr :clients
 			
-			def call(method, url, headers = nil, body = nil)
-				endpoint = Endpoint.parse(url)
+			def call(method, url_or_endpoint, headers = nil, body = nil)
+				endpoint = if url_or_endpoint.is_a?(Endpoint)
+					url_or_endpoint
+				else
+					Endpoint.parse(url_or_endpoint)
+				end
 				key = host_key(endpoint)
 				
 				client = @clients.fetch(key) do
@@ -70,8 +74,9 @@ module Async
 			end
 			
 			::Protocol::HTTP::Methods.each do |name, verb|
-				define_method(verb.downcase) do |url, headers = nil, body = nil|
-					self.call(verb, url.to_str, headers, body)
+				define_method(verb.downcase) do |url_or_endpoint, headers = nil, body = nil|
+					url_or_endpoint = url_or_endpoint.to_str unless url_or_endpoint.is_a?(Endpoint)
+					self.call(verb, url_or_endpoint, headers, body)
 				end
 			end
 			

@@ -33,6 +33,7 @@ module Async
 					def initialize(stream, version)
 						super(stream)
 						
+						@ready = true
 						@version = version
 					end
 					
@@ -68,11 +69,11 @@ module Async
 					
 					# Can we use this connection to make requests?
 					def viable?
-						@stream&.connected?
+						@ready && @stream&.connected?
 					end
 					
 					def reusable?
-						@persistent && @stream && !@stream.closed?
+						@ready && @persistent && @stream && !@stream.closed?
 					end
 				end
 			end

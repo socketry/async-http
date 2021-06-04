@@ -1,4 +1,4 @@
-# Copyright, 2019, by Samuel G. D. Williams. <http://www.codeotaku.com>
+# Copyright, 2021, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,35 +18,53 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'async/http/server'
-require 'async/http/client'
-require 'async/http/endpoint'
+require_relative '../../server_context'
+require 'async/http/protocol/http11'
 
-# Console.logger.level = Logger::DEBUG
-
-RSpec.shared_context Async::HTTP::Server do
-	include_context Async::RSpec::Reactor
-	
-	let(:protocol) {described_class}
-	let(:endpoint) {Async::HTTP::Endpoint.parse('http://127.0.0.1:9294', timeout: 0.8, reuse_port: true)}
-	
-	let(:retries) {1}
-	let!(:client) {Async::HTTP::Client.new(endpoint, protocol: protocol, retries: retries)}
-	
-	let!(:server_task) do
-		server_task = reactor.async do
-			server.run
-		end
-	end
-	
-	after(:each) do
-		client.close
-		server_task.stop
-	end
+RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 30 do
+	include_context Async::HTTP::Server
 	
 	let(:server) do
 		Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
-			Protocol::HTTP::Response[200, {}, []]
+			Protocol::HTTP::Response[200, {}, [request.path]]
+		end
+	end
+	
+	it "doesn't desync responses" do
+		tasks = []
+		task = Async::Task.current
+		
+		response = client.get("/a")
+		expect(response.read).to be == "/a"
+		
+		response = client.get("/b")
+		expect(response.read).to be == "/b"
+		
+		100.times do
+			tasks << task.async{
+				loop do
+					response = client.get('/a')
+					expect(response.read).to be == "/a"
+				ensure
+					response&.close
+				end
+			}
+		end
+		
+		100.times do
+			tasks << task.async{
+				loop do
+					response = client.get('/b')
+					expect(response.read).to be == "/b"
+				ensure
+					response&.close
+				end
+			}
+		end
+		
+		tasks.each do |task|
+			task.sleep 0.01
+			task.stop
 		end
 	end
 end

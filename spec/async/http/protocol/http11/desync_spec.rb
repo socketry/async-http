@@ -30,6 +30,15 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 30 do
 		end
 	end
 	
+	around do |example|
+		current = Console.logger.level
+		Console.logger.fatal!
+		
+		example.run
+	ensure
+		Console.logger.level = current
+	end
+	
 	it "doesn't desync responses" do
 		tasks = []
 		task = Async::Task.current

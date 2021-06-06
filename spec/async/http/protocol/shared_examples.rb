@@ -496,4 +496,58 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 			expect(count).to be == 6
 		end
 	end
+	
+	context 'multiple client requests' do
+		let(:server) do
+			Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
+				Protocol::HTTP::Response[200, {}, [request.path]]
+			end
+		end
+		
+		around do |example|
+			current = Console.logger.level
+			Console.logger.fatal!
+			
+			example.run
+		ensure
+			Console.logger.level = current
+		end
+		
+		it "doesn't cancel all requests" do
+			tasks = []
+			task = Async::Task.current
+			stopped = []
+			
+			10.times do
+				tasks << task.async {
+					begin
+						loop do
+							client.get('http://127.0.0.1:8080/a').finish
+						end
+					ensure
+						stopped << 'a'
+					end
+				}
+			end
+			
+			10.times do
+				tasks << task.async {
+					begin
+						loop do
+							client.get('http://127.0.0.1:8080/b').finish
+						end
+					ensure
+						stopped << 'b'
+					end
+				}
+			end
+			
+			tasks.each do |child|
+				task.sleep 0.01
+				child.stop
+			end
+			
+			expect(stopped.sort).to be == stopped
+		end
+	end
 end

@@ -65,8 +65,8 @@ module Async
 						task.annotate("Reading #{version} requests for #{self.class}.")
 						
 						# It's possible the connection has died before we get here...
-						@requests&.async do |task, request|
-							task.annotate("Incoming request: #{request.method} #{request.path.inspect}.")
+						@requests&.async do |t, request|
+							t.annotate("Incoming request: #{request.method} #{request.path.inspect}.")
 							
 							@count += 1
 							

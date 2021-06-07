@@ -33,7 +33,7 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 30 do
 	around do |example|
 		current = Console.logger.level
 		Console.logger.fatal!
-		
+	
 		example.run
 	ensure
 		Console.logger.level = current
@@ -43,17 +43,16 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 30 do
 		tasks = []
 		task = Async::Task.current
 		
-		response = client.get("/a")
-		expect(response.read).to be == "/a"
-		
-		response = client.get("/b")
-		expect(response.read).to be == "/b"
+		backtraces = []
 		
 		100.times do
 			tasks << task.async{
 				loop do
 					response = client.get('/a')
 					expect(response.read).to be == "/a"
+				rescue Exception => exception
+					backtraces << exception&.backtrace
+					raise
 				ensure
 					response&.close
 				end
@@ -65,15 +64,21 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 30 do
 				loop do
 					response = client.get('/b')
 					expect(response.read).to be == "/b"
+				rescue Exception => exception
+					backtraces << exception&.backtrace
+					raise
 				ensure
 					response&.close
 				end
 			}
 		end
 		
-		tasks.each do |task|
+		tasks.each do |child|
 			task.sleep 0.01
-			task.stop
+			child.stop
 		end
+		
+		puts "Backtraces"
+		pp backtraces.sort.uniq
 	end
 end

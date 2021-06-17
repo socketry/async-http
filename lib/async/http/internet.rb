@@ -31,7 +31,7 @@ module Async
 	module HTTP
 		class Internet
 			def initialize(**options)
-				@clients = {}
+				@clients = Hash.new
 				@options = options
 			end
 			
@@ -39,13 +39,17 @@ module Async
 			# @attribute [Hash(URI, Client)]
 			attr :clients
 			
-			def call(method, url, headers = nil, body = nil)
-				endpoint = Endpoint.parse(url)
+			def client_for(endpoint)
 				key = host_key(endpoint)
 				
-				client = @clients.fetch(key) do
-					@clients[key] = self.client_for(endpoint)
+				@clients.fetch(key) do
+					@clients[key] = self.make_client(endpoint)
 				end
+			end
+			
+			def call(method, url, headers = nil, body = nil)
+				endpoint = Endpoint.parse(url)
+				client = self.client_for(endpoint)
 				
 				body = Body::Buffered.wrap(body)
 				headers = ::Protocol::HTTP::Headers[headers]
@@ -53,12 +57,6 @@ module Async
 				request = ::Protocol::HTTP::Request.new(endpoint.scheme, endpoint.authority, method, endpoint.path, nil, headers, body)
 				
 				return client.call(request)
-			end
-			
-			def client_for(endpoint)
-				::Protocol::HTTP::AcceptEncoding.new(
-					Client.new(endpoint, **@options)
-				)
 			end
 			
 			def close
@@ -75,7 +73,13 @@ module Async
 				end
 			end
 			
-			private
+			protected
+			
+			def make_client(endpoint)
+				::Protocol::HTTP::AcceptEncoding.new(
+					Client.new(endpoint, **@options)
+				)
+			end
 			
 			def host_key(endpoint)
 				url = endpoint.url.dup

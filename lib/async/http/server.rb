@@ -23,8 +23,11 @@
 require 'async/io/endpoint'
 require 'async/io/stream'
 
-require_relative 'protocol'
 require 'protocol/http/middleware'
+
+require 'trace/provider'
+
+require_relative 'protocol'
 
 module Async
 	module HTTP
@@ -69,6 +72,26 @@ module Async
 			
 			def run
 				@endpoint.accept(&self.method(:accept))
+			end
+			
+			Trace::Provider(self) do
+				def call(request)
+					if trace_parent = request.headers['traceparent']
+						context = Trace::Context.parse(trace_parent, request.headers['tracestate'], remote: true)
+					end
+					
+					attributes = {
+						'http.method': request.method,
+						'http.authority': request.authority,
+						'http.scheme': request.scheme,
+						'http.path': request.path,
+						'http.user_agent': request.headers['user-agent']
+					}
+					
+					trace('async.http.server.call', context, attributes: attributes) do
+						super
+					end
+				end
 			end
 		end
 	end

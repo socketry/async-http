@@ -28,6 +28,8 @@ require 'async/pool/controller'
 require 'protocol/http/body/completable'
 require 'protocol/http/methods'
 
+require 'trace/provider'
+
 require_relative 'protocol'
 
 module Async
@@ -134,6 +136,26 @@ module Async
 					end
 				ensure
 					@pool.release(connection) if connection
+				end
+			end
+			
+			Trace::Provider(self) do
+				def call(request)
+					attributes = {
+						'http.method': request.method,
+						'http.authority': request.authority || self.authority,
+						'http.scheme': request.scheme || self.scheme,
+						'http.path': request.path,
+					}
+					
+					trace('async.http.client.call', attributes: attributes) do |context|
+						# if context.valid?
+						# 	request.headers['traceparent'] = context.to_s
+						# 	request.headers['tracestate'] = context.state
+						# end
+						
+						super
+					end
 				end
 			end
 			

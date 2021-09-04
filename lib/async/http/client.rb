@@ -148,13 +148,29 @@ module Async
 						'http.path': request.path,
 					}
 					
-					trace('async.http.client.call', attributes: attributes) do |context|
-						# if context.valid?
-						# 	request.headers['traceparent'] = context.to_s
-						# 	request.headers['tracestate'] = context.state
-						# end
+					if protocol = request.protocol
+						attributes['http.protocol'] = protocol
+					end
+					
+					# if length = request.body&.length
+					# 	span['http.request.length'] = length
+					# end
+					
+					trace('async.http.client.call', attributes: attributes) do |span|
+						if context = trace_context(span)
+							request.headers['traceparent'] = context.to_s
+							# request.headers['tracestate'] = context.state
+						end
 						
-						super
+						super.tap do |response|
+							if status = response&.status
+								span['http.status_code'] = status
+							end
+							
+							# if length = response.body&.length
+							# 	span['http.response.length'] = length
+							# end
+						end
 					end
 				end
 			end

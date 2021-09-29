@@ -43,7 +43,7 @@ module Async
 				uri_klass = URI.scheme_list[scheme.upcase] || URI::HTTP
 				
 				self.new(
-					uri_klass.new(scheme, nil, hostname, nil, nil, nil, nil, nil, nil),
+					uri_klass.new(scheme, nil, hostname, nil, nil, nil, nil, nil, nil).normalize,
 					**options
 				)
 			end

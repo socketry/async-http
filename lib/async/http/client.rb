@@ -28,7 +28,7 @@ require 'async/pool/controller'
 require 'protocol/http/body/completable'
 require 'protocol/http/methods'
 
-require 'trace/provider'
+require 'traces/provider'
 
 require_relative 'protocol'
 
@@ -139,7 +139,7 @@ module Async
 				end
 			end
 			
-			Trace::Provider(self) do
+			Traces::Provider(self) do
 				def call(request)
 					attributes = {
 						'http.method': request.method,

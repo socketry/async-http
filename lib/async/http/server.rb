@@ -25,7 +25,7 @@ require 'async/io/stream'
 
 require 'protocol/http/middleware'
 
-require 'trace/provider'
+require 'traces/provider'
 
 require_relative 'protocol'
 
@@ -74,7 +74,7 @@ module Async
 				@endpoint.accept(&self.method(:accept))
 			end
 			
-			Trace::Provider(self) do
+			Traces::Provider(self) do
 				def call(request)
 					if trace_parent = request.headers['traceparent']
 						self.trace_context = Trace::Context.parse(trace_parent, request.headers['tracestate'], remote: true)

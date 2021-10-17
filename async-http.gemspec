@@ -19,7 +19,7 @@ Gem::Specification.new do |spec|
 	spec.add_dependency "protocol-http", "~> 0.22.0"
 	spec.add_dependency "protocol-http1", "~> 0.14.0"
 	spec.add_dependency "protocol-http2", "~> 0.14.0"
-	spec.add_dependency "trace", "~> 0.6.0"
+	spec.add_dependency "traces", "~> 0.2.0"
 	
 	spec.add_development_dependency "async-container", "~> 0.14"
 	spec.add_development_dependency "async-rspec", "~> 1.10"

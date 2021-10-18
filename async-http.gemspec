@@ -9,6 +9,9 @@ Gem::Specification.new do |spec|
 	spec.authors = ["Samuel Williams"]
 	spec.license = "MIT"
 	
+	spec.cert_chain  = ['release.cert']
+	spec.signing_key = File.expand_path('~/.gem/release.pem')
+	
 	spec.homepage = "https://github.com/socketry/async-http"
 	
 	spec.files = Dir.glob('{bake,lib}/**/*', File::FNM_DOTMATCH, base: __dir__)
@@ -23,7 +26,7 @@ Gem::Specification.new do |spec|
 	spec.add_development_dependency "async-container", "~> 0.14"
 	spec.add_development_dependency "async-rspec", "~> 1.10"
 	spec.add_development_dependency "covered"
+	spec.add_development_dependency "localhost"
 	spec.add_development_dependency "rack-test"
 	spec.add_development_dependency "rspec", "~> 3.6"
-	spec.add_development_dependency "localhost"
 end

@@ -37,13 +37,13 @@ module Async
 				return self.new(url, endpoint, **options)
 			end
 			
-			# Construct an endpoint with a specified scheme, hostname, and options.
-			def self.for(scheme, hostname, **options)
+			# Construct an endpoint with a specified scheme, hostname, optional path, and options.
+			def self.for(scheme, hostname, path = "/", **options)
 				# TODO: Consider using URI.for once it becomes available:
 				uri_klass = URI.scheme_list[scheme.upcase] || URI::HTTP
 				
 				self.new(
-					uri_klass.new(scheme, nil, hostname, nil, nil, nil, nil, nil, nil).normalize,
+					uri_klass.new(scheme, nil, hostname, nil, nil, path, nil, nil, nil).normalize,
 					**options
 				)
 			end

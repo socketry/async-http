@@ -43,17 +43,17 @@ RSpec.shared_examples_for 'client benchmark' do
 	
 	let(:client) {Async::HTTP::Client.new(endpoint, protocol: protocol)}
 	
-	let(:bound_endpoint) do
-		Async::Reactor.run do
-			Async::IO::SharedEndpoint.bound(endpoint)
-		end.wait
-	end
-	
-	before(:all) do
+	before do
+		Sync do
+			@bound_endpoint = Async::IO::SharedEndpoint.bound(endpoint)
+		end
+		
 		GC.disable
 	end
 	
-	after(:all) do
+	after do
+		@bound_endpoint&.close
+		
 		GC.enable
 	end
 	
@@ -69,7 +69,7 @@ RSpec.shared_examples_for 'client benchmark' do
 			end
 		end
 		
-		bound_endpoint&.close
+		@bound_endpoint&.close
 		
 		if ab = `which ab`.chomp!
 			# puts [ab, "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, url].join(' ')
@@ -89,7 +89,7 @@ RSpec.describe Async::HTTP::Server do
 		let(:server) do
 			Async::HTTP::Server.new(
 				Protocol::HTTP::Middleware::Okay,
-				bound_endpoint, protocol: protocol, scheme: endpoint.scheme
+				@bound_endpoint, protocol: protocol, scheme: endpoint.scheme
 			)
 		end
 		
@@ -98,7 +98,7 @@ RSpec.describe Async::HTTP::Server do
 	
 	describe 'multiple chunks' do
 		let(:server) do
-			Async::HTTP::Server.for(bound_endpoint, protocol: protocol, scheme: endpoint.scheme) do
+			Async::HTTP::Server.for(@bound_endpoint, protocol: protocol, scheme: endpoint.scheme) do
 				Protocol::HTTP::Response[200, {}, "Hello World".chars]
 			end
 		end

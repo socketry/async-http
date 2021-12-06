@@ -181,7 +181,7 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 			end
 		end
 		
-		let(:authorization_lambda) { ->(request) { true } }
+		let(:authorization_lambda) { ->(request) {true} }
 		
 		it 'can get insecure website' do
 			endpoint = Async::HTTP::Endpoint.parse("http://www.google.com")
@@ -198,6 +198,8 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 			expect(proxy_client.pool).to_not be_empty
 			proxy_client.close
 			expect(proxy_client.pool).to be_empty
+			
+			pp client
 		end
 		
 		it 'can get secure website' do

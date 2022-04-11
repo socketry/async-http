@@ -73,6 +73,14 @@ RSpec.describe Async::HTTP::Client, timeout: 5 do
 			client.close
 		end
 		
+		it "can warm up the connection pool", timeout: nil do
+			expect(client.pool.available?).to be_falsey
+			client.open
+			expect(client.pool.available?).to be_truthy
+			client.close
+			expect(client.pool.available?).to be_falsey
+		end
+		
 		it "can request remote resource with compression" do
 			compressor = Protocol::HTTP::AcceptEncoding.new(client)
 			

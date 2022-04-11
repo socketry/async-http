@@ -83,6 +83,13 @@ module Async
 				end
 			end
 			
+			# Open a connection to the remote host and warm up the connection pool.
+			def open
+				@pool.acquire do |connection|
+					# Connected.
+				end
+			end
+			
 			def close
 				while @pool.busy?
 					Console.logger.warn(self) {"Waiting for #{@protocol} pool to drain: #{@pool}"}

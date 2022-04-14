@@ -34,7 +34,6 @@ module Async
 						super
 						
 						@headers = nil
-						@trailer = nil
 						
 						# Input buffer, reading request body, or response body (receive_data):
 						@length = nil
@@ -62,11 +61,7 @@ module Async
 					
 					def receive_trailing_headers(headers, end_stream)
 						headers.each do |key, value|
-							if @trailer.include?(key)
-								add_header(key, value)
-							else
-								raise ::Protocol::HTTP2::HeaderError, "Cannot add trailer #{key} as it was not specified as a trailer!"
-							end
+							add_header(key, value)
 						end
 					end
 					
@@ -74,9 +69,7 @@ module Async
 						if @headers.nil?
 							@headers = ::Protocol::HTTP::Headers.new
 							self.receive_initial_headers(super, frame.end_stream?)
-							
-							@trailer = @headers[TRAILER]
-						elsif @trailer and frame.end_stream?
+						elsif frame.end_stream?
 							self.receive_trailing_headers(super, frame.end_stream?)
 						else
 							raise ::Protocol::HTTP2::HeaderError, "Unable to process headers!"

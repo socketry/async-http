@@ -138,7 +138,11 @@ module Async
 					@pool.release(connection) if connection
 				end
 			end
-			
+
+			def inspect
+				"#<#{self.class} authority=#{@authority.inspect}>"
+			end
+
 			Traces::Provider(self) do
 				def call(request)
 					attributes = {

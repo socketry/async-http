@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 
 require_relative "lib/async/http/version"
 
@@ -6,7 +7,7 @@ Gem::Specification.new do |spec|
 	spec.version = Async::HTTP::VERSION
 	
 	spec.summary = "A HTTP client and server library."
-	spec.authors = ["Samuel Williams"]
+	spec.authors = ["Samuel Williams", "Brian Morearty", "Bruno Sutic", "Janko Marohnić", "Adam Daniels", "Cyril Roelandt", "Denis Talakevich", "Ian Ker-Seymer", "Igor Sidorov", "Marco Concetto Rudilosso", "Olle Jonsson", "Orgad Shaneh", "Stefan Wrobel", "TheAthlete", "Trevor Turk", "samshadwell"]
 	spec.license = "MIT"
 	
 	spec.cert_chain  = ['release.cert']

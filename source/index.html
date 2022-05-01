@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		
+			<title>Overview</title>
+		
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		
+		<link rel="icon" type="image/png" href="../_static/icon.png"/>
+		<link rel="stylesheet" href="../_static/site.css" type="text/css" media="screen"/>
+		
+		<script src="../_components/jquery/jquery.min.js"></script>
+		<script src="../_components/jquery-syntax/jquery.syntax.min.js"></script>
+		<script src="../_components/mermaid/mermaid.min.js"></script>
+		
+		<script src="../_static/links.js"></script>
+		
+		<script type="text/javascript">
+		//<![CDATA[
+			jQuery(function($) {
+				$.syntax();
+			});
+			
+			let isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+			let config = {theme: 'light'};
+			if (isDarkMode) config.theme = 'dark';
+			else config.theme = 'forest';
+			mermaid.initialize(config);
+		//]]>
+		</script>
+	</head>
+
+	<body>
+		<header> › <a class="link" href="../index.html">Project</a> › <a class="link" href="index.html">Source</a></header>
+		
+		<main>
+			
+	<h1>Overview</h1>
+	
+	<ul class="index"><li>
+						<a href="Async/index.html"><code class="language-ruby">module Async</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+						<a href="Async/HTTP/index.html"><code class="language-ruby">module HTTP</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+						<a href="Async/HTTP/Body/index.html"><code class="language-ruby">module Body</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+						<a href="Async/HTTP/Body/Delayed/index.html"><code class="language-ruby">class Delayed &lt; Protocol::HTTP::Body::Wrapper</code></a>
+						
+						
+						
+					
+					<ul class="index"></ul>				</li><li>
+						<a href="Async/HTTP/Body/Hijack/index.html"><code class="language-ruby">class Hijack &lt; ::Protocol::HTTP::Body::Readable</code></a>
+						
+						
+						
+							<p>A body which is designed for hijacked server responses - a response which uses a block to read and write the request and response bodies respectively.</p>
+
+					
+					<ul class="index"><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li></ul>				</li><li>
+						<a href="Async/HTTP/Body/Pipe/index.html"><code class="language-ruby">class Pipe</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li></ul>				</li><li>
+						<a href="Async/HTTP/Body/Slowloris/index.html"><code class="language-ruby">class Slowloris &lt; Writable</code></a>
+						
+						
+						
+							<p>A dynamic body which you can write to and read from.</p>
+
+					
+					<ul class="index"><li>
+						<a href="Async/HTTP/Body/Slowloris/ThroughputError/index.html"><code class="language-ruby">class ThroughputError &lt; StandardError</code></a>
+						
+						
+						
+					
+					<ul class="index"></ul>				</li><li>
+					
+									</li><li>
+					
+									</li></ul>				</li><li>
+						<a href="Async/HTTP/Body/Stream/index.html"><code class="language-ruby">class Stream</code></a>
+						
+						
+						
+							<p>The input stream is an IO-like object which contains the raw HTTP POST data. When applicable, its external encoding must be “ASCII-8BIT” and it must be opened in binary mode, for Ruby 1.9 compatibility. The input stream must respond to gets, each, read and rewind.</p>
+
+					
+					<ul class="index"><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li></ul>				</li><li>
+						<a href="Async/HTTP/Body/Writable/index.html"><code class="language-ruby">class Writable &lt; Readable</code></a>
+						
+						
+						
+							<p>A dynamic body which you can write to and read from.</p>
+
+					
+					<ul class="index"><li>
+						<a href="Async/HTTP/Body/Writable/Closed/index.html"><code class="language-ruby">class Closed &lt; StandardError</code></a>
+						
+						
+						
+					
+					<ul class="index"></ul>				</li><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li></ul>				</li><li>
+						<a href="Async/HTTP/Body/Statistics/index.html"><code class="language-ruby">class Statistics &lt; ::Protocol::HTTP::Body::Wrapper</code></a>
+						
+						
+						
+							<p>Invokes a callback once the body has finished reading.</p>
+
+					
+					<ul class="index"></ul>				</li></ul>				</li><li>
+						<a href="Async/HTTP/Client/index.html"><code class="language-ruby">class Client &lt; ::Protocol::HTTP::Methods</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+					
+									</li><li>
+						<a href="Async/HTTP/Client/Provider/index.html"><code class="language-ruby">Traces::Provider(self)</code></a>
+						
+						
+						
+					
+					<ul class="index"></ul>				</li></ul>				</li><li>
+						<a href="Async/HTTP/Endpoint/index.html"><code class="language-ruby">class Endpoint &lt; Async::IO::Endpoint</code></a>
+						
+						
+						
+							<p>Represents a way to connect to a remote HTTP server.</p>
+
+					
+					<ul class="index"><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li></ul>				</li><li>
+						<a href="Async/HTTP/Internet/index.html"><code class="language-ruby">class Internet</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+					
+									</li><li>
+						<a href="Async/HTTP/Internet/each/index.html"><code class="language-ruby">::Protocol::HTTP::Methods.each</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+						<a href="Async/HTTP/Internet/each/define_method/index.html"><code class="language-ruby">define_method(verb.downcase)</code></a>
+						
+						
+						
+					
+					<ul class="index"></ul>				</li></ul>				</li></ul>				</li><li>
+						<a href="Async/HTTP/Protocol/index.html"><code class="language-ruby">module Protocol</code></a>
+						
+						
+						
+							<p>A protocol specifies a way in which to communicate with a remote peer.</p>
+
+					
+					<ul class="index"><li>
+						<a href="Async/HTTP/Protocol/HTTP1/index.html"><code class="language-ruby">module HTTP1</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+						<a href="Async/HTTP/Protocol/HTTP1/Client/index.html"><code class="language-ruby">class Client &lt; Connection</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+					
+									</li></ul>				</li><li>
+						<a href="Async/HTTP/Protocol/HTTP1/Connection/index.html"><code class="language-ruby">class Connection &lt; ::Protocol::HTTP1::Connection</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+					
+									</li></ul>				</li><li>
+						<a href="Async/HTTP/Protocol/HTTP1/Request/index.html"><code class="language-ruby">class Request &lt; Protocol::Request</code></a>
+						
+						
+						
+					
+					<ul class="index"></ul>				</li><li>
+						<a href="Async/HTTP/Protocol/HTTP1/Response/index.html"><code class="language-ruby">class Response &lt; Protocol::Response</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+					
+									</li></ul>				</li><li>
+						<a href="Async/HTTP/Protocol/HTTP1/Server/index.html"><code class="language-ruby">class Server &lt; Connection</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+					
+									</li></ul>				</li></ul>				</li><li>
+						<a href="Async/HTTP/Protocol/HTTP10/index.html"><code class="language-ruby">module HTTP10</code></a>
+						
+						
+						
+					
+					<ul class="index"></ul>				</li><li>
+						<a href="Async/HTTP/Protocol/HTTP11/index.html"><code class="language-ruby">module HTTP11</code></a>
+						
+						
+						
+					
+					<ul class="index"></ul>				</li><li>
+						<a href="Async/HTTP/Protocol/HTTP2/index.html"><code class="language-ruby">module HTTP2</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+						<a href="Async/HTTP/Protocol/HTTP2/Client/index.html"><code class="language-ruby">class Client &lt; ::Protocol::HTTP2::Client</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+					
+									</li></ul>				</li><li>
+						<a href="Async/HTTP/Protocol/HTTP2/Connection/index.html"><code class="language-ruby">module Connection</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+					
+									</li></ul>				</li><li>
+						<a href="Async/HTTP/Protocol/HTTP2/Input/index.html"><code class="language-ruby">class Input &lt; Body::Writable</code></a>
+						
+						
+						
+							<p>A writable body which requests window updates when data is read from it.</p>
+
+					
+					<ul class="index"></ul>				</li><li>
+						<a href="Async/HTTP/Protocol/HTTP2/Output/index.html"><code class="language-ruby">class Output</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li></ul>				</li><li>
+						<a href="Async/HTTP/Protocol/HTTP2/Request/index.html"><code class="language-ruby">class Request &lt; Protocol::Request</code></a>
+						
+						
+						
+							<p>Typically used on the server side to represent an incoming request, and write the response.</p>
+
+					
+					<ul class="index"><li>
+						<a href="Async/HTTP/Protocol/HTTP2/Request/Stream/index.html"><code class="language-ruby">class Stream &lt; HTTP2::Stream</code></a>
+						
+						
+						
+					
+					<ul class="index"></ul>				</li></ul>				</li><li>
+						<a href="Async/HTTP/Protocol/HTTP2/Response/index.html"><code class="language-ruby">class Response &lt; Protocol::Response</code></a>
+						
+						
+						
+							<p>Typically used on the client side for writing a request and reading the incoming response.</p>
+
+					
+					<ul class="index"><li>
+						<a href="Async/HTTP/Protocol/HTTP2/Response/Stream/index.html"><code class="language-ruby">class Stream &lt; HTTP2::Stream</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li></ul>				</li><li>
+					
+									</li></ul>				</li><li>
+						<a href="Async/HTTP/Protocol/HTTP2/Server/index.html"><code class="language-ruby">class Server &lt; ::Protocol::HTTP2::Server</code></a>
+						
+						
+						
+					
+					<ul class="index"></ul>				</li><li>
+						<a href="Async/HTTP/Protocol/HTTP2/Stream/index.html"><code class="language-ruby">class Stream &lt; ::Protocol::HTTP2::Stream</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li></ul>				</li></ul>				</li><li>
+						<a href="Async/HTTP/Protocol/HTTPS/index.html"><code class="language-ruby">module HTTPS</code></a>
+						
+						
+						
+							<p>A server that supports both HTTP1.0 and HTTP1.1 semantics by detecting the version of the request.</p>
+
+					
+					<ul class="index"><li>
+					
+									</li></ul>				</li><li>
+						<a href="Async/HTTP/Protocol/RequestFailed/index.html"><code class="language-ruby">class RequestFailed &lt; StandardError</code></a>
+						
+						
+						
+							<p>Failed to send the request. The request body has NOT been consumed (i.e. #read) and you should retry the request.</p>
+
+					
+					<ul class="index"></ul>				</li><li>
+						<a href="Async/HTTP/Protocol/Request/index.html"><code class="language-ruby">class Request &lt; ::Protocol::HTTP::Request</code></a>
+						
+						
+						
+							<p>This is generated by server protocols.</p>
+
+					
+					<ul class="index"></ul>				</li><li>
+						<a href="Async/HTTP/Protocol/Response/index.html"><code class="language-ruby">class Response &lt; ::Protocol::HTTP::Response</code></a>
+						
+						
+						
+							<p>This is generated by client protocols.</p>
+
+					
+					<ul class="index"></ul>				</li></ul>				</li><li>
+						<a href="Async/HTTP/Proxy/index.html"><code class="language-ruby">class Proxy</code></a>
+						
+						
+						
+							<p>Wraps a client, address and headers required to initiate a connectio to a remote host using the CONNECT verb.</p>
+
+					
+					<ul class="index"><li>
+						<a href="Async/HTTP/Proxy/ConnectFailure/index.html"><code class="language-ruby">class ConnectFailure &lt; StandardError</code></a>
+						
+						
+						
+					
+					<ul class="index"></ul>				</li><li>
+						<a href="Async/HTTP/Proxy/Client/index.html"><code class="language-ruby">module Client</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+					
+									</li></ul>				</li><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li></ul>				</li><li>
+						<a href="Async/HTTP/TooManyRedirects/index.html"><code class="language-ruby">class TooManyRedirects &lt; StandardError</code></a>
+						
+						
+						
+					
+					<ul class="index"></ul>				</li><li>
+						<a href="Async/HTTP/RelativeLocation/index.html"><code class="language-ruby">class RelativeLocation &lt; ::Protocol::HTTP::Middleware</code></a>
+						
+						
+						
+							<p>A client wrapper which transparently handles both relative and absolute redirects to a given maximum number of hops.</p>
+
+					
+					<ul class="index"><li>
+					
+									</li><li>
+					
+									</li></ul>				</li><li>
+						<a href="Async/HTTP/Server/index.html"><code class="language-ruby">class Server &lt; ::Protocol::HTTP::Middleware</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+						<a href="Async/HTTP/Server/Provider/index.html"><code class="language-ruby">Traces::Provider(self)</code></a>
+						
+						
+						
+					
+					<ul class="index"></ul>				</li></ul>				</li><li>
+						<a href="Async/HTTP/Statistics/index.html"><code class="language-ruby">class Statistics</code></a>
+						
+						
+						
+					
+					<ul class="index"></ul>				</li></ul>				</li></ul>				</li></ul>
+				
+			<footer>Documentation generated by <a href="https://github.com/socketry/utopia-project">Utopia::Project</a>.</footer>
+		</main>
+	</body>
+</html>

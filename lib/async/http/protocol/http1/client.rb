@@ -34,6 +34,7 @@ module Async
 						
 						Console.logger.debug(self) {"#{request.method} #{request.path} #{request.headers.inspect}"}
 						
+						# Mark the start of the trailers:
 						trailer = request.headers.trailer!
 						
 						# We carefully interpret https://tools.ietf.org/html/rfc7230#section-6.3.1 to implement this correctly.

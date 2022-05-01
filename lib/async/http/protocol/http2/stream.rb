@@ -145,7 +145,7 @@ module Async
 							send_reset_stream(::Protocol::HTTP2::Error::INTERNAL_ERROR)
 						else
 							# Write trailer?
-							if trailer
+							if trailer&.any?
 								send_headers(nil, trailer, ::Protocol::HTTP2::END_STREAM)
 							else
 								send_data(nil, ::Protocol::HTTP2::END_STREAM)

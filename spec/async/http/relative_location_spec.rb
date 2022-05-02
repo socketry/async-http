@@ -18,32 +18,21 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+require_relative 'server_context'
+
 require 'async/http/relative_location'
 require 'async/http/server'
 
 RSpec.describe Async::HTTP::RelativeLocation do
-	let(:endpoint) {Async::HTTP::Endpoint.parse('http://127.0.0.1:9294', reuse_port: true)}
-	let(:client) {Async::HTTP::Client.new(endpoint)}
+	include_context Async::HTTP::Server
+	let(:protocol) {Async::HTTP::Protocol::HTTP1}
 	
-	subject {described_class.new(client)}
+	subject {described_class.new(@client, 1)}
 	
 	context 'server redirections' do
-		include_context Async::RSpec::Reactor
-		
-		let!(:server_task) do
-			reactor.async do
-				server.run
-			end
-		end
-		
-		after(:each) do
-			server_task.stop
-			subject.close
-		end
-		
 		context '301' do
 			let(:server) do
-				Async::HTTP::Server.for(endpoint) do |request|
+				Async::HTTP::Server.for(@bound_endpoint) do |request|
 					case request.path
 					when '/home'
 						Protocol::HTTP::Response[301, {'location' => '/'}, []]
@@ -61,17 +50,14 @@ RSpec.describe Async::HTTP::RelativeLocation do
 				expect(response).to be_success
 				expect(response.read).to be == "GET"
 			end
-
+			
 			context 'limiting redirects' do
-				subject {described_class.new(client, 1)}
-
 				it 'should allow the maximum number of redirects' do
 					response = subject.get('/')
-
 					response.finish
 					expect(response).to be_success
 				end
-
+				
 				it 'should fail with maximum redirects' do
 					expect{
 						response = subject.get('/home')
@@ -82,7 +68,7 @@ RSpec.describe Async::HTTP::RelativeLocation do
 		
 		context '302' do
 			let(:server) do
-				Async::HTTP::Server.for(endpoint) do |request|
+				Async::HTTP::Server.for(@bound_endpoint) do |request|
 					case request.path
 					when '/'
 						Protocol::HTTP::Response[302, {'location' => '/index.html'}, []]
@@ -102,7 +88,7 @@ RSpec.describe Async::HTTP::RelativeLocation do
 		
 		context '307' do
 			let(:server) do
-				Async::HTTP::Server.for(endpoint) do |request|
+				Async::HTTP::Server.for(@bound_endpoint) do |request|
 					case request.path
 					when '/'
 						Protocol::HTTP::Response[307, {'location' => '/index.html'}, []]
@@ -122,7 +108,7 @@ RSpec.describe Async::HTTP::RelativeLocation do
 		
 		context '308' do
 			let(:server) do
-				Async::HTTP::Server.for(endpoint) do |request|
+				Async::HTTP::Server.for(@bound_endpoint) do |request|
 					case request.path
 					when '/'
 						Protocol::HTTP::Response[308, {'location' => '/index.html'}, []]

@@ -28,11 +28,11 @@ module Async
 	module HTTP
 		class TooManyRedirects < StandardError
 		end
-
+		
 		# A client wrapper which transparently handles both relative and absolute redirects to a given maximum number of hops.
 		class RelativeLocation < ::Protocol::HTTP::Middleware
 			DEFAULT_METHOD = GET
-
+			
 			# maximum_hops is the max number of redirects. Set to 0 to allow 1 request with no redirects.
 			def initialize(app, maximum_hops = 3)
 				super(app)
@@ -51,7 +51,7 @@ module Async
 				
 				while hops <= @maximum_hops
 					response = super(request)
-
+					
 					if response.redirection?
 						hops += 1
 						response.finish

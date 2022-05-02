@@ -25,13 +25,13 @@ require 'async/http/endpoint'
 
 RSpec.describe 'consistent retry behaviour' do
 	include_context Async::HTTP::Server
+	let(:protocol) {Async::HTTP::Protocol::HTTP1}
 	
 	let(:delay) {0.1}
 	let(:retries) {2}
-	let(:protocol) {Async::HTTP::Protocol::HTTP1}
 	
 	let(:server) do
-		Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
+		Async::HTTP::Server.for(@bound_endpoint) do |request|
 			Async::Task.current.sleep(delay)
 			Protocol::HTTP::Response[200, {}, []]
 		end

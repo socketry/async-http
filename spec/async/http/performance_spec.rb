@@ -21,66 +21,65 @@
 require 'async/http/server'
 require 'async/http/client'
 
-require 'async/http/endpoint'
-require 'async/io/shared_endpoint'
-require 'async/reactor'
-
+require_relative 'server_context'
 require 'async/container'
 
 require 'etc'
-require 'benchmark'
+
+AB = `which ab`.chomp!
+WRK = `which wrk`.chomp!
 
 RSpec.shared_examples_for 'client benchmark' do
-	let(:endpoint) {Async::HTTP::Endpoint.parse("http://127.0.0.1:9294")}
+	include_context Async::RSpec::Reactor
+	
+	let(:endpoint) {Async::HTTP::Endpoint.parse('http://127.0.0.1:9294', timeout: 0.8, reuse_port: true)}
+	
+	let(:server) do
+		Async::HTTP::Server.for(@bound_endpoint) do |request|
+			Protocol::HTTP::Response[200, {}, []]
+		end
+	end
+	
 	let(:url) {endpoint.url.to_s}
-	
-	let(:protocol) {Async::HTTP::Protocol::HTTP1}
-	
-	let(:concurrency) {Etc.nprocessors rescue 2}
-	
-	# TODO making this higher causes issues in connect - what's the issue?
-	let(:repeats) {200}
-	
-	let(:client) {Async::HTTP::Client.new(endpoint, protocol: protocol)}
+	let(:repeats) {1000}
+	let(:concurrency) {Etc.nprocessors || 2}
 	
 	before do
-		Sync do
-			@bound_endpoint = Async::IO::SharedEndpoint.bound(endpoint)
-		end
+		# We bind the endpoint before running the server so that we know incoming connections will be accepted:
+		@bound_endpoint = Async::IO::SharedEndpoint.bound(endpoint)
+		
+		# I feel a dedicated class might be better than this hack:
+		allow(@bound_endpoint).to receive(:protocol).and_return(endpoint.protocol)
+		allow(@bound_endpoint).to receive(:scheme).and_return(endpoint.scheme)
+		
+		@container = Async::Container.new
 		
 		GC.disable
-	end
-	
-	after do
-		@bound_endpoint&.close
 		
-		GC.enable
-	end
-	
-	it "runs benchmark" do
-		server
-		
-		container = Async::Container.new
-		
-		container.run(count: concurrency) do |instance|
+		@container.run(count: concurrency) do |instance|
 			Async do
 				instance.ready!
 				server.run
 			end
 		end
 		
-		@bound_endpoint&.close
+		@bound_endpoint.close
+	end
+	
+	after do
+		@container.stop
 		
-		if ab = `which ab`.chomp!
-			# puts [ab, "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, url].join(' ')
-			system(ab, "-k", "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, url)
+		GC.enable
+	end
+	
+	it "runs benchmark", timeout: nil do
+		if AB
+			system(AB, "-k", "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, url)
 		end
 		
-		if wrk = `which wrk`.chomp!
-			system(wrk, "-c", concurrency.to_s, "-d", "2", "-t", concurrency.to_s, url)
+		if WRK
+			system(WRK, "-c", concurrency.to_s, "-d", "2", "-t", concurrency.to_s, url)
 		end
-		
-		container.stop
 	end
 end
 
@@ -89,7 +88,7 @@ RSpec.describe Async::HTTP::Server do
 		let(:server) do
 			Async::HTTP::Server.new(
 				Protocol::HTTP::Middleware::Okay,
-				@bound_endpoint, protocol: protocol, scheme: endpoint.scheme
+				@bound_endpoint
 			)
 		end
 		
@@ -98,7 +97,7 @@ RSpec.describe Async::HTTP::Server do
 	
 	describe 'multiple chunks' do
 		let(:server) do
-			Async::HTTP::Server.for(@bound_endpoint, protocol: protocol, scheme: endpoint.scheme) do
+			Async::HTTP::Server.for(@bound_endpoint) do
 				Protocol::HTTP::Response[200, {}, "Hello World".chars]
 			end
 		end

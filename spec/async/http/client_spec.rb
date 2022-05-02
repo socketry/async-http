@@ -31,6 +31,7 @@ require 'protocol/http/accept_encoding'
 RSpec.describe Async::HTTP::Client, timeout: 5 do
 	describe Async::HTTP::Protocol::HTTP1 do
 		include_context Async::HTTP::Server
+		let(:protocol) {described_class}
 		
 		it "client can get resource" do
 			response = client.get("/")

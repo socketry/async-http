@@ -51,13 +51,13 @@ RSpec.describe Async::HTTP::Protocol::HTTP2, timeout: 2 do
 		include_context Async::HTTP::Server
 		
 		let(:server) do
-			Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
+			Async::HTTP::Server.for(@bound_endpoint) do |request|
 				Protocol::HTTP::Response[200, request.headers, ["Authority: #{request.authority.inspect}"]]
 			end
 		end
 		
 		# We specify nil for the authority - it won't be sent.
-		let!(:client) {Async::HTTP::Client.new(endpoint, protocol: protocol, scheme: endpoint.scheme, authority: nil)}
+		let!(:client) {Async::HTTP::Client.new(endpoint, authority: nil)}
 		
 		it "should not send :authority header if host header is present" do
 			response = client.post("/", [['host', 'foo']])
@@ -76,7 +76,7 @@ RSpec.describe Async::HTTP::Protocol::HTTP2, timeout: 2 do
 		let(:notification) {Async::Notification.new}
 		
 		let(:server) do
-			Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
+			Async::HTTP::Server.for(@bound_endpoint) do |request|
 				body = Async::HTTP::Body::Writable.new
 				
 				reactor.async do |task|

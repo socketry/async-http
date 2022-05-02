@@ -43,7 +43,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		let(:body) {Protocol::HTTP::Body::File.open("/dev/zero", size: 512*1024**2)}
 		
 		let(:server) do
-			Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
+			Async::HTTP::Server.for(@bound_endpoint) do |request|
 				Protocol::HTTP::Response[200, {}, body]
 			end
 		end
@@ -73,7 +73,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		let(:response) {Protocol::HTTP::Response[200, {}, body]}
 		
 		let(:server) do
-			Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
+			Async::HTTP::Server.for(@bound_endpoint) do |request|
 				response
 			end
 		end
@@ -88,7 +88,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 	
 	context 'empty body' do
 		let(:server) do
-			Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
+			Async::HTTP::Server.for(@bound_endpoint) do |request|
 				Protocol::HTTP::Response[204]
 			end
 		end
@@ -100,7 +100,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 	
 	context 'with trailer', if: described_class.bidirectional? do
 		let(:server) do
-			Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
+			Async::HTTP::Server.for(@bound_endpoint) do |request|
 				if trailer = request.headers['trailer']
 					expect(request.headers).to_not include('etag')
 					request.finish
@@ -159,7 +159,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 	
 	context 'with working server' do
 		let(:server) do
-			Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
+			Async::HTTP::Server.for(@bound_endpoint) do |request|
 				if request.method == 'POST'
 					# We stream the request body directly to the response.
 					Protocol::HTTP::Response[200, {}, request.body]
@@ -201,7 +201,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		context 'using GET method' do
 			let(:expected) {"GET #{protocol::VERSION}"}
 			
-			it "can handle many simultaneous requests", timeout: nil do |example|
+			it "can handle many simultaneous requests", timeout: 10 do |example|
 				duration = Async::Clock.measure do
 					10.times do
 						tasks = 100.times.collect do
@@ -305,7 +305,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 	
 	context 'content length' do
 		let(:server) do
-			Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
+			Async::HTTP::Server.for(@bound_endpoint) do |request|
 				Protocol::HTTP::Response[200, [], ["Content Length: #{request.body.length}"]]
 			end
 		end
@@ -321,7 +321,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 	
 	context 'hijack with nil response' do
 		let(:server) do
-			Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
+			Async::HTTP::Server.for(@bound_endpoint) do |request|
 				nil
 			end
 		end
@@ -337,7 +337,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		let(:content) {"Hello World!"}
 		
 		let(:server) do
-			Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
+			Async::HTTP::Server.for(@bound_endpoint) do |request|
 				Async::HTTP::Body::Hijack.response(request, 200, {}) do |stream|
 					stream.write content
 					stream.write content
@@ -357,7 +357,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		let(:bad_body) {Async::HTTP::Body::Buffered.new(["Borked"], 10)}
 		
 		let(:server) do
-			Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
+			Async::HTTP::Server.for(@bound_endpoint) do |request|
 				Protocol::HTTP::Response[200, {}, bad_body]
 			end
 		end
@@ -377,7 +377,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		let(:server) do
 			chunks = sent_chunks
 			
-			Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
+			Async::HTTP::Server.for(@bound_endpoint) do |request|
 				body = Async::HTTP::Body::Writable.new
 				
 				Async::Reactor.run do |task|
@@ -409,7 +409,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 	
 	context 'hijack server' do
 		let(:server) do
-			Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
+			Async::HTTP::Server.for(@bound_endpoint) do |request|
 				if request.hijack?
 					io = request.hijack!
 					io.write "HTTP/1.1 200 Okay\r\nContent-Length: 16\r\n\r\nHijack Succeeded"
@@ -430,7 +430,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 	
 	context 'broken server' do
 		let(:server) do
-			Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
+			Async::HTTP::Server.for(@bound_endpoint) do |request|
 				raise RuntimeError.new('simulated failure')
 			end
 		end
@@ -446,7 +446,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 		let(:endpoint) {Async::HTTP::Endpoint.parse('http://127.0.0.1:9294', reuse_port: true, timeout: 0.1)}
 		
 		let(:server) do
-			Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
+			Async::HTTP::Server.for(@bound_endpoint) do |request|
 				Async::Task.current.sleep(endpoint.timeout * 2)
 				Protocol::HTTP::Response[200, {}, []]
 			end
@@ -461,7 +461,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 	
 	context 'bi-directional streaming', if: described_class.bidirectional? do
 		let(:server) do
-			Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
+			Async::HTTP::Server.for(@bound_endpoint) do |request|
 				# Echo the request body back to the client.
 				Protocol::HTTP::Response[200, {}, request.body]
 			end
@@ -499,7 +499,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 	
 	context 'multiple client requests' do
 		let(:server) do
-			Async::HTTP::Server.for(endpoint, protocol: protocol) do |request|
+			Async::HTTP::Server.for(@bound_endpoint) do |request|
 				Protocol::HTTP::Response[200, {}, [request.path]]
 			end
 		end

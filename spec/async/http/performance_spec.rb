@@ -26,9 +26,6 @@ require 'async/container'
 
 require 'etc'
 
-AB = `which ab`.chomp!
-WRK = `which wrk`.chomp!
-
 RSpec.shared_examples_for 'client benchmark' do
 	include_context Async::RSpec::Reactor
 	
@@ -73,12 +70,12 @@ RSpec.shared_examples_for 'client benchmark' do
 	end
 	
 	it "runs benchmark", timeout: nil do
-		if AB
-			system(AB, "-k", "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, url)
+		if ab = `which ab`.chomp!
+			system(ab, "-k", "-n", (concurrency*repeats).to_s, "-c", concurrency.to_s, url)
 		end
 		
-		if WRK
-			system(WRK, "-c", concurrency.to_s, "-d", "2", "-t", concurrency.to_s, url)
+		if wrk = `which wrk`.chomp!
+			system(wrk, "-c", concurrency.to_s, "-d", "2", "-t", concurrency.to_s, url)
 		end
 	end
 end

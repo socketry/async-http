@@ -46,15 +46,15 @@
 	<section>
 	<h2>Definitions</h2>
 	
-	<section id="Async::HTTP::Endpoint.for"><h3><code class="language-ruby">def self.for(scheme, hostname, **options)</code></h3><p>Construct an endpoint with a specified scheme, hostname, and options.</p>
+	<section id="Async::HTTP::Endpoint.for"><h3><code class="language-ruby">def self.for(scheme, hostname, path = &quot;/&quot;, **options)</code></h3><p>Construct an endpoint with a specified scheme, hostname, optional path, and options.</p>
 <details>
 						<summary><h4>Implementation</h4></summary>
-						<pre><code class="language-ruby">def self.for(scheme, hostname, **options)
+						<pre><code class="language-ruby">def self.for(scheme, hostname, path = &quot;/&quot;, **options)
 	# TODO: Consider using URI.for once it becomes available:
 	uri_klass = URI.scheme_list[scheme.upcase] || URI::HTTP
 	
 	self.new(
-		uri_klass.new(scheme, nil, hostname, nil, nil, nil, nil, nil, nil).normalize,
+		uri_klass.new(scheme, nil, hostname, nil, nil, path, nil, nil, nil).normalize,
 		**options
 	)
 end</code></pre>

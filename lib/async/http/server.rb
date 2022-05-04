@@ -96,7 +96,7 @@ module Async
 						attributes['http.protocol'] = protocol
 					end
 					
-					trace('async.http.server.call', attributes: attributes) do |span|
+					trace('async.http.server.call', resource: "#{request.method} #{request.path}", attributes: attributes) do |span|
 						super.tap do |response|
 							if status = response&.status
 								span['http.status_code'] = status

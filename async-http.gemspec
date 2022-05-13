@@ -30,5 +30,5 @@ Gem::Specification.new do |spec|
 	spec.add_development_dependency "covered"
 	spec.add_development_dependency "localhost"
 	spec.add_development_dependency "rack-test"
-	spec.add_development_dependency "rspec", "~> 3.6"
+	spec.add_development_dependency "rspec", ">= 3.6"
 end

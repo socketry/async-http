@@ -27,8 +27,6 @@ require 'async/container'
 require 'etc'
 
 RSpec.shared_examples_for 'client benchmark' do
-	include_context Async::RSpec::Reactor
-	
 	let(:endpoint) {Async::HTTP::Endpoint.parse('http://127.0.0.1:9294', timeout: 0.8, reuse_port: true)}
 	
 	let(:server) do
@@ -42,8 +40,10 @@ RSpec.shared_examples_for 'client benchmark' do
 	let(:concurrency) {Etc.nprocessors || 2}
 	
 	before do
-		# We bind the endpoint before running the server so that we know incoming connections will be accepted:
-		@bound_endpoint = Async::IO::SharedEndpoint.bound(endpoint)
+		Sync do
+			# We bind the endpoint before running the server so that we know incoming connections will be accepted:
+			@bound_endpoint = Async::IO::SharedEndpoint.bound(endpoint)
+		end
 		
 		# I feel a dedicated class might be better than this hack:
 		allow(@bound_endpoint).to receive(:protocol).and_return(endpoint.protocol)

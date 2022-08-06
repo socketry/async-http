@@ -1,3 +1,15 @@
 falcon:
   url: https://github.com/socketry/falcon.git
   command: bundle exec rspec
+async-rest:
+  url: https://github.com/socketry/async-rest.git
+  command: bundle exec rspec
+async-websocket:
+  url: https://github.com/socketry/async-websocket.git
+  command: bundle exec rspec
+async-http-faraday:
+  url: https://github.com/socketry/async-http-faraday.git
+  command: bundle exec rspec
+# async-http-cache:
+#   url: https://github.com/socketry/async-http-cache.git
+#   command: bundle exec rspec

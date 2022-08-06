@@ -9,6 +9,13 @@ group :maintenance, optional: true do
 	gem "bake-github-pages"
 	gem "utopia-project"
 end
+
+group :test do
+	gem "bake"
+	gem "bake-test"
+	gem "bake-test-external"
+end
+
 # gem "async", path: "../async"
 # gem "async-io", path: "../async-io"
 # gem "traces", path: "../traces"

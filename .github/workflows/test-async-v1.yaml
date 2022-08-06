@@ -1,6 +1,13 @@
-name: Async head
+name: Test Async v1
 
 on: [push, pull_request]
+
+permissions:
+  contents: read
+
+env:
+  CONSOLE_OUTPUT: XTerm
+  BUNDLE_GEMFILE: gems/async-v1.rb
 
 jobs:
   test:
@@ -12,18 +19,15 @@ jobs:
           - ubuntu
         
         ruby:
-          - head
-    
-    env:
-      BUNDLE_GEMFILE: gems/async-head.rb
+          - 2.7
     
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{matrix.ruby}}
         bundler-cache: true
     
     - name: Run tests
-      timeout-minutes: 5
-      run: bundle exec rspec
+      timeout-minutes: 10
+      run: bundle exec bake test

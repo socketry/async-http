@@ -1,6 +1,12 @@
-name: Development
+name: Test
 
 on: [push, pull_request]
+
+permissions:
+  contents: read
+
+env:
+  CONSOLE_OUTPUT: XTerm
 
 jobs:
   test:
@@ -15,12 +21,11 @@ jobs:
           - macos
         
         ruby:
-          - "2.6"
           - "2.7"
           - "3.0"
+          - "3.1"
         
         experimental: [false]
-        env: [""]
         
         include:
           - os: ubuntu
@@ -34,7 +39,7 @@ jobs:
             experimental: true
     
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{matrix.ruby}}
@@ -43,7 +48,7 @@ jobs:
     - name: Installing packages (ubuntu)
       if: matrix.os == 'ubuntu'
       run: sudo apt-get install apache2-utils
-    
+
     - name: Run tests
-      timeout-minutes: 5
-      run: ${{matrix.env}} bundle exec rspec
+      timeout-minutes: 10
+      run: bundle exec bake test

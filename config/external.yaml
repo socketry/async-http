@@ -1,0 +1,3 @@
+falcon:
+  url: https://github.com/socketry/falcon.git
+  command: bundle exec rspec

@@ -2,7 +2,6 @@
 
 source 'https://rubygems.org'
 
-gemspec path: "../"
+eval_gemfile("../gems.rb")
 
 gem 'async', git: "https://github.com/socketry/async"
-gem "thread-local"

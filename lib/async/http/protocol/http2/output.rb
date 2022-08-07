@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require_relative '../../body/stream'
+require 'protocol/http/body/stream'
 
 module Async
 	module HTTP
@@ -88,7 +88,7 @@ module Async
 						
 						input = @stream.wait_for_input
 						
-						@body.call(Body::Stream.new(input, self))
+						@body.call(::Protocol::HTTP::Body::Stream.new(input, self))
 					rescue Async::Stop
 						# Ignore.
 					end

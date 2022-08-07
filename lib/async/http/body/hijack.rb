@@ -21,7 +21,9 @@
 # THE SOFTWARE.
 
 require 'protocol/http/body/readable'
-require_relative 'stream'
+require 'protocol/http/body/stream'
+
+require_relative 'writable'
 
 module Async
 	module HTTP
@@ -42,6 +44,7 @@ module Async
 					
 					@task = nil
 					@stream = nil
+					@output = nil
 				end
 				
 				# We prefer streaming directly as it's the lowest overhead.
@@ -57,23 +60,18 @@ module Async
 				
 				# Has the producer called #finish and has the reader consumed the nil token?
 				def empty?
-					if @stream
-						@stream.empty?
-					else
-						false
-					end
+					@output&.empty?
 				end
 				
 				def ready?
-					if @stream
-						@stream.output.ready?
-					end
+					@output&.ready?
 				end
 				
 				# Read the next available chunk.
 				def read
-					unless @task
-						@stream = Stream.new(@input)
+					unless @output
+						@output = Writable.new
+						@stream = ::Protocol::HTTP::Body::Stream.new(@input, @output)
 						
 						@task = Task.current.async do |task|
 							task.annotate "Streaming hijacked body."
@@ -82,7 +80,7 @@ module Async
 						end
 					end
 					
-					return @stream.output.read
+					return @output.read
 				end
 				
 				def inspect

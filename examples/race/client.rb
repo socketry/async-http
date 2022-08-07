@@ -3,7 +3,7 @@
 require 'async'
 require_relative '../../lib/async/http/internet'
 
-Async.logger.fatal!
+Console.logger.fatal!
 
 Async do |task|
 	internet = Async::HTTP::Internet.new

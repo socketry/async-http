@@ -33,11 +33,13 @@ module Async
 						end
 					end
 					
+					UPGRADE = 'upgrade'
+
 					# @param reason [String] HTTP response line reason, ignored.
 					def initialize(connection, version, status, reason, headers, body)
 						@connection = connection
 						
-						protocol = connection.upgrade?(headers)
+						protocol = headers.delete(UPGRADE)
 						
 						super(version, status, headers, body, protocol)
 					end

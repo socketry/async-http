@@ -32,11 +32,14 @@ module Async
 							self.new(connection, *parts)
 						end
 					end
+
+					UPGRADE = 'upgrade'
 					
 					def initialize(connection, authority, method, path, version, headers, body)
 						@connection = connection
 						
-						protocol = connection.upgrade?(headers)
+						# HTTP/1 requests with an upgrade header (which can contain zero or more values) are extracted into the protocol field of the request, and we expect a response to select one of those protocols with a status code of 101 Switching Protocols.
+						protocol = headers.delete('upgrade')
 						
 						super(nil, authority, method, path, version, headers, body, protocol)
 					end

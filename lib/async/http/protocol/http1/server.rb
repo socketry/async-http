@@ -65,11 +65,13 @@ module Async
 							
 							if response
 								trailer = response.headers.trailer!
-								
+
 								write_response(@version, response.status, response.headers)
-								
+
 								body = response.body
-								
+
+								# Some operations in this method are long running, that is, it's expected that `body.call(stream)` could literally run indefinitely. In order to facilitate garbage collection, we want to nullify as many local variables before calling the streaming body. This ensures that the garbage collection can clean up as much state as possible during the long running operation.
+
 								if body and protocol = response.protocol
 									stream = write_upgrade_body(protocol)
 									
@@ -92,6 +94,7 @@ module Async
 									head = request.head?
 									version = request.version
 									
+									# Same as above:
 									request = nil unless body
 									response = nil
 									

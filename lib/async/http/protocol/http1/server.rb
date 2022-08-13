@@ -60,57 +60,59 @@ module Async
 						
 						while request = next_request
 							response = yield(request, self)
-							
-							return if @stream.nil? or @stream.closed?
-							
-							if response
-								trailer = response.headers.trailer!
+							body = response&.body
 
-								write_response(@version, response.status, response.headers)
+							begin
+								# If a response was generated, send it:
+								if response
+									trailer = response.headers.trailer!
 
-								body = response.body
+									write_response(@version, response.status, response.headers)
 
-								# Some operations in this method are long running, that is, it's expected that `body.call(stream)` could literally run indefinitely. In order to facilitate garbage collection, we want to nullify as many local variables before calling the streaming body. This ensures that the garbage collection can clean up as much state as possible during the long running operation.
+									# Some operations in this method are long running, that is, it's expected that `body.call(stream)` could literally run indefinitely. In order to facilitate garbage collection, we want to nullify as many local variables before calling the streaming body. This ensures that the garbage collection can clean up as much state as possible during the long running operation, so we don't retain objects that are no longer needed.
 
-								if body and protocol = response.protocol
-									stream = write_upgrade_body(protocol)
-									
-									# At this point, the request body is hijacked, so we don't want to call #finish below.
-									request = nil
-									
-									# We also don't want to hold on to the response object:
-									response = nil
-									
-									body.call(stream)
-								elsif request.connect? and response.success?
-									stream = write_tunnel_body(request.version)
-									
-									# Same as above:
-									request = nil
-									response = nil
-									
-									body.call(stream)
+									if body and protocol = response.protocol
+										stream = write_upgrade_body(protocol)
+										
+										# At this point, the request body is hijacked, so we don't want to call #finish below.
+										request = response = nil
+										
+										body.call(stream)
+									elsif request.connect? and response.success?
+										stream = write_tunnel_body(request.version)
+										
+										# Same as above:
+										request = response = nil
+										
+										body.call(stream)
+									else
+										head = request.head?
+										version = request.version
+										
+										# Same as above:
+										request = nil unless body
+										response = nil
+										
+										write_body(version, body, head, trailer)
+									end
+
+									# We are done with the body, you shouldn't need to call close on it:
+									body = nil
 								else
-									head = request.head?
-									version = request.version
-									
-									# Same as above:
-									request = nil unless body
-									response = nil
-									
-									write_body(version, body, head, trailer)
+									# If the request failed to generate a response, it was an internal server error:
+									write_response(@version, 500, {})
+									write_body(request.version, nil)
 								end
-							else
-								# If the request failed to generate a response, it was an internal server error:
-								write_response(@version, 500, {})
-								write_body(request.version, nil)
+								
+								# Gracefully finish reading the request body if it was not already done so.
+								request&.finish
+								
+								# This ensures we yield at least once every iteration of the loop and allow other fibers to execute.
+								task.yield
+							rescue => error
+							ensure
+								body&.close(error)
 							end
-							
-							# Gracefully finish reading the request body if it was not already done so.
-							request&.finish
-							
-							# This ensures we yield at least once every iteration of the loop and allow other fibers to execute.
-							task.yield
 						end
 					end
 				end

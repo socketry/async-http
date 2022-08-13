@@ -47,6 +47,14 @@ module Async
 				end
 			end
 			
+			# Make a request to the internet with the given `method` and `url`.
+			#
+			# If you provide non-frozen headers, they may be mutated.
+			#
+			# @parameter method [String] The request method, e.g. `GET`.
+			# @parameter url [String] The URL to request, e.g. `https://www.codeotaku.com`.
+			# @parameter headers [Hash | Protocol::HTTP::Headers] The headers to send with the request.
+			# @parameter body [String | Protocol::HTTP::Body] The body to send with the request.
 			def call(method, url, headers = nil, body = nil)
 				endpoint = Endpoint.parse(url)
 				client = self.client_for(endpoint)

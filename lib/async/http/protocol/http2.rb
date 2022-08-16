@@ -27,7 +27,7 @@ module Async
 	module HTTP
 		module Protocol
 			module HTTP2
-				VERSION = "h2"
+				VERSION = "HTTP/2"
 				
 				def self.bidirectional?
 					true

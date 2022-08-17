@@ -110,6 +110,7 @@ module Async
 								# This ensures we yield at least once every iteration of the loop and allow other fibers to execute.
 								task.yield
 							rescue => error
+								raise
 							ensure
 								body&.close(error)
 							end

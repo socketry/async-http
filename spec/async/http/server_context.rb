@@ -38,8 +38,6 @@ RSpec.shared_context Async::HTTP::Server do
 	end
 	
 	before do
-		@client = Async::HTTP::Client.new(endpoint, protocol: endpoint.protocol, retries: retries)
-		
 		# We bind the endpoint before running the server so that we know incoming connections will be accepted:
 		@bound_endpoint = Async::IO::SharedEndpoint.bound(endpoint)
 		
@@ -50,12 +48,14 @@ RSpec.shared_context Async::HTTP::Server do
 		@server_task = Async do
 			server.run
 		end
+		
+		@client = Async::HTTP::Client.new(endpoint, protocol: endpoint.protocol, retries: retries)
 	end
 	
 	after do
-		@client.close
-		@server_task.stop
-		@bound_endpoint.close
+		@client&.close
+		@server_task&.stop
+		@bound_endpoint&.close
 	end
 	
 	let(:client) {@client}

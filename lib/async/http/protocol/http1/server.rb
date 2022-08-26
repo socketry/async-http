@@ -61,7 +61,12 @@ module Async
 						while request = next_request
 							response = yield(request, self)
 							body = response&.body
-
+							
+							if @stream.nil? and body.nil?
+								# Full hijack.
+								return
+							end
+							
 							begin
 								# If a response was generated, send it:
 								if response

@@ -19,6 +19,7 @@
 # THE SOFTWARE.
 
 require 'rack/test'
+require 'rack/builder'
 
 require 'async'
 require 'async/http'

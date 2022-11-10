@@ -161,7 +161,7 @@ module Async
 					end
 					
 					trace('async.http.client.call', attributes: attributes) do |span|
-						if context = trace_context(span)
+						if context = self.trace_context
 							request.headers['traceparent'] = context.to_s
 							# request.headers['tracestate'] = context.state
 						end

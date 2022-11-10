@@ -25,6 +25,8 @@ require 'covered/rspec'
 
 require 'async/rspec'
 
+ENV['TRACES_BACKEND'] ||= 'traces/backend/test'
+
 RSpec.shared_context 'docstring as description' do
 	let(:description) {self.class.metadata.fetch(:description_args).first}
 end

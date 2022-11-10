@@ -6,7 +6,7 @@ async-rest:
   command: bundle exec rspec
 async-websocket:
   url: https://github.com/socketry/async-websocket.git
-  command: bundle exec rspec
+  command: bundle exec sus
 async-http-faraday:
   url: https://github.com/socketry/async-http-faraday.git
   command: bundle exec rspec

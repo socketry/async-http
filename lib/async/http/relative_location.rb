@@ -32,6 +32,8 @@ module Async
 		
 		# A client wrapper which transparently handles both relative and absolute redirects to a given maximum number of hops.
 		#
+		# The best reference for these semantics is defined by the [Fetch specification](https://fetch.spec.whatwg.org/#http-redirect-fetch).
+		#
 		# | Redirect using GET                        | Permanent | Temporary |
 		# |:-----------------------------------------:|:---------:|:---------:|
 		# | Allowed                                   | 301       | 302       |
@@ -44,7 +46,13 @@ module Async
 		# - <https://datatracker.ietf.org/doc/html/rfc7231#section-6-4-7> 307 Temporary Redirect.
 		#
 		class RelativeLocation < ::Protocol::HTTP::Middleware
-			PROHIBITED_GET_HEADERS = ['content-type', 'content-encoding', 'transfer-encoding']
+			# Header keys which should be deleted when changing a request from a POST to a GET as defined by <https://fetch.spec.whatwg.org/#request-body-header-name>.
+			PROHIBITED_GET_HEADERS = [
+				'content-encoding',
+				'content-language',
+				'content-location',
+				'content-type',
+			]
 			
 			# maximum_hops is the max number of redirects. Set to 0 to allow 1 request with no redirects.
 			def initialize(app, maximum_hops = 3)
@@ -81,10 +89,14 @@ module Async
 					
 					if response.redirection?
 						hops += 1
-						response.finish
 						
 						# Get the redirect location:
-						location = response.headers['location']
+						unless location = response.headers['location']
+							return response
+						end
+						
+						response.finish
+						
 						uri = URI.parse(location)
 						
 						if uri.absolute?

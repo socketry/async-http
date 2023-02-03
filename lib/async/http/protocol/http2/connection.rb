@@ -70,9 +70,14 @@ module Async
 					end
 					
 					def close(error = nil)
-						@reader = nil
-						
 						super
+						
+						# Ensure the reader task is stopped.
+						if @reader
+							reader = @reader
+							@reader = nil
+							reader.stop
+						end
 					end
 					
 					def write_frame(frame)

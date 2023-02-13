@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
 	spec.version = Async::HTTP::VERSION
 	
 	spec.summary = "A HTTP client and server library."
-	spec.authors = ["Samuel Williams", "Brian Morearty", "Bruno Sutic", "Janko Marohnić", "Adam Daniels", "Cyril Roelandt", "Denis Talakevich", "Ian Ker-Seymer", "Igor Sidorov", "Marco Concetto Rudilosso", "Olle Jonsson", "Orgad Shaneh", "Stefan Wrobel", "TheAthlete", "Trevor Turk", "samshadwell"]
+	spec.authors = ["Samuel Williams", "Brian Morearty", "Bruno Sutic", "Janko Marohnić", "Adam Daniels", "Cyril Roelandt", "Denis Talakevich", "Ian Ker-Seymer", "Igor Sidorov", "Marco Concetto Rudilosso", "Olle Jonsson", "Orgad Shaneh", "Sam Shadwell", "Stefan Wrobel", "Tim Meusel", "Trevor Turk", "Viacheslav Koval"]
 	spec.license = "MIT"
 	
 	spec.cert_chain  = ['release.cert']
@@ -15,7 +15,7 @@ Gem::Specification.new do |spec|
 	
 	spec.homepage = "https://github.com/socketry/async-http"
 	
-	spec.files = Dir.glob('{bake,lib}/**/*', File::FNM_DOTMATCH, base: __dir__)
+	spec.files = Dir.glob(['{bake,lib}/**/*', '*.md'], File::FNM_DOTMATCH, base: __dir__)
 	
 	spec.add_dependency "async", ">= 1.25"
 	spec.add_dependency "async-io", ">= 1.28"

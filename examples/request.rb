@@ -1,7 +1,8 @@
 #!/usr/bin/env ruby
-# 
-# $LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
-# $LOAD_PATH.unshift(File.expand_path("../../http-protocol/lib", __dir__))
+# frozen_string_literal: true
+
+# Released under the MIT License.
+# Copyright, 2018-2023, by Samuel Williams.
 
 require 'async'
 require 'async/http/client'

@@ -1,3 +1,7 @@
+# frozen_string_literal: true
+
+# Released under the MIT License.
+# Copyright, 2020-2023, by Samuel Williams.
 
 # Fetch the specified URL and print the response.
 # @param url [String] the URL to parse and fetch.

@@ -24,6 +24,15 @@ RSpec.describe Async::HTTP::Internet, timeout: 5 do
 		
 		response.close
 	end
+
+	it "must accept URI::HTTP objects" do
+		uri = URI.parse("https://www.codeotaku.com/index")
+		response = subject.get(uri, headers)
+		
+		expect(response).to be_success
+		
+		response.close
+	end
 	
 	let(:sample) {{"hello" => "world"}}
 	let(:body) {[JSON.dump(sample)]}

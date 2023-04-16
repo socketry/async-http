@@ -23,6 +23,15 @@ describe Async::HTTP::Internet do
 		response.close
 	end
 	
+	it "can accept URI::HTTP objects" do
+		uri = URI.parse("https://www.codeotaku.com/index")
+		response = internet.get(uri, headers)
+		
+		expect(response).to be(:success?)
+	ensure
+		response&.close
+	end
+	
 	let(:sample) {{"hello" => "world"}}
 	let(:body) {[JSON.dump(sample)]}
 	

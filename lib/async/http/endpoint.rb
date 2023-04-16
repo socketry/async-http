@@ -39,7 +39,7 @@ module Async
 				if url.is_a?(Endpoint)
 					return url
 				else
-					Endpoint.parse(url.to_str)
+					Endpoint.parse(url.to_s)
 				end
 			end
 			

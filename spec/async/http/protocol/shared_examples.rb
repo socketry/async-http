@@ -443,7 +443,7 @@ RSpec.shared_examples_for Async::HTTP::Protocol do
 	end
 	
 	context 'slow server' do
-		let(:endpoint) {Async::HTTP::Endpoint.parse('http://127.0.0.1:9294', reuse_port: true, timeout: 0.1)}
+		let(:endpoint) {Async::HTTP::Endpoint.parse('http://127.0.0.1:0', reuse_port: true, timeout: 0.1)}
 		
 		let(:server) do
 			Async::HTTP::Server.for(@bound_endpoint) do |request|

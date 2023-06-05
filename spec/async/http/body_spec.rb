@@ -20,7 +20,7 @@ RSpec.shared_examples Async::HTTP::Body do
 	
 	context 'with echo server' do
 		let(:server) do
-			Async::HTTP::Server.for(server_endpoint, protocol: described_class) do |request|
+			Async::HTTP::Server.for(@bound_endpoint, protocol: described_class) do |request|
 				input = request.body
 				output = Async::HTTP::Body::Writable.new
 				
@@ -55,7 +55,7 @@ RSpec.shared_examples Async::HTTP::Body do
 		let(:notification) {Async::Notification.new}
 		
 		let(:server) do
-			Async::HTTP::Server.for(server_endpoint, protocol: described_class) do |request|
+			Async::HTTP::Server.for(@bound_endpoint, protocol: described_class) do |request|
 				body = Async::HTTP::Body::Writable.new
 				
 				Async::Task.current.async do |task|
@@ -103,8 +103,8 @@ RSpec.describe Async::HTTP::Protocol::HTTPS do
 	let(:client_context) {authority.client_context}
 	
 	# Shared port for localhost network tests.
-	let(:server_endpoint) {Async::HTTP::Endpoint.parse("https://localhost:9299", ssl_context: server_context, reuse_port: true)}
-	let(:client_endpoint) {Async::HTTP::Endpoint.parse("https://localhost:9299", ssl_context: client_context, reuse_port: true)}
+	let(:server_endpoint) {Async::HTTP::Endpoint.parse("https://localhost:0", ssl_context: server_context, reuse_port: true)}
+	let(:client_endpoint) {Async::HTTP::Endpoint.parse("https://localhost:0", ssl_context: client_context, reuse_port: true)}
 	
 	it_should_behave_like Async::HTTP::Body
 end

@@ -12,7 +12,7 @@ RSpec.shared_context Async::HTTP::Server do
 	include_context Async::RSpec::Reactor
 	
 	let(:protocol) {described_class}
-	let(:endpoint) {Async::HTTP::Endpoint.parse('http://127.0.0.1:9294', timeout: 0.8, reuse_port: true, protocol: protocol)}
+	let(:endpoint) {Async::HTTP::Endpoint.parse('http://127.0.0.1:0', timeout: 0.8, reuse_port: true, protocol: protocol)}
 	
 	let(:server_endpoint) {endpoint}
 	let(:client_endpoint) {endpoint}
@@ -37,7 +37,16 @@ RSpec.shared_context Async::HTTP::Server do
 			server.run
 		end
 		
-		@client = Async::HTTP::Client.new(client_endpoint, protocol: endpoint.protocol, retries: retries)
+		local_address_endpoint = @bound_endpoint.local_address_endpoint
+		
+		if timeout = client_endpoint.timeout
+			local_address_endpoint.each do |endpoint|
+				endpoint.options = {timeout: timeout}
+			end
+		end
+		
+		client_endpoint.endpoint = local_address_endpoint
+		@client = Async::HTTP::Client.new(client_endpoint, protocol: client_endpoint.protocol, retries: retries)
 	end
 	
 	after do

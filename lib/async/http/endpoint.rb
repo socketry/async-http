@@ -177,6 +177,10 @@ module Async
 				@endpoint ||= build_endpoint
 			end
 			
+			def endpoint=(endpoint)
+				@endpoint = build_endpoint(endpoint)
+			end
+			
 			def bind(*arguments, &block)
 				endpoint.bind(*arguments, &block)
 			end

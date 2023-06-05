@@ -28,7 +28,8 @@ RSpec.describe Async::HTTP::Internet, timeout: 30 do
 	let(:sample) {{"hello" => "world"}}
 	let(:body) {[JSON.dump(sample)]}
 	
-	it "can fetch remote json" do
+	# This test is increasingly flakey.
+	xit "can fetch remote json" do
 		response = subject.post("https://httpbin.org/anything", headers, body)
 		
 		expect(response).to be_success

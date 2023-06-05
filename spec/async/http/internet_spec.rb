@@ -8,7 +8,7 @@ require 'async/reactor'
 
 require 'json'
 
-RSpec.describe Async::HTTP::Internet, timeout: 5 do
+RSpec.describe Async::HTTP::Internet, timeout: 30 do
 	include_context Async::RSpec::Reactor
 	
 	let(:headers) {[['accept', '*/*'], ['user-agent', 'async-http']]}

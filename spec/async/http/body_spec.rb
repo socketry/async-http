@@ -94,7 +94,7 @@ RSpec.shared_examples Async::HTTP::Body do
 	end
 end
 
-RSpec.describe Async::HTTP::Protocol::HTTP1, timeout: 2 do
+RSpec.describe Async::HTTP::Protocol::HTTP1 do
 	include_context Async::RSpec::Reactor
 	
 	let(:endpoint) {Async::HTTP::Endpoint.parse('http://127.0.0.1:9296', reuse_port: true)}
@@ -104,7 +104,7 @@ RSpec.describe Async::HTTP::Protocol::HTTP1, timeout: 2 do
 	it_should_behave_like Async::HTTP::Body
 end
 
-RSpec.describe Async::HTTP::Protocol::HTTPS, timeout: 2 do
+RSpec.describe Async::HTTP::Protocol::HTTPS do
 	include_context Async::RSpec::Reactor
 	let(:authority) {Localhost::Authority.new}
 	

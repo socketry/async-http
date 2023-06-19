@@ -144,8 +144,8 @@ module Async
 						attributes['http.request.length'] = length
 					end
 					
-					trace('async.http.client.call', attributes: attributes) do |span|
-						if context = self.trace_context
+					Traces.trace('async.http.client.call', attributes: attributes) do |span|
+						if context = Traces.trace_context
 							request.headers['traceparent'] = context.to_s
 							# request.headers['tracestate'] = context.state
 						end

@@ -61,7 +61,7 @@ module Async
 			Traces::Provider(self) do
 				def call(request)
 					if trace_parent = request.headers['traceparent']
-						self.trace_context = Traces::Context.parse(trace_parent.join, request.headers['tracestate'], remote: true)
+						Traces.trace_context = Traces::Context.parse(trace_parent.join, request.headers['tracestate'], remote: true)
 					end
 					
 					attributes = {
@@ -80,7 +80,7 @@ module Async
 						attributes['http.protocol'] = protocol
 					end
 					
-					trace('async.http.server.call', resource: "#{request.method} #{request.path}", attributes: attributes) do |span|
+					Traces.trace('async.http.server.call', resource: "#{request.method} #{request.path}", attributes: attributes) do |span|
 						super.tap do |response|
 							if status = response&.status
 								span['http.status_code'] = status

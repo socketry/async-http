@@ -2,11 +2,12 @@
 
 # Released under the MIT License.
 # Copyright, 2018-2024, by Samuel Williams.
+# Copyright, 2023, by Thomas Morgan.
 
 require_relative 'http2/client'
 require_relative 'http2/server'
 
-require 'io/stream/buffered'
+require 'io/stream'
 
 module Async
 	module HTTP
@@ -37,7 +38,7 @@ module Async
 				}
 				
 				def self.client(peer, settings = CLIENT_SETTINGS)
-					stream = ::IO::Stream::Buffered.wrap(peer)
+					stream = ::IO::Stream(peer)
 					client = Client.new(stream)
 					
 					client.send_connection_preface(settings)
@@ -47,7 +48,7 @@ module Async
 				end
 				
 				def self.server(peer, settings = SERVER_SETTINGS)
-					stream = ::IO::Stream::Buffered.wrap(peer)
+					stream = ::IO::Stream(peer)
 					server = Server.new(stream)
 					
 					server.read_connection_preface(settings)

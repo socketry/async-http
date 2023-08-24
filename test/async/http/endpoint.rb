@@ -155,7 +155,7 @@ end
 
 describe Async::HTTP::Endpoint.parse("http://www.google.com/search") do
 	it "should select the correct protocol" do
-		expect(subject.protocol).to be == Async::HTTP::Protocol::HTTP1
+		expect(subject.protocol).to be == Async::HTTP::Protocol::HTTP
 	end
 	
 	it "should parse the correct hostname" do

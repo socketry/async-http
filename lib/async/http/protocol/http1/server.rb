@@ -3,6 +3,7 @@
 # Released under the MIT License.
 # Copyright, 2018-2023, by Samuel Williams.
 # Copyright, 2020, by Igor Sidorov.
+# Copyright, 2023, by Thomas Morgan.
 
 require_relative 'connection'
 
@@ -14,6 +15,9 @@ module Async
 					def fail_request(status)
 						@persistent = false
 						write_response(@version, status, {}, nil)
+						write_body(@version, nil)
+					rescue Errno::ECONNRESET, Errno::EPIPE
+						# Handle when connection is already closed
 					end
 					
 					def next_request

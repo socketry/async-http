@@ -9,7 +9,7 @@ require 'protocol/http/body/wrapper'
 module Async
 	module HTTP
 		module Body
-			class Delayed < Protocol::HTTP::Body::Wrapper
+			class Delayed < ::Protocol::HTTP::Body::Wrapper
 				def initialize(body, delay = 0.01)
 					super(body)
 					

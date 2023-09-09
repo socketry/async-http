@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
 	spec.version = Async::HTTP::VERSION
 	
 	spec.summary = "A HTTP client and server library."
-	spec.authors = ["Samuel Williams", "Brian Morearty", "Bruno Sutic", "Janko Marohnić", "Adam Daniels", "Cyril Roelandt", "Denis Talakevich", "Ian Ker-Seymer", "Igor Sidorov", "Marco Concetto Rudilosso", "Olle Jonsson", "Orgad Shaneh", "Sam Shadwell", "Stefan Wrobel", "Tim Meusel", "Trevor Turk", "Viacheslav Koval"]
+	spec.authors = ["Samuel Williams", "Brian Morearty", "Bruno Sutic", "Janko Marohnić", "Adam Daniels", "Thomas Morgan", "Cyril Roelandt", "Denis Talakevich", "Ian Ker-Seymer", "Igor Sidorov", "Marco Concetto Rudilosso", "Olle Jonsson", "Orgad Shaneh", "Sam Shadwell", "Stefan Wrobel", "Tim Meusel", "Trevor Turk", "Viacheslav Koval"]
 	spec.license = "MIT"
 	
 	spec.cert_chain  = ['release.cert']
@@ -17,6 +17,8 @@ Gem::Specification.new do |spec|
 	
 	spec.files = Dir.glob(['{bake,lib}/**/*', '*.md'], File::FNM_DOTMATCH, base: __dir__)
 	
+	spec.required_ruby_version = ">= 3.0"
+	
 	spec.add_dependency "async", ">= 1.25"
 	spec.add_dependency "async-io", ">= 1.28"
 	spec.add_dependency "async-pool", ">= 0.2"
@@ -24,11 +26,4 @@ Gem::Specification.new do |spec|
 	spec.add_dependency "protocol-http1", "~> 0.15.0"
 	spec.add_dependency "protocol-http2", "~> 0.15.0"
 	spec.add_dependency "traces", ">= 0.10.0"
-	
-	spec.add_development_dependency "async-container", "~> 0.14"
-	spec.add_development_dependency "async-rspec", "~> 1.10"
-	spec.add_development_dependency "covered"
-	spec.add_development_dependency "localhost"
-	spec.add_development_dependency "rack-test"
-	spec.add_development_dependency "rspec", "~> 3.6"
 end

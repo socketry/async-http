@@ -17,6 +17,7 @@ Copyright, 2021-2022, by Adam Daniels.
 Copyright, 2022, by Ian Ker-Seymer.  
 Copyright, 2022, by Marco Concetto Rudilosso.  
 Copyright, 2022, by Tim Meusel.  
+Copyright, 2023, by Thomas Morgan.  
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

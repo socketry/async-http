@@ -7,20 +7,6 @@ source 'https://rubygems.org'
 
 gemspec
 
-group :maintenance, optional: true do
-	gem "bake-modernize"
-	gem "bake-gem"
-	
-	gem "bake-github-pages"
-	gem "utopia-project"
-end
-
-group :test do
-	gem "bake"
-	gem "bake-test"
-	gem "bake-test-external"
-end
-
 # gem "async", path: "../async"
 # gem "async-io", path: "../async-io"
 # gem "traces", path: "../traces"
@@ -30,4 +16,29 @@ end
 # gem "protocol-http2", path: "../protocol-http2"
 # gem "protocol-hpack", path: "../protocol-hpack"
 
-gem "thread-local"
+group :maintenance, optional: true do
+	gem "bake-modernize"
+	gem "bake-gem"
+	
+	gem "bake-github-pages"
+	gem "utopia-project"
+end
+
+group :test do
+	gem "covered"
+	gem "sus"
+	gem "sus-fixtures-async"
+	
+	gem "bake"
+	gem "bake-test"
+	gem "bake-test-external"
+	
+	gem "async-container", "~> 0.14"
+	gem "async-rspec", "~> 1.10"
+
+	gem "localhost"
+	gem "rack-test"
+	
+	# Optional dependency:
+	gem "thread-local"
+end

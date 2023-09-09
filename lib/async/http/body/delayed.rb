@@ -3,6 +3,7 @@
 # Released under the MIT License.
 # Copyright, 2018-2023, by Samuel Williams.
 # Copyright, 2020, by Bruno Sutic.
+# Copyright, 2023, by Thomas Morgan.
 
 require 'protocol/http/body/wrapper'
 

@@ -3,14 +3,14 @@
 # Released under the MIT License.
 # Copyright, 2019-2023, by Samuel Williams.
 
+require 'sus/fixtures/async'
+require 'async/http'
+
 require 'rack/test'
 require 'rack/builder'
 
-require 'async'
-require 'async/http'
-
-RSpec.describe Rack::Test do
-	include_context Async::RSpec::Reactor
+describe Rack::Test do
+	include Sus::Fixtures::Async::ReactorContext
 	include Rack::Test::Methods
 	
 	let(:app) do

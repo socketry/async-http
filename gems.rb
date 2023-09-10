@@ -28,6 +28,8 @@ group :test do
 	gem "covered"
 	gem "sus"
 	gem "sus-fixtures-async"
+	gem "sus-fixtures-async-http", "~> 0.7"
+	gem "sus-fixtures-openssl"
 	
 	gem "bake"
 	gem "bake-test"

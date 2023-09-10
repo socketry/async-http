@@ -5,42 +5,44 @@
 
 require 'async/http/body/hijack'
 
-RSpec.describe Async::HTTP::Body::Hijack do
-	include_context Async::RSpec::Reactor
+require 'sus/fixtures/async'
+
+describe Async::HTTP::Body::Hijack do
+	include Sus::Fixtures::Async::ReactorContext
+	
+	let(:body) do
+		subject.wrap do |stream|
+			3.times do 
+				stream.write(content)
+			end
+			stream.close
+		end
+	end
 	
 	let(:content) {"Hello World!"}
 	
-	describe '#call' do
+	with '#call' do
 		let(:stream) {Async::HTTP::Body::Writable.new}
 		
-		subject do
-			described_class.wrap do |stream|
-				3.times do 
-					stream.write(content)
-				end
-				stream.close
-			end
-		end
-		
 		it "should generate body using direct invocation" do
-			subject.call(stream)
+			body.call(stream)
 			
 			3.times do
 				expect(stream.read).to be == content
 			end
 			
 			expect(stream.read).to be_nil
-			expect(stream).to be_empty
+			expect(stream).to be(:empty?)
 		end
 		
 		it "should generate body using stream" do
 			3.times do
-				expect(subject.read).to be == content
+				expect(body.read).to be == content
 			end
 			
-			expect(subject.read).to be_nil
+			expect(body.read).to be_nil
 			
-			expect(subject).to be_empty
+			expect(body).to be(:empty?)
 		end
 	end
 end

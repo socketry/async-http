@@ -9,32 +9,34 @@ require 'async/http/proxy'
 require 'async/http/protocol'
 require 'async/http/body/hijack'
 
-require_relative 'server_context'
+require 'sus/fixtures/async/http'
 
-RSpec.shared_examples_for Async::HTTP::Proxy do
-	include_context Async::HTTP::Server
+AProxy = Sus::Shared("a proxy") do
+	include Sus::Fixtures::Async::HTTP::ServerContext
 	
-	describe '.proxied_endpoint' do
+	let(:protocol) {subject}
+	
+	with '.proxied_endpoint' do
 		it "can construct valid endpoint" do
 			endpoint = Async::HTTP::Endpoint.parse("http://www.codeotaku.com")
 			proxied_endpoint = client.proxied_endpoint(endpoint)
 			
-			expect(proxied_endpoint).to be_kind_of(Async::HTTP::Endpoint)
+			expect(proxied_endpoint).to be_a(Async::HTTP::Endpoint)
 		end
 	end
 	
-	describe '.proxied_client' do
+	with '.proxied_client' do
 		it "can construct valid client" do
 			endpoint = Async::HTTP::Endpoint.parse("http://www.codeotaku.com")
 			proxied_client = client.proxied_client(endpoint)
 			
-			expect(proxied_client).to be_kind_of(Async::HTTP::Client)
+			expect(proxied_client).to be_a(Async::HTTP::Client)
 		end
 	end
 	
-	context 'CONNECT' do
-		let(:server) do
-			Async::HTTP::Server.for(@bound_endpoint) do |request|
+	with 'CONNECT' do
+		let(:app) do
+			Protocol::HTTP::Middleware.for do |request|
 				Async::HTTP::Body::Hijack.response(request, 200, {}) do |stream|
 					chunk = stream.read
 					stream.close_read
@@ -52,7 +54,7 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 			
 			response = client.connect("127.0.0.1:1234", [], input)
 			
-			expect(response).to be_success
+			expect(response).to be(:success?)
 			
 			input.write(data)
 			input.close
@@ -61,9 +63,9 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 		end
 	end
 	
-	context 'echo server' do
-		let(:server) do
-			Async::HTTP::Server.for(@bound_endpoint) do |request|
+	with 'echo server' do
+		let(:app) do
+			Protocol::HTTP::Middleware.for do |request|
 				expect(request.path).to be == "localhost:1"
 				
 				Async::HTTP::Body::Hijack.response(request, 200, {}) do |stream|
@@ -81,7 +83,7 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 		
 		it "can connect to remote system using block" do
 			proxy = Async::HTTP::Proxy.tcp(client, "localhost", 1)
-			expect(proxy.client.pool).to be_empty
+			expect(proxy.client.pool).to be(:empty?)
 			
 			proxy.connect do |peer|
 				stream = Async::IO::Stream.new(peer)
@@ -93,12 +95,12 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 			end
 			
 			proxy.close
-			expect(proxy.client.pool).to be_empty
+			expect(proxy.client.pool).to be(:empty?)
 		end
 		
 		it "can connect to remote system" do
 			proxy = Async::HTTP::Proxy.tcp(client, "localhost", 1)
-			expect(proxy.client.pool).to be_empty
+			expect(proxy.client.pool).to be(:empty?)
 			
 			stream = Async::IO::Stream.new(proxy.connect)
 			
@@ -110,13 +112,13 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 			stream.close
 			proxy.close
 			
-			expect(proxy.client.pool).to be_empty
+			expect(proxy.client.pool).to be(:empty?)
 		end
 	end
 	
-	context 'proxied client' do
-		let(:server) do
-			Async::HTTP::Server.for(@bound_endpoint) do |request|
+	with 'proxied client' do
+		let(:app) do
+			Protocol::HTTP::Middleware.for do |request|
 				expect(request.method).to be == "CONNECT"
 				
 				unless authorization_lambda.call(request)
@@ -174,18 +176,16 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 			proxy_client = client.proxied_client(endpoint)
 			
 			response = proxy_client.get("/search")
-			expect(response).to_not be_failure
+			expect(response).not.to be(:failure?)
 			
 			# The response would be a redirect:
-			expect(response).to be_redirection
+			expect(response).to be(:redirection?)
 			response.finish
 			
 			# The proxy.connnect response is not being released correctly - after pipe is done:
-			expect(proxy_client.pool).to_not be_empty
+			expect(proxy_client.pool).not.to be(:empty?)
 			proxy_client.close
-			expect(proxy_client.pool).to be_empty
-			
-			pp client
+			expect(proxy_client.pool).to be(:empty?)
 		end
 		
 		it 'can get secure website' do
@@ -194,18 +194,18 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 			
 			response = proxy_client.get("/search")
 			
-			expect(response).to_not be_failure
-			expect(response.read).to_not be_empty
+			expect(response).not.to be(:failure?)
+			expect(response.read).not.to be(:empty?)
 			
 			proxy_client.close
 		end
 		
-		context 'authorization header required' do
+		with 'authorization header required' do
 			let(:authorization_lambda) do
 				->(request) {request.headers['proxy-authorization'] == 'supersecretpassword' }
 			end
 			
-			context 'request includes headers' do
+			with 'request includes headers' do
 				let(:headers) { [['Proxy-Authorization', 'supersecretpassword']] }
 				
 				it 'succeeds' do
@@ -214,14 +214,14 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 					
 					response = proxy_client.get('/search')
 					
-					expect(response).to_not be_failure
-					expect(response.read).to_not be_empty
+					expect(response).not.to be(:failure?)
+					expect(response.read).not.to be(:empty?)
 					
 					proxy_client.close
 				end
 			end
 			
-			context 'request does not include headers' do
+			with 'request does not include headers' do
 				it 'does not succeed' do
 					endpoint = Async::HTTP::Endpoint.parse("https://www.google.com")
 					proxy_client = client.proxied_client(endpoint)
@@ -229,7 +229,7 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 					expect do
 						# Why is this response not 407? Because the response should come from the proxied connection, but that connection failed to be established. Because of that, there is no response. If we respond here with 407, it would be indistinguisable from the remote server returning 407. That would be an odd case, but none-the-less a valid one.
 						response = proxy_client.get('/search')
-					end.to raise_error(Async::HTTP::Proxy::ConnectFailure)
+					end.to raise_exception(Async::HTTP::Proxy::ConnectFailure)
 					
 					proxy_client.close
 				end
@@ -238,14 +238,14 @@ RSpec.shared_examples_for Async::HTTP::Proxy do
 	end
 end
 
-RSpec.describe Async::HTTP::Protocol::HTTP10 do
-	it_behaves_like Async::HTTP::Proxy
+describe Async::HTTP::Protocol::HTTP10 do
+	it_behaves_like AProxy
 end
 
-RSpec.describe Async::HTTP::Protocol::HTTP11 do
-	it_behaves_like Async::HTTP::Proxy
+describe Async::HTTP::Protocol::HTTP11 do
+	it_behaves_like AProxy
 end
 
-RSpec.describe Async::HTTP::Protocol::HTTP2 do
-	it_behaves_like Async::HTTP::Proxy
+describe Async::HTTP::Protocol::HTTP2 do
+	it_behaves_like AProxy
 end

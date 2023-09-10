@@ -3,23 +3,26 @@
 # Released under the MIT License.
 # Copyright, 2021-2023, by Samuel Williams.
 
-require_relative '../../server_context'
 require 'async/http/protocol/http11'
 
-RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 30 do
-	include_context Async::HTTP::Server
+require 'sus/fixtures/async/http/server_context'
+
+describe Async::HTTP::Protocol::HTTP11 do
+	include Sus::Fixtures::Async::ReactorContext
+	include Sus::Fixtures::Async::HTTP::ServerContext
 	
-	let(:server) do
-		Async::HTTP::Server.for(@bound_endpoint) do |request|
+	let(:app) do
+		Protocol::HTTP::Middleware.for do |request|
 			Protocol::HTTP::Response[200, {}, [request.path]]
 		end
 	end
 	
-	around do |example|
+	
+	def around
 		current = Console.logger.level
 		Console.logger.fatal!
-	
-		example.run
+		
+		super
 	ensure
 		Console.logger.level = current
 	end
@@ -63,7 +66,8 @@ RSpec.describe Async::HTTP::Protocol::HTTP11, timeout: 30 do
 			child.stop
 		end
 		
-		puts "Backtraces"
-		pp backtraces.sort.uniq
+		# puts "Backtraces"
+		# pp backtraces.sort.uniq
+		expect(backtraces).not.to be(:empty?)
 	end
 end

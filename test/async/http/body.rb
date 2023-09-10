@@ -5,22 +5,15 @@
 
 require 'async/http/body'
 
-require 'async/http/server'
-require 'async/http/client'
-require 'async/http/endpoint'
-
-require 'async/io/ssl_socket'
-
-require_relative 'server_context'
-
+require 'sus/fixtures/async'
+require 'sus/fixtures/openssl'
+require 'sus/fixtures/async/http'
 require 'localhost/authority'
 
-RSpec.shared_examples Async::HTTP::Body do
-	let(:client) {Async::HTTP::Client.new(client_endpoint, protocol: described_class)}
-	
-	context 'with echo server' do
-		let(:server) do
-			Async::HTTP::Server.for(@bound_endpoint, protocol: described_class) do |request|
+ABody = Sus::Shared("a body") do
+	with 'echo server' do
+		let(:app) do
+			Protocol::HTTP::Middleware.for do |request|
 				input = request.body
 				output = Async::HTTP::Body::Writable.new
 				
@@ -46,16 +39,16 @@ RSpec.shared_examples Async::HTTP::Body do
 			
 			response = client.post("/", {}, output)
 			
-			expect(response).to be_success
+			expect(response).to be(:success?)
 			expect(response.read).to be == "!dlroW olleH"
 		end
 	end
 	
-	context "with streaming server" do
+	with "streaming server" do
 		let(:notification) {Async::Notification.new}
 		
-		let(:server) do
-			Async::HTTP::Server.for(@bound_endpoint, protocol: described_class) do |request|
+		let(:app) do
+			Protocol::HTTP::Middleware.for do |request|
 				body = Async::HTTP::Body::Writable.new
 				
 				Async::Task.current.async do |task|
@@ -74,7 +67,7 @@ RSpec.shared_examples Async::HTTP::Body do
 		it "can stream response" do
 			response = client.get("/")
 			
-			expect(response).to be_success
+			expect(response).to be(:success?)
 			
 			j = 0
 			# This validates interleaving
@@ -88,23 +81,28 @@ RSpec.shared_examples Async::HTTP::Body do
 	end
 end
 
-RSpec.describe Async::HTTP::Protocol::HTTP1 do
-	include_context Async::HTTP::Server
+describe Async::HTTP::Protocol::HTTP1 do
+	include Sus::Fixtures::Async::HTTP::ServerContext
 	
-	it_should_behave_like Async::HTTP::Body
+	it_behaves_like ABody
 end
 
-RSpec.describe Async::HTTP::Protocol::HTTPS do
-	include_context Async::HTTP::Server
+describe Async::HTTP::Protocol::HTTPS do
+	include Sus::Fixtures::Async::HTTP::ServerContext
+	include Sus::Fixtures::OpenSSL::ValidCertificateContext
 	
 	let(:authority) {Localhost::Authority.new}
 	
 	let(:server_context) {authority.server_context}
 	let(:client_context) {authority.client_context}
 	
-	# Shared port for localhost network tests.
-	let(:server_endpoint) {Async::HTTP::Endpoint.parse("https://localhost:0", ssl_context: server_context, reuse_port: true)}
-	let(:client_endpoint) {Async::HTTP::Endpoint.parse("https://localhost:0", ssl_context: client_context, reuse_port: true)}
+	def make_server_endpoint(bound_endpoint)
+		Async::IO::SSLEndpoint.new(super, ssl_context: server_context)
+	end
 	
-	it_should_behave_like Async::HTTP::Body
+	def make_client_endpoint(bound_endpoint)
+		Async::IO::SSLEndpoint.new(super, ssl_context: client_context)
+	end
+	
+	it_behaves_like ABody
 end

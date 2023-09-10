@@ -3,17 +3,15 @@
 # Released under the MIT License.
 # Copyright, 2018-2023, by Samuel Williams.
 
-require_relative 'server_context'
-
 require 'async/http/statistics'
+require 'sus/fixtures/async/http'
 
-RSpec.describe Async::HTTP::Statistics, timeout: 5 do
-	include_context Async::HTTP::Server
-	let(:protocol) {Async::HTTP::Protocol::HTTP1}
+describe Async::HTTP::Statistics do
+	include Sus::Fixtures::Async::HTTP::ServerContext
 	
-	let(:server) do
-		Async::HTTP::Server.for(@bound_endpoint) do |request|
-			statistics = described_class.start
+	let(:app) do
+		Protocol::HTTP::Middleware.for do |request|
+			statistics = subject.start
 			
 			response = Protocol::HTTP::Response[200, {}, ["Hello ", "World!"]]
 			
@@ -21,7 +19,7 @@ RSpec.describe Async::HTTP::Statistics, timeout: 5 do
 				expect(statistics.sent).to be == 12
 				expect(error).to be_nil
 			end.tap do |response|
-				expect(response.body).to receive(:complete_statistics).and_call_original
+				expect(response.body).to receive(:complete_statistics)
 			end
 		end
 	end
@@ -30,6 +28,6 @@ RSpec.describe Async::HTTP::Statistics, timeout: 5 do
 		response = client.get("/")
 		expect(response.read).to be == "Hello World!"
 		
-		expect(response).to be_success
+		expect(response).to be(:success?)
 	end
 end

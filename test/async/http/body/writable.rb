@@ -3,10 +3,15 @@
 # Released under the MIT License.
 # Copyright, 2018-2023, by Samuel Williams.
 
-require_relative 'writable_examples'
+require 'async/http/body/slowloris'
 
-RSpec.describe Async::HTTP::Body::Writable do
-	include_context Async::RSpec::Reactor
+require 'sus/fixtures/async'
+require 'async/http/body/a_writable_body'
+
+describe Async::HTTP::Body::Writable do
+	include Sus::Fixtures::Async::ReactorContext
 	
-	it_behaves_like Async::HTTP::Body::Writable
+	let(:body) {subject.new}
+	
+	it_behaves_like Async::HTTP::Body::AWritableBody
 end

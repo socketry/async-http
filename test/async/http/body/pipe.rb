@@ -8,19 +8,25 @@ require 'async'
 require 'async/http/body/pipe'
 require 'async/http/body/writable'
 
-RSpec.describe Async::HTTP::Body::Pipe do
-	let(:input) { Async::HTTP::Body::Writable.new }
-	let(:pipe) { described_class.new(input) }
+require 'sus/fixtures/async'
+
+describe Async::HTTP::Body::Pipe do
+	let(:input) {Async::HTTP::Body::Writable.new}
+	let(:pipe) {subject.new(input)}
 	
-	let(:data) { 'Hello World!' }
+	let(:data) {'Hello World!'}
 	
-	describe '#to_io' do
-		include_context Async::RSpec::Reactor
+	with '#to_io' do
+		include Sus::Fixtures::Async::ReactorContext
 		
+		let(:input_write_duration) {0}
 		let(:io) { pipe.to_io }
 		
-		before do
-			Async::Task.current.async do |task| # input writer task
+		def before
+			super
+			
+			 # input writer task
+			Async do |task|
 				first, second = data.split(' ')
 				input.write("#{first} ")
 				task.sleep(input_write_duration) if input_write_duration > 0
@@ -29,38 +35,35 @@ RSpec.describe Async::HTTP::Body::Pipe do
 			end
 		end
 		
-		after { io.close }
+		def aftrer
+			io.close
+			
+			super
+		end
 		
-		shared_examples :returns_io_socket do
+		it "returns an io socket" do
+			expect(io).to be_a(Async::IO::Socket)
+			expect(io.read).to be == data
+		end
+		
+		with 'blocking reads' do
+			let(:input_write_duration) {0.01}
+			
 			it 'returns an io socket' do
-				expect(io).to be_a(Async::IO::Socket)
-				expect(io.read).to eq data
+				expect(io.read).to be == data
 			end
-		end
-		
-		context 'when reading blocks' do
-			let(:input_write_duration) { 0.01 }
-			
-			include_examples :returns_io_socket
-		end
-		
-		context 'when reading does not block' do
-			let(:input_write_duration) { 0 }
-			
-			include_examples :returns_io_socket
 		end
 	end
 	
-	describe 'going out of reactor scope' do
-		context 'when pipe is closed' do
-			it 'finishes' do
-				Async { pipe.close }
-			end
+	with 'reactor going out of scope' do
+		it 'finishes' do
+			# ensures pipe background tasks are transient
+			Async{pipe}
 		end
 		
-		context 'when pipe is not closed' do
-			it 'finishes' do # ensures pipe background tasks are transient
-				Async { pipe }
+		with 'closed pipe' do
+			it 'finishes' do
+				Async{pipe.close}
 			end
 		end
 	end

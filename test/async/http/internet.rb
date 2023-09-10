@@ -7,20 +7,18 @@ require 'async/http/internet'
 require 'async/reactor'
 
 require 'json'
+require 'sus/fixtures/async'
 
-RSpec.describe Async::HTTP::Internet, timeout: 30 do
-	include_context Async::RSpec::Reactor
+describe Async::HTTP::Internet do
+	include Sus::Fixtures::Async::ReactorContext
 	
+	let(:internet) {subject.new}
 	let(:headers) {[['accept', '*/*'], ['user-agent', 'async-http']]}
 	
-	after do
-		subject.close
-	end
-	
 	it "can fetch remote website" do
-		response = subject.get("https://www.codeotaku.com/index", headers)
+		response = internet.get("https://www.codeotaku.com/index", headers)
 		
-		expect(response).to be_success
+		expect(response).to be(:success?)
 		
 		response.close
 	end
@@ -29,10 +27,10 @@ RSpec.describe Async::HTTP::Internet, timeout: 30 do
 	let(:body) {[JSON.dump(sample)]}
 	
 	# This test is increasingly flakey.
-	xit "can fetch remote json" do
-		response = subject.post("https://httpbin.org/anything", headers, body)
+	it "can fetch remote json" do
+		response = internet.post("https://httpbin.org/anything", headers, body)
 		
-		expect(response).to be_success
-		expect{JSON.parse(response.read)}.to_not raise_error
+		expect(response).to be(:success?)
+		expect{JSON.parse(response.read)}.not.to raise_exception
 	end
 end

@@ -4,8 +4,8 @@
 # Copyright, 2018-2023, by Samuel Williams.
 
 require 'async/http/protocol/http10'
-require_relative 'shared_examples'
+require 'async/http/a_protocol'
 
-RSpec.describe Async::HTTP::Protocol::HTTP10 do
-	it_behaves_like Async::HTTP::Protocol
+describe Async::HTTP::Protocol::HTTP10 do
+	it_behaves_like Async::HTTP::AProtocol
 end

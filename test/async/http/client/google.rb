@@ -6,18 +6,20 @@
 require 'async/http/client'
 require 'async/http/endpoint'
 
-RSpec.describe Async::HTTP::Client, timeout: 5 do
-	include_context Async::RSpec::Reactor
+require 'sus/fixtures/async'
+
+describe Async::HTTP::Client do
+	include Sus::Fixtures::Async::ReactorContext
 	
 	let(:endpoint) {Async::HTTP::Endpoint.parse('https://www.google.com')}
 	let(:client) {Async::HTTP::Client.new(endpoint)}
 	
 	it 'can fetch remote resource' do
 		response = client.get('/', 'accept' => '*/*')
-	
+		
 		response.finish
-	
-		expect(response).to_not be_failure
+		
+		expect(response).not.to be(:failure?)
 		
 		client.close
 	end

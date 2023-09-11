@@ -1,6 +1,6 @@
 falcon:
   url: https://github.com/socketry/falcon.git
-  command: bundle exec rspec
+  command: bundle exec bake test
 async-rest:
   url: https://github.com/socketry/async-rest.git
   command: bundle exec rspec

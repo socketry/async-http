@@ -141,6 +141,16 @@ module Async
 							@stream.send_headers(nil, headers, ::Protocol::HTTP2::END_STREAM)
 						end
 					end
+					
+					def write_interim_response(response)
+						protocol_headers = [
+							[STATUS, response.status]
+						]
+						
+						headers = ::Protocol::HTTP::Headers::Merged.new(protocol_headers, response.headers)
+						
+						@stream.send_headers(nil, headers)
+					end
 				end
 			end
 		end

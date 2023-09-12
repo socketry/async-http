@@ -39,7 +39,13 @@ module Async
 						# This should be invoked from the background reader, and notifies the task waiting for the headers that we are done.
 						def receive_initial_headers(headers, end_stream)
 							headers.each do |key, value|
+								# It's guaranteed that this should be the first header:
 								if key == STATUS
+									status = Integer(value)
+									
+									# Ignore informational headers:
+									return if status >= 100 && status < 200
+									
 									@response.status = Integer(value)
 								elsif key == PROTOCOL
 									@response.protocol = value

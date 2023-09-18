@@ -83,7 +83,7 @@ module Async
 										version = request.version
 										
 										# Same as above:
-										request = nil unless body
+										request = nil unless request.body
 										response = nil
 										
 										write_body(version, body, head, trailer)
@@ -98,7 +98,7 @@ module Async
 								end
 								
 								# Gracefully finish reading the request body if it was not already done so.
-								request&.finish
+								request&.each{}
 								
 								# This ensures we yield at least once every iteration of the loop and allow other fibers to execute.
 								task.yield
@@ -109,6 +109,7 @@ module Async
 							end
 						end
 					end
+					
 				end
 			end
 		end

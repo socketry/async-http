@@ -65,7 +65,7 @@ module Async
 							@input = nil
 						end
 					rescue ::Protocol::HTTP2::HeaderError => error
-						Console.logger.error(self, error)
+						Console.logger.debug(self, error)
 						
 						send_reset_stream(error.code)
 					end

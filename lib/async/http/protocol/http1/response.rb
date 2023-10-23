@@ -18,9 +18,12 @@ module Async
 					
 					UPGRADE = 'upgrade'
 
-					# @param reason [String] HTTP response line reason, ignored.
+					attr_reader :reason
+
+					# @param reason [String] HTTP response line reason phrase
 					def initialize(connection, version, status, reason, headers, body)
 						@connection = connection
+						@reason = reason
 						
 						protocol = headers.delete(UPGRADE)
 						
@@ -30,7 +33,7 @@ module Async
 					def connection
 						@connection
 					end
-					
+
 					def hijack?
 						@body.nil?
 					end

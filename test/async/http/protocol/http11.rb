@@ -46,6 +46,7 @@ describe Async::HTTP::Protocol::HTTP11 do
 					expect(response).to be(:success?)
 					expect(response.version).to be == "HTTP/1.1"
 					expect(response.body).to be(:empty?)
+					expect(response.reason).to be == "OK"
 					
 					response.read
 				end
@@ -73,6 +74,12 @@ describe Async::HTTP::Protocol::HTTP11 do
 				response = client.get("/")
 				
 				expect(response.read).to be == "Hello World!"
+			end
+
+			it "has access to the http reason phrase" do
+				response = client.head("/")
+
+				expect(response.reason).to be == "It worked!"
 			end
 		end
 	end

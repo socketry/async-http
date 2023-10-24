@@ -25,6 +25,9 @@ module Async
 					false
 				end
 				
+				def write_interim_response(response)
+				end
+				
 				def peer
 					if connection = self.connection
 						connection.peer

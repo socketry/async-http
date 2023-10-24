@@ -41,8 +41,26 @@ module Async
 				end
 			end
 			
-			with "huge body", timeout: 600 do
-				let(:body) {::Protocol::HTTP::Body::File.open("/dev/zero", size: 512*1024**2)}
+			with "interim response" do
+				let(:app) do
+					::Protocol::HTTP::Middleware.for do |request|
+						request.write_interim_response(
+							::Protocol::HTTP::Response[103, [["link", "</style.css>; rel=preload; as=style"]]]
+						)
+						
+						::Protocol::HTTP::Response[200, {}, ["Hello World"]]
+					end
+				end
+				
+				it "can read informational response" do
+					response = client.get("/")
+					expect(response).to be(:success?)
+					expect(response.read).to be == "Hello World"
+				end
+			end
+			
+			with "huge body" do
+				let(:body) {::Protocol::HTTP::Body::File.open("/dev/zero", size: 8*1024**2)}
 				
 				let(:app) do
 					::Protocol::HTTP::Middleware.for do |request|

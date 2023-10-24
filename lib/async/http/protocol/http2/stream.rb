@@ -50,13 +50,11 @@ module Async
 					end
 					
 					def process_headers(frame)
-						if @headers.nil?
-							@headers = ::Protocol::HTTP::Headers.new
-							self.receive_initial_headers(super, frame.end_stream?)
-						elsif frame.end_stream?
+						if frame.end_stream? && @headers
 							self.receive_trailing_headers(super, frame.end_stream?)
 						else
-							raise ::Protocol::HTTP2::HeaderError, "Unable to process headers!"
+							@headers ||= ::Protocol::HTTP::Headers.new
+							self.receive_initial_headers(super, frame.end_stream?)
 						end
 						
 						# TODO this might need to be in an ensure block:

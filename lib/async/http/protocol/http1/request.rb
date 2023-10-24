@@ -38,6 +38,10 @@ module Async
 					def hijack!
 						@connection.hijack!
 					end
+					
+					def write_interim_response(response)
+						@connection.write_interim_response(response.version, response.status, response.headers)
+					end
 				end
 			end
 		end

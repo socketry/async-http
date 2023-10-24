@@ -11,17 +11,21 @@ module Async
 			module HTTP1
 				class Response < Protocol::Response
 					def self.read(connection, request)
-						if parts = connection.read_response(request.method)
-							self.new(connection, *parts)
+						while parts = connection.read_response(request.method)
+							response = self.new(connection, *parts)
+							
+							if response.final?
+								return response
+							end
 						end
 					end
 					
 					UPGRADE = 'upgrade'
-
-          # @attribute [String] The HTTP response line reason.
+					
+					# @attribute [String] The HTTP response line reason.
 					attr :reason
-
-					# @parameter reason [String] HTTP response line reason phrase
+					
+					# @parameter reason [String] HTTP response line reason phrase.
 					def initialize(connection, version, status, reason, headers, body)
 						@connection = connection
 						@reason = reason
@@ -34,7 +38,7 @@ module Async
 					def connection
 						@connection
 					end
-
+					
 					def hijack?
 						@body.nil?
 					end

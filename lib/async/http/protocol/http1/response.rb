@@ -21,7 +21,7 @@ module Async
           # @attribute [String] The HTTP response line reason.
 					attr :reason
 
-					# @param reason [String] HTTP response line reason phrase
+					# @parameter reason [String] HTTP response line reason phrase
 					def initialize(connection, version, status, reason, headers, body)
 						@connection = connection
 						@reason = reason

@@ -68,8 +68,9 @@ AProxy = Sus::Shared("a proxy") do
 			Protocol::HTTP::Middleware.for do |request|
 				expect(request.path).to be == "localhost:1"
 				
+				Console.debug(self) {"Hijacking incoming request..."}
 				Async::HTTP::Body::Hijack.response(request, 200, {}) do |stream|
-					while chunk = stream.read_partial(1024)
+					while chunk = (stream.readpartial(1024) rescue nil)
 						stream.write(chunk)
 						stream.flush
 					end
@@ -86,12 +87,10 @@ AProxy = Sus::Shared("a proxy") do
 			expect(proxy.client.pool).to be(:empty?)
 			
 			proxy.connect do |peer|
-				stream = Async::IO::Stream.new(peer)
+				peer.write(data)
+				peer.close_write
 				
-				stream.write(data)
-				stream.close_write
-				
-				expect(stream.read).to be == data
+				expect(peer.read).to be == data
 			end
 			
 			proxy.close
@@ -102,7 +101,7 @@ AProxy = Sus::Shared("a proxy") do
 			proxy = Async::HTTP::Proxy.tcp(client, "localhost", 1)
 			expect(proxy.client.pool).to be(:empty?)
 			
-			stream = Async::IO::Stream.new(proxy.connect)
+			stream = proxy.connect
 			
 			stream.write(data)
 			stream.close_write
@@ -126,18 +125,19 @@ AProxy = Sus::Shared("a proxy") do
 				end
 				
 				host, port = request.path.split(":", 2)
-				endpoint = Async::IO::Endpoint.tcp(host, port)
+				endpoint = ::IO::Endpoint.tcp(host, port)
 				
 				Console.logger.debug(self) {"Making connection to #{endpoint}..."}
 				
 				Async::HTTP::Body::Hijack.response(request, 200, {}) do |stream|
-					upstream = Async::IO::Stream.new(endpoint.connect)
+					upstream = endpoint.connect
 					Console.logger.debug(self) {"Connected to #{upstream}..."}
 					
 					reader = Async do |task|
 						task.annotate "Upstream reader."
 						
-						while chunk = upstream.read_partial
+						while chunk = (upstream.readpartial(1024) rescue nil)
+							Console.logger.info(self) {"Read #{chunk.bytesize} bytes from upstream..."}
 							stream.write(chunk)
 							stream.flush
 						end
@@ -149,7 +149,8 @@ AProxy = Sus::Shared("a proxy") do
 					writer = Async do |task|
 						task.annotate "Upstream writer."
 						
-						while chunk = stream.read_partial
+						while chunk = (stream.readpartial(1024) rescue nil)
+							Console.logger.info(self) {"Read #{chunk.bytesize} bytes from downstream..."}
 							upstream.write(chunk)
 							upstream.flush
 						end

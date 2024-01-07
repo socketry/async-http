@@ -8,6 +8,8 @@ require 'protocol/http1'
 require_relative 'request'
 require_relative 'response'
 
+require 'io/connected'
+
 module Async
 	module HTTP
 		module Protocol
@@ -31,15 +33,17 @@ module Async
 					end
 					
 					def read_line?
-						@stream.read_until(CRLF)
+						@stream.gets(CRLF, chomp: true)
+					rescue Errno::ECONNRESET
+						nil
 					end
 					
 					def read_line
-						@stream.read_until(CRLF) or raise EOFError, "Could not read line!"
+						read_line? or raise EOFError, "Could not read line!"
 					end
 					
 					def peer
-						@stream.io
+						@stream
 					end
 					
 					attr :count
@@ -50,7 +54,7 @@ module Async
 					
 					# Can we use this connection to make requests?
 					def viable?
-						@ready && @stream&.connected?
+						@ready && @stream.connected?
 					end
 					
 					def reusable?

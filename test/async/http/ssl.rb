@@ -41,11 +41,11 @@ describe Async::HTTP::Server do
 		end
 		
 		def make_server_endpoint(bound_endpoint)
-			Async::IO::SSLEndpoint.new(super, ssl_context: server_context)
+			::IO::Endpoint::SSLEndpoint.new(super, ssl_context: server_context)
 		end
 		
 		def make_client_endpoint(bound_endpoint)
-			Async::IO::SSLEndpoint.new(super, ssl_context: client_context)
+			::IO::Endpoint::SSLEndpoint.new(super, ssl_context: client_context)
 		end
 		
 		it "client can get a resource via https" do

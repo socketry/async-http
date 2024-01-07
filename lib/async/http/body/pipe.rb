@@ -18,10 +18,7 @@ module Async
 					@input = input
 					@output = output
 					
-					head, tail = IO::Socket.pair(Socket::AF_UNIX, Socket::SOCK_STREAM)
-					
-					@head = IO::Stream.new(head)
-					@tail = tail
+					@head, @tail = ::Socket.pair(Socket::AF_UNIX, Socket::SOCK_STREAM)
 					
 					@reader = nil
 					@writer = nil
@@ -68,7 +65,7 @@ module Async
 					
 					task.annotate "#{self.class} writer."
 					
-					while chunk = @head.read_partial
+					while chunk = @head.readpartial(1024)
 						@output.write(chunk)
 					end
 				ensure

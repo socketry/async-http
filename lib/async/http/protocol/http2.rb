@@ -35,9 +35,9 @@ module Async
 				}
 				
 				def self.client(peer, settings = CLIENT_SETTINGS)
-					stream = IO::Stream.new(peer, sync: true)
+					peer.sync = true
 					
-					client = Client.new(stream)
+					client = Client.new(peer)
 					
 					client.send_connection_preface(settings)
 					client.start_connection
@@ -46,9 +46,9 @@ module Async
 				end
 				
 				def self.server(peer, settings = SERVER_SETTINGS)
-					stream = IO::Stream.new(peer, sync: true)
+					peer.sync = true
 					
-					server = Server.new(stream)
+					server = Server.new(peer)
 					
 					server.read_connection_preface(settings)
 					server.start_connection

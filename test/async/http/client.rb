@@ -15,6 +15,8 @@ require 'sus/fixtures/async'
 require 'sus/fixtures/async/http'
 
 describe Async::HTTP::Client do
+	include Sus::Fixtures::Async::ReactorContext
+	
 	with 'basic server' do
 		include Sus::Fixtures::Async::HTTP::ServerContext
 		
@@ -26,8 +28,6 @@ describe Async::HTTP::Client do
 	end
 	
 	with 'non-existant host' do
-		include Sus::Fixtures::Async::ReactorContext
-		
 		let(:endpoint) {Async::HTTP::Endpoint.parse('http://the.future')}
 		let(:client) {Async::HTTP::Client.new(endpoint)}
 		

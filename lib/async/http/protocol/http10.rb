@@ -20,15 +20,11 @@ module Async
 				end
 				
 				def self.client(peer)
-					stream = IO::Stream.new(peer, sync: true)
-					
-					return HTTP1::Client.new(stream, VERSION)
+					return HTTP1::Client.new(peer, VERSION)
 				end
 				
 				def self.server(peer)
-					stream = IO::Stream.new(peer, sync: true)
-					
-					return HTTP1::Server.new(stream, VERSION)
+					return HTTP1::Server.new(peer, VERSION)
 				end
 				
 				def self.names

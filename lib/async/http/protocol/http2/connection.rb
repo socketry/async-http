@@ -8,6 +8,8 @@ require_relative 'stream'
 
 require 'async/semaphore'
 
+require 'io/connected'
+
 module Async
 	module HTTP
 		module Protocol
@@ -92,10 +94,12 @@ module Async
 							begin
 								while !self.closed?
 									self.consume_window
+									Console.debug(self, @framer) {"Reading frame..."}
 									self.read_frame
 								end
-							rescue SocketError, IOError, EOFError, Errno::ECONNRESET, Errno::EPIPE, Async::Wrapper::Cancelled
+							rescue SocketError, EOFError, Errno::ECONNRESET, Errno::EPIPE, Async::Wrapper::Cancelled => error
 								# Ignore.
+								Console.warn(self, error)
 							rescue ::Protocol::HTTP2::GoawayError => error
 								# Error is raised if a response is actively reading from the
 								# connection. The connection is silently closed if GOAWAY is
@@ -115,7 +119,7 @@ module Async
 					attr :promises
 					
 					def peer
-						@stream.io
+						@stream
 					end
 					
 					attr :count

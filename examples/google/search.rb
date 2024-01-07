@@ -12,8 +12,6 @@ require_relative "../../lib/async/http"
 URL = "https://www.google.com/search"
 ENDPOINT = Async::HTTP::Endpoint.parse(URL)
 
-# Console.logger.enable(Async::IO::Stream, Console::Logger::DEBUG)
-
 class Google < Protocol::HTTP::Middleware
 	def search(term)
 		Console.logger.info(self) {"Searching for #{term}..."}

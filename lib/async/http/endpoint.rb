@@ -7,6 +7,7 @@
 require 'async/io/host_endpoint'
 require 'async/io/ssl_endpoint'
 require 'async/io/ssl_socket'
+require 'async/io/shared_endpoint'
 
 require_relative 'protocol/http1'
 require_relative 'protocol/https'

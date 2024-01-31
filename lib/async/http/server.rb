@@ -32,7 +32,7 @@ module Async
 			attr :protocol
 			attr :scheme
 			
-			def accept(peer, address, task: Task.current)
+			def accept(peer, address)
 				connection = @protocol.server(peer)
 				
 				Console.logger.debug(self) {"Incoming connnection from #{address.inspect} to #{@protocol}"}
@@ -54,8 +54,8 @@ module Async
 				connection&.close
 			end
 			
-			def run
-				@endpoint.accept(&self.method(:accept))
+			def run(**options)
+				@endpoint.accept(**options, &self.method(:accept))
 			end
 			
 			Traces::Provider(self) do

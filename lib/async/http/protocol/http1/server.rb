@@ -50,10 +50,7 @@ module Async
 							response = yield(request, self)
 							body = response&.body
 							
-							if @stream.nil? and body.nil?
-								# Full hijack.
-								return
-							end
+							return if hijacked?
 							
 							task.defer_stop do
 								# If a response was generated, send it:

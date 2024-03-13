@@ -83,24 +83,28 @@ describe Async::HTTP::Protocol::HTTP11 do
 			end
 		end
 
-		with 'empty response after hijack' do
+		with 'full hijack with empty response' do
+			let(:body) {Async::HTTP::Body::Buffered.new([], 0)}
+
 			let(:app) do
-				Protocol::HTTP::Middleware.for do |request|
+				::Protocol::HTTP::Middleware.for do |request|
 					peer = request.hijack!
 
-					peer.write(
-						"#{request.version} 200 It worked!\r\n" +
-						"connection: close\r\n" +
-						"\r\n" +
-						"Hello World!"
-					)
-					peer.close
+          peer.write(
+            "#{request.version} 200 It worked!\r\n" +
+            "connection: close\r\n" +
+            "\r\n" +
+            "Hello World!"
+          )
+          peer.close
 
-					::Protocol::HTTP::Response[-1, {}, []]
+					::Protocol::HTTP::Response[-1, {}, body]
 				end
 			end
 
-			it "reads raw response" do
+			it "works properly" do
+				expect(body).not.to receive(:close)
+
 				response = client.get("/")
 
 				expect(response.read).to be == "Hello World!"

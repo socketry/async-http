@@ -14,7 +14,7 @@ module Async
 	module HTTP
 		class Internet
 			def initialize(**options)
-				@clients = Hash.new
+				@clients = options.delete(:clients) || Hash.new
 				@options = options
 			end
 			

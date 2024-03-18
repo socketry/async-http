@@ -260,9 +260,9 @@ ssl_private_key = OpenSSL::PKey::RSA.new(ENV['PRIVATE_SSL_KEY_AS_STRING']))
 ssl_certificate = OpenSSL::X509::Certificate.new(OpenSSL::X509::Certificate.new(ENV['PUBLIC_SSL_CERTIFICATE_AS_STRING'])
 
 ssl_context =  OpenSSL::SSL::SSLContext.new.tap do |context|
-      context.cert = ssl_certificate
-      context.key = ssl_private_key
-    end
+  context.cert = ssl_certificate
+  context.key = ssl_private_key
+end
 api_url = 'https://www.example-api.com'
 auth_url = 'https://www.example-auth.com'
 

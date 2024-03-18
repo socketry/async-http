@@ -247,7 +247,7 @@ Async do
 end
 ```
 
-### Private Certificate Authentication Verification
+### Private Certificate Authentication
 
 You provide private certificates for authentication.
 

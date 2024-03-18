@@ -247,6 +247,45 @@ Async do
 end
 ```
 
+### Private Certificate Authentication Verification
+
+You provide private certificates for authentication.
+
+``` ruby
+require 'async'
+require 'async/http'
+
+# These are generated from a signed certificate request.
+ssl_private_key = OpenSSL::PKey::RSA.new(ENV['PRIVATE_SSL_KEY_AS_STRING']))
+ssl_certificate = OpenSSL::X509::Certificate.new(OpenSSL::X509::Certificate.new(ENV['PUBLIC_SSL_CERTIFICATE_AS_STRING'])
+
+ssl_context =  OpenSSL::SSL::SSLContext.new.tap do |context|
+      context.cert = ssl_certificate
+      context.key = ssl_private_key
+    end
+api_url = 'https://www.example-api.com'
+auth_url = 'https://www.example-auth.com'
+
+api_endpoint = Async::HTTP::Endpoint.parse(api_url, ssl_context: ssl_context)
+auth_endpoint = Async::HTTP::Endpoint.parse(auth_url, ssl_context: ssl_context)
+
+clients = {
+	api_url => Async::HTTP::Client.new(api_endpoint),
+  auth_url => Async::HTTP::Client.new(auth_endpoint)
+}
+
+
+Async do
+	internet = Async::HTTP::Internet.new(clients: clients)
+	token_response = internet.get("#{internet}/auth/token")
+	token = JSON.parse(token_response.read).dig("token")
+	headers = [['Authorization', "Bearer #{token}"]]
+	widgets_response = internet.get("#{api_url}/widgets", headers )
+	
+	pp widgets_response.status, widgets_response.headers.fields, widgets_response.read
+end
+```
+
 ### Timeouts
 
 Here's a basic example with a timeout:

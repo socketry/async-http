@@ -270,19 +270,19 @@ api_endpoint = Async::HTTP::Endpoint.parse(api_url, ssl_context: ssl_context)
 auth_endpoint = Async::HTTP::Endpoint.parse(auth_url, ssl_context: ssl_context)
 
 clients = {
-	api_url => Async::HTTP::Client.new(api_endpoint),
+  api_url => Async::HTTP::Client.new(api_endpoint),
   auth_url => Async::HTTP::Client.new(auth_endpoint)
 }
 
 
 Async do
-	internet = Async::HTTP::Internet.new(clients: clients)
-	token_response = internet.get("#{internet}/auth/token")
-	token = JSON.parse(token_response.read).dig("token")
-	headers = [['Authorization', "Bearer #{token}"]]
-	widgets_response = internet.get("#{api_url}/widgets", headers )
+  internet = Async::HTTP::Internet.new(clients: clients)
+  token_response = internet.get("#{internet}/auth/token")
+  token = JSON.parse(token_response.read).dig("token")
+  headers = [['Authorization', "Bearer #{token}"]]
+  widgets_response = internet.get("#{api_url}/widgets", headers )
 	
-	pp widgets_response.status, widgets_response.headers.fields, widgets_response.read
+  pp widgets_response.status, widgets_response.headers.fields, widgets_response.read
 end
 ```
 

@@ -89,7 +89,7 @@ module Async
 							
 							task.annotate("#{version} reading data for #{self.class}.")
 							
-							begin
+							task.defer_stop do
 								while !self.closed?
 									self.consume_window
 									self.read_frame

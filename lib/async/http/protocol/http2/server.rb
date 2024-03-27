@@ -53,7 +53,7 @@ module Async
 							
 							@count += 1
 							
-							begin
+							task.defer_stop do
 								response = yield(request)
 							rescue
 								# We need to close the stream if the user code blows up while generating a response:

@@ -89,6 +89,7 @@ module Async
 							
 							task.annotate("#{version} reading data for #{self.class}.")
 							
+							# We don't need to defer stop here as this is already a transient task (ignores stop):
 							begin
 								while !self.closed?
 									self.consume_window

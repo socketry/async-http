@@ -2,6 +2,7 @@
 
 # Released under the MIT License.
 # Copyright, 2018-2023, by Samuel Williams.
+# Copyright, 2023, by Thomas Morgan.
 
 require_relative 'http2/client'
 require_relative 'http2/server'
@@ -46,7 +47,7 @@ module Async
 				end
 				
 				def self.server(peer, settings = SERVER_SETTINGS)
-					stream = IO::Stream.new(peer, sync: true)
+					stream = peer.is_a?(IO::Stream) ? peer : IO::Stream.new(peer, sync: true)
 					
 					server = Server.new(stream)
 					

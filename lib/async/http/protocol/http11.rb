@@ -3,6 +3,7 @@
 # Released under the MIT License.
 # Copyright, 2017-2023, by Samuel Williams.
 # Copyright, 2018, by Janko Marohnić.
+# Copyright, 2023, by Thomas Morgan.
 
 require_relative 'http1'
 
@@ -27,7 +28,7 @@ module Async
 				end
 				
 				def self.server(peer)
-					stream = IO::Stream.new(peer, sync: true)
+					stream = peer.is_a?(IO::Stream) ? peer : IO::Stream.new(peer, sync: true)
 					
 					return HTTP1::Server.new(stream, VERSION)
 				end

@@ -85,7 +85,7 @@ module Async
 					if secure?
 						Protocol::HTTPS
 					else
-						Protocol::HTTP1
+						Protocol::HTTP
 					end
 				end
 			end

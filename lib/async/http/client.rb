@@ -93,7 +93,6 @@ module Async
 					
 					# This signals that the ensure block below should not try to release the connection, because it's bound into the response which will be returned:
 					connection = nil
-					
 					return response
 				rescue Protocol::RequestFailed
 					# This is a specific case where the entire request wasn't sent before a failure occurred. So, we can even resend non-idempotent requests.
@@ -119,7 +118,9 @@ module Async
 						raise
 					end
 				ensure
-					@pool.release(connection) if connection
+					if connection
+						@pool.release(connection)
+					end
 				end
 			end
 			

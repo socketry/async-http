@@ -21,6 +21,8 @@ module Async
 					end
 					
 					def next_request
+						Console.debug(self, "Reading request...", persistent: @persistent)
+						
 						# The default is true.
 						return unless @persistent
 						

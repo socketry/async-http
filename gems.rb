@@ -8,8 +8,9 @@ source 'https://rubygems.org'
 gemspec
 
 # gem "async", path: "../async"
-# gem "async-io", path: "../async-io"
 # gem "traces", path: "../traces"
+gem "io-endpoint", path: "../io-endpoint"
+# gem "sus-fixtures-async-http", path: "../sus-fixtures-async-http"
 
 # gem "protocol-http", path: "../protocol-http"
 # gem "protocol-http1", path: "../protocol-http1"
@@ -28,7 +29,7 @@ group :test do
 	gem "covered"
 	gem "sus"
 	gem "sus-fixtures-async"
-	gem "sus-fixtures-async-http", "~> 0.7"
+	gem "sus-fixtures-async-http", "~> 0.8"
 	gem "sus-fixtures-openssl"
 	
 	gem "bake"

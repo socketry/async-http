@@ -481,8 +481,10 @@ module Async
 				
 				it "can't get /" do
 					expect do
-						client.get("/")
-					end.to raise_exception(Async::TimeoutError)
+						Console.debug(self) {"Connecting to #{endpoint.inspect}"}
+						response = client.get("/")
+						Console.debug(self) {"Got response #{response.inspect}"}
+					end.to raise_exception(::IO::TimeoutError)
 				end
 			end
 			
@@ -542,33 +544,41 @@ module Async
 					Console.logger.level = current
 				end
 				
+				def timeout = nil
+				
 				it "doesn't cancel all requests" do
-					tasks = []
 					task = Async::Task.current
+					tasks = []
 					stopped = []
 					
 					10.times do
-						tasks << task.async {
-							begin
-								loop do
-									client.get('http://127.0.0.1:8080/a').finish
-								end
+						task.async do |child|
+							tasks << child
+							
+							loop do
+								response = client.get('/a')
+								response.finish
 							ensure
-								stopped << 'a'
+								response&.close
 							end
-						}
+						ensure
+							stopped << 'a'
+						end
 					end
 					
 					10.times do
-						tasks << task.async {
-							begin
-								loop do
-									client.get('http://127.0.0.1:8080/b').finish
-								end
+						task.async do |child|
+							tasks << child
+							
+							loop do
+								response = client.get('/b')
+								response.finish
 							ensure
-								stopped << 'b'
+								response&.close
 							end
-						}
+						ensure
+							stopped << 'b'
+						end
 					end
 					
 					tasks.each do |child|

@@ -55,7 +55,8 @@ module Async
 								return
 							end
 							
-							task.defer_stop do
+							# task.defer_stop do
+							begin
 								# If a response was generated, send it:
 								if response
 									trailer = response.headers.trailer!

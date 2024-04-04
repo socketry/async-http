@@ -100,14 +100,14 @@ module Async
 								
 								# Gracefully finish reading the request body if it was not already done so.
 								request&.each{}
-								
-								# This ensures we yield at least once every iteration of the loop and allow other fibers to execute.
-								task.yield
 							rescue => error
 								raise
 							ensure
 								body&.close(error)
 							end
+							
+							# This ensures we yield at least once every iteration of the loop and allow other fibers to execute.
+							task.yield
 						end
 					end
 					

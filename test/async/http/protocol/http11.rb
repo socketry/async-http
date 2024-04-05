@@ -103,7 +103,7 @@ describe Async::HTTP::Protocol::HTTP11 do
 			end
 
 			it "works properly" do
-				expect(body).not.to receive(:close)
+				expect(body).to receive(:close)
 
 				response = client.get("/")
 

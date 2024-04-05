@@ -50,7 +50,10 @@ module Async
 							response = yield(request, self)
 							body = response&.body
 							
-							return if hijacked?
+							if hijacked?
+								body&.close
+								return
+							end
 							
 							task.defer_stop do
 								# If a response was generated, send it:

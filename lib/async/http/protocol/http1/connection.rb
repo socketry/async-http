@@ -18,7 +18,6 @@ module Async
 						
 						@ready = true
 						@version = version
-						@hijacked = false
 					end
 					
 					attr :version
@@ -47,15 +46,6 @@ module Async
 					
 					def concurrency
 						1
-					end
-
-					def hijack!
-						@hijacked = true
-						super
-					end
-
-					def hijacked?
-						@hijacked
 					end
 					
 					# Can we use this connection to make requests?

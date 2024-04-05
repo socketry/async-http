@@ -50,8 +50,8 @@ module Async
 							response = yield(request, self)
 							body = response&.body
 							
-							if @stream.nil? and body.nil?
-								# Full hijack.
+							if hijacked?
+								body&.close
 								return
 							end
 							

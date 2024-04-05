@@ -65,7 +65,7 @@ describe Async::HTTP::Protocol::HTTP11 do
 						"Hello World!"
 					)
 					peer.close
-					
+
 					nil
 				end
 			end
@@ -80,6 +80,34 @@ describe Async::HTTP::Protocol::HTTP11 do
 				response = client.head("/")
 
 				expect(response.reason).to be == "It worked!"
+			end
+		end
+
+		with 'full hijack with empty response' do
+			let(:body) {Async::HTTP::Body::Buffered.new([], 0)}
+
+			let(:app) do
+				::Protocol::HTTP::Middleware.for do |request|
+					peer = request.hijack!
+
+          peer.write(
+            "#{request.version} 200 It worked!\r\n" +
+            "connection: close\r\n" +
+            "\r\n" +
+            "Hello World!"
+          )
+          peer.close
+
+					::Protocol::HTTP::Response[-1, {}, body]
+				end
+			end
+
+			it "works properly" do
+				expect(body).to receive(:close)
+
+				response = client.get("/")
+
+				expect(response.read).to be == "Hello World!"
 			end
 		end
 	end

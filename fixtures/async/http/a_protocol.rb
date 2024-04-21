@@ -190,9 +190,7 @@ module Async
 						elsif request.method == 'GET'
 							expect(request.body).to be_nil
 							
-							::Protocol::HTTP::Response[200, {
-								'remote-address' => request.remote_address.inspect
-							}, ["#{request.method} #{request.version}"]]
+							::Protocol::HTTP::Response[200, {'my-header' => 'my-value'}, ["#{request.method} #{request.version}"]]
 						else
 							::Protocol::HTTP::Response[200, {}, ["Hello World"]]
 						end
@@ -276,8 +274,8 @@ module Async
 							tempfile.close
 						end
 						
-						it "has remote-address header" do
-							expect(response.headers['remote-address']).not.to be_nil
+						it "has response header" do
+							expect(response.headers['my-header']).to be == ['my-value']
 						end
 						
 						it "has protocol version" do

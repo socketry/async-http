@@ -28,6 +28,18 @@ module Async
 				@scheme = scheme
 			end
 			
+			def as_json(...)
+				{
+					endpoint: @endpoint.to_s,
+					protocol: @protocol,
+					scheme: @scheme,
+				}
+			end
+			
+			def to_json(...)
+				as_json.to_json(...)
+			end
+			
 			attr :endpoint
 			attr :protocol
 			attr :scheme

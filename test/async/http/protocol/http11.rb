@@ -11,6 +11,29 @@ require 'async/http/a_protocol'
 describe Async::HTTP::Protocol::HTTP11 do
 	it_behaves_like Async::HTTP::AProtocol
 	
+	with '#as_json' do
+		include Sus::Fixtures::Async::HTTP::ServerContext
+		let(:protocol) {subject}
+		
+		it "generates a JSON representation" do
+			response = client.get("/")
+			connection = response.connection
+			
+			expect(connection.as_json).to be == "#<Async::HTTP::Protocol::HTTP1::Client negotiated HTTP/1.1, currently ready>"
+		ensure
+			response&.close
+		end
+		
+		it "generates a JSON string" do
+			response = client.get("/")
+			connection = response.connection
+			
+			expect(JSON.dump(connection)).to be == connection.to_json
+		ensure
+			response&.close
+		end
+	end
+	
 	with 'server' do
 		include Sus::Fixtures::Async::HTTP::ServerContext
 		let(:protocol) {subject}
@@ -90,13 +113,13 @@ describe Async::HTTP::Protocol::HTTP11 do
 				::Protocol::HTTP::Middleware.for do |request|
 					peer = request.hijack!
 
-          peer.write(
-            "#{request.version} 200 It worked!\r\n" +
-            "connection: close\r\n" +
-            "\r\n" +
-            "Hello World!"
-          )
-          peer.close
+					peer.write(
+						"#{request.version} 200 It worked!\r\n" +
+						"connection: close\r\n" +
+						"\r\n" +
+						"Hello World!"
+					)
+					peer.close
 
 					::Protocol::HTTP::Response[-1, {}, body]
 				end

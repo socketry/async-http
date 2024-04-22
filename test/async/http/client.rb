@@ -23,6 +23,40 @@ describe Async::HTTP::Client do
 			response.read
 			expect(response).to be(:success?)
 		end
+		
+		with 'client' do
+			with "#as_json" do
+				it "generates a JSON representation" do
+					expect(client.as_json).to be == {
+						endpoint: client.endpoint.to_s,
+						protocol: client.protocol,
+						retries: client.retries,
+						scheme: endpoint.scheme,
+						authority: endpoint.authority,
+					}
+				end
+				
+				it 'generates a JSON string' do
+					expect(JSON.dump(client)).to be == client.to_json
+				end
+			end
+		end
+		
+		with 'server' do
+			with "#as_json" do
+				it "generates a JSON representation" do
+					expect(server.as_json).to be == {
+						endpoint: server.endpoint.to_s,
+						protocol: server.protocol,
+						scheme: server.scheme,
+					}
+				end
+				
+				it 'generates a JSON string' do
+					expect(JSON.dump(server)).to be == server.to_json
+				end
+			end
+		end
 	end
 	
 	with 'non-existant host' do

@@ -42,6 +42,20 @@ module Async
 				@authority = authority
 			end
 			
+			def as_json(...)
+				{
+					endpoint: @endpoint.to_s,
+					protocol: @protocol,
+					retries: @retries,
+					scheme: @scheme,
+					authority: @authority,
+				}
+			end
+			
+			def to_json(...)
+				as_json.to_json(...)
+			end
+			
 			attr :endpoint
 			attr :protocol
 			

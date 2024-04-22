@@ -20,6 +20,18 @@ module Async
 						@version = version
 					end
 					
+					def to_s
+						"\#<#{self.class} negotiated #{@version}, currently #{@ready ? 'ready' : 'in-use'}>"
+					end
+					
+					def as_json(...)
+						to_s
+					end
+					
+					def to_json(...)
+						as_json.to_json(...)
+					end
+					
 					attr :version
 					
 					def http1?

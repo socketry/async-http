@@ -9,6 +9,29 @@ require 'async/http/a_protocol'
 describe Async::HTTP::Protocol::HTTP2 do
 	it_behaves_like Async::HTTP::AProtocol
 	
+	with '#as_json' do
+		include Sus::Fixtures::Async::HTTP::ServerContext
+		let(:protocol) {subject}
+		
+		it "generates a JSON representation" do
+			response = client.get("/")
+			connection = response.connection
+			
+			expect(connection.as_json).to be == "#<Async::HTTP::Protocol::HTTP2::Client 1 requests, 0 active streams>"
+		ensure
+			response&.close
+		end
+		
+		it "generates a JSON string" do
+			response = client.get("/")
+			connection = response.connection
+			
+			expect(JSON.dump(connection)).to be == connection.to_json
+		ensure
+			response&.close
+		end
+	end
+	
 	with 'server' do
 		include Sus::Fixtures::Async::HTTP::ServerContext
 		let(:protocol) {subject}

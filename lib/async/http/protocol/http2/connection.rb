@@ -36,7 +36,15 @@ module Async
 					end
 					
 					def to_s
-						"\#<#{self.class} #{@streams.count} active streams>"
+						"\#<#{self.class} #{@count} requests, #{@streams.count} active streams>"
+					end
+					
+					def as_json(...)
+						to_s
+					end
+					
+					def to_json(...)
+						as_json.to_json(...)
 					end
 					
 					attr :stream

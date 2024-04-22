@@ -3,7 +3,7 @@ falcon:
   command: bundle exec bake test
 async-rest:
   url: https://github.com/socketry/async-rest.git
-  command: bundle exec rspec
+  command: bundle exec sus
 async-websocket:
   url: https://github.com/socketry/async-websocket.git
   command: bundle exec sus

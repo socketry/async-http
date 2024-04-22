@@ -1,6 +1,6 @@
 # MIT License
 
-Copyright, 2017-2023, by Samuel Williams.  
+Copyright, 2017-2024, by Samuel Williams.  
 Copyright, 2018, by Viacheslav Koval.  
 Copyright, 2018, by Janko Marohnić.  
 Copyright, 2019, by Denis Talakevich.  
@@ -18,6 +18,9 @@ Copyright, 2022, by Ian Ker-Seymer.
 Copyright, 2022, by Marco Concetto Rudilosso.  
 Copyright, 2022, by Tim Meusel.  
 Copyright, 2023, by Thomas Morgan.  
+Copyright, 2023, by dependabot[bot].  
+Copyright, 2023, by Josh Huber.  
+Copyright, 2024, by Anton Zhuravsky.  
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

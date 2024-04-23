@@ -206,7 +206,7 @@ AProxy = Sus::Shared("a proxy") do
 			end
 			
 			with 'request includes headers' do
-				let(:headers) { [['Proxy-Authorization', 'supersecretpassword']] }
+				let(:headers) { [['proxy-authorization', 'supersecretpassword']] }
 				
 				it 'succeeds' do
 					endpoint = Async::HTTP::Endpoint.parse("https://www.google.com")

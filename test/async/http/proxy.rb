@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2019-2023, by Samuel Williams.
+# Copyright, 2019-2024, by Samuel Williams.
 # Copyright, 2020, by Sam Shadwell.
 
 require 'async'
@@ -86,12 +86,10 @@ AProxy = Sus::Shared("a proxy") do
 			expect(proxy.client.pool).to be(:empty?)
 			
 			proxy.connect do |peer|
-				stream = Async::IO::Stream.new(peer)
+				peer.write(data)
+				peer.close_write
 				
-				stream.write(data)
-				stream.close_write
-				
-				expect(stream.read).to be == data
+				expect(peer.read).to be == data
 			end
 			
 			proxy.close
@@ -102,14 +100,14 @@ AProxy = Sus::Shared("a proxy") do
 			proxy = Async::HTTP::Proxy.tcp(client, "localhost", 1)
 			expect(proxy.client.pool).to be(:empty?)
 			
-			stream = Async::IO::Stream.new(proxy.connect)
+			peer = proxy.connect
 			
-			stream.write(data)
-			stream.close_write
+			peer.write(data)
+			peer.close_write
 			
-			expect(stream.read).to be == data
+			expect(peer.read).to be == data
 			
-			stream.close
+			peer.close
 			proxy.close
 			
 			expect(proxy.client.pool).to be(:empty?)
@@ -131,7 +129,7 @@ AProxy = Sus::Shared("a proxy") do
 				Console.logger.debug(self) {"Making connection to #{endpoint}..."}
 				
 				Async::HTTP::Body::Hijack.response(request, 200, {}) do |stream|
-					upstream = Async::IO::Stream.new(endpoint.connect)
+					upstream = ::IO::Stream::Buffered.wrap(endpoint.connect)
 					Console.logger.debug(self) {"Connected to #{upstream}..."}
 					
 					reader = Async do |task|

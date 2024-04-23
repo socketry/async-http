@@ -62,7 +62,7 @@ module Async
 					
 					# Can we use this connection to make requests?
 					def viable?
-						@ready && @stream&.connected?
+						@ready && @stream&.readable?
 					end
 					
 					def reusable?

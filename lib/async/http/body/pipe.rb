@@ -1,11 +1,8 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2019-2023, by Samuel Williams.
+# Copyright, 2019-2024, by Samuel Williams.
 # Copyright, 2020, by Bruno Sutic.
-
-require 'async/io/socket'
-require 'async/io/stream'
 
 require_relative 'writable'
 
@@ -18,9 +15,9 @@ module Async
 					@input = input
 					@output = output
 					
-					head, tail = IO::Socket.pair(Socket::AF_UNIX, Socket::SOCK_STREAM)
+					head, tail = ::Socket.pair(Socket::AF_UNIX, Socket::SOCK_STREAM)
 					
-					@head = IO::Stream.new(head)
+					@head = ::IO::Stream::Buffered.new(head)
 					@tail = tail
 					
 					@reader = nil

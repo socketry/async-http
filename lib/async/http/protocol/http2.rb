@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2018-2023, by Samuel Williams.
+# Copyright, 2018-2024, by Samuel Williams.
 
 require_relative 'http2/client'
 require_relative 'http2/server'
+
+require 'io/stream/buffered'
 
 module Async
 	module HTTP
@@ -35,8 +37,7 @@ module Async
 				}
 				
 				def self.client(peer, settings = CLIENT_SETTINGS)
-					stream = IO::Stream.new(peer, sync: true)
-					
+					stream = ::IO::Stream::Buffered.wrap(peer)
 					client = Client.new(stream)
 					
 					client.send_connection_preface(settings)
@@ -46,8 +47,7 @@ module Async
 				end
 				
 				def self.server(peer, settings = SERVER_SETTINGS)
-					stream = IO::Stream.new(peer, sync: true)
-					
+					stream = ::IO::Stream::Buffered.wrap(peer)
 					server = Server.new(stream)
 					
 					server.read_connection_preface(settings)

@@ -202,6 +202,9 @@ module Async
 				end
 				
 				it "disconnects slow clients" do
+					# We won't be able to disconnect slow clients if IO#timeout is not available:
+					skip_unless_method_defined(:timeout, IO)
+					
 					response = client.get("/")
 					response.read
 					
@@ -478,9 +481,11 @@ module Async
 				end
 				
 				it "can't get /" do
+					skip_unless_method_defined(:timeout, IO)
+					
 					expect do
 						client.get("/")
-					end.to raise_exception(Async::TimeoutError)
+					end.to raise_exception(::IO::TimeoutError)
 				end
 			end
 			

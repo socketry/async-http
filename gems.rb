@@ -9,6 +9,7 @@ gemspec
 
 # gem "async", path: "../async"
 # gem "async-io", path: "../async-io"
+# gem "io-stream", path: "../io-stream"
 # gem "traces", path: "../traces"
 
 # gem "protocol-http", path: "../protocol-http"

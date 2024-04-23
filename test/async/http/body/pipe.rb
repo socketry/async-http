@@ -42,7 +42,7 @@ describe Async::HTTP::Body::Pipe do
 		end
 		
 		it "returns an io socket" do
-			expect(io).to be_a(Async::IO::Socket)
+			expect(io).to be_a(::Socket)
 			expect(io.read).to be == data
 		end
 		

@@ -90,19 +90,18 @@ module Async
 									self.consume_window
 									self.read_frame
 								end
-							rescue SocketError, IOError, EOFError, Errno::ECONNRESET, Errno::EPIPE, Async::Wrapper::Cancelled
-								# Ignore.
-							rescue ::Protocol::HTTP2::GoawayError => error
+							rescue Async::Stop, ::IO::TimeoutError, ::Protocol::HTTP2::GoawayError => error
 								# Error is raised if a response is actively reading from the
 								# connection. The connection is silently closed if GOAWAY is
 								# received outside the request/response cycle.
-								if @reader
-									self.close(error)
-								end
+							rescue SocketError, IOError, EOFError, Errno::ECONNRESET, Errno::EPIPE => ignored_error
+								# Ignore.
+							rescue => error
+								# Every other error.
 							ensure
 								# Don't call #close twice.
 								if @reader
-									self.close($!)
+									self.close(error)
 								end
 							end
 						end

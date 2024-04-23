@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2018-2023, by Samuel Williams.
+# Copyright, 2018-2024, by Samuel Williams.
 
 require_relative '../request'
 
@@ -15,7 +15,7 @@ module Async
 							self.new(connection, *parts)
 						end
 					end
-
+					
 					UPGRADE = 'upgrade'
 					
 					def initialize(connection, authority, method, path, version, headers, body)

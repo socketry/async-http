@@ -202,9 +202,6 @@ module Async
 				end
 				
 				it "disconnects slow clients" do
-					# We won't be able to disconnect slow clients if IO#timeout is not available:
-					skip_unless_method_defined(:timeout, IO)
-					
 					response = client.get("/")
 					response.read
 					
@@ -481,8 +478,6 @@ module Async
 				end
 				
 				it "can't get /" do
-					skip_unless_method_defined(:timeout, IO)
-					
 					expect do
 						client.get("/")
 					end.to raise_exception(::IO::TimeoutError)
@@ -536,47 +531,45 @@ module Async
 					end
 				end
 				
-				def around
-					current = Console.logger.level
-					Console.logger.fatal!
-					
-					super
-				ensure
-					Console.logger.level = current
-				end
-				
 				it "doesn't cancel all requests" do
-					tasks = []
 					task = Async::Task.current
+					tasks = []
 					stopped = []
 					
 					10.times do
-						tasks << task.async {
-							begin
-								loop do
-									client.get('http://127.0.0.1:8080/a').finish
-								end
+						task.async do |child|
+							tasks << child
+							
+							loop do
+								response = client.get('/a')
+								response.finish
 							ensure
-								stopped << 'a'
+								response&.close
 							end
-						}
+						ensure
+							stopped << 'a'
+						end
 					end
 					
 					10.times do
-						tasks << task.async {
-							begin
-								loop do
-									client.get('http://127.0.0.1:8080/b').finish
-								end
+						task.async do |child|
+							tasks << child
+							
+							loop do
+								response = client.get('/b')
+								response.finish
 							ensure
-								stopped << 'b'
+								response&.close
 							end
-						}
+						ensure
+							stopped << 'b'
+						end
 					end
 					
 					tasks.each do |child|
 						sleep 0.01
 						child.stop
+						child.wait
 					end
 					
 					expect(stopped.sort).to be == stopped

@@ -4,8 +4,7 @@
 # Copyright, 2017-2024, by Samuel Williams.
 # Copyright, 2019, by Brian Morearty.
 
-require 'async/io/endpoint'
-require 'async/io/stream'
+require 'io/endpoint'
 
 require 'protocol/http/middleware'
 

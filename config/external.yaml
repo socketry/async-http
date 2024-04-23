@@ -9,7 +9,7 @@ async-websocket:
   command: bundle exec sus
 async-http-faraday:
   url: https://github.com/socketry/async-http-faraday.git
-  command: bundle exec rspec
+  command: bundle exec bake test
 # async-http-cache:
 #   url: https://github.com/socketry/async-http-cache.git
 #   command: bundle exec rspec

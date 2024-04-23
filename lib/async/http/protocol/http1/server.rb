@@ -15,10 +15,10 @@ module Async
 				class Server < Connection
 					def fail_request(status)
 						@persistent = false
-						write_response(@version, status, {}, nil)
+						write_response(@version, status, {})
 						write_body(@version, nil)
 					rescue Errno::ECONNRESET, Errno::EPIPE
-						# Handle when connection is already closed
+						# Nothing we can do...
 					end
 					
 					def next_request
@@ -110,7 +110,6 @@ module Async
 							end
 						end
 					end
-					
 				end
 			end
 		end

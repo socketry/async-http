@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2019-2023, by Samuel Williams.
+# Copyright, 2019-2024, by Samuel Williams.
 
 require "async"
 require "async/clock"
@@ -11,8 +11,6 @@ require_relative "../../lib/async/http"
 
 URL = "https://www.google.com/search"
 ENDPOINT = Async::HTTP::Endpoint.parse(URL)
-
-# Console.logger.enable(Async::IO::Stream, Console::Logger::DEBUG)
 
 class Google < Protocol::HTTP::Middleware
 	def search(term)

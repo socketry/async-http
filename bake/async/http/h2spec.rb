@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2019-2023, by Samuel Williams.
+# Copyright, 2019-2024, by Samuel Williams.
 
 def build
 	# Fetch the code:
@@ -24,9 +24,9 @@ def server
 	require 'async'
 	require 'async/container'
 	require 'async/http/server'
-	require 'async/io/host_endpoint'
+	require 'io/endpoint/host_endpoint'
 	
-	endpoint = Async::IO::Endpoint.tcp('127.0.0.1', 7272)
+	endpoint = IO::Endpoint.tcp('127.0.0.1', 7272)
 	
 	container = Async::Container.new
 	

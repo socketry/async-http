@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2018-2023, by Samuel Williams.
+# Copyright, 2018-2024, by Samuel Williams.
 # Copyright, 2021-2022, by Adam Daniels.
 
 require 'async/http/endpoint'
@@ -36,7 +36,7 @@ describe Async::HTTP::Endpoint do
 			end
 			
 			it "should be connecting to 127.0.0.1" do
-				expect(subject.endpoint).to be_a Async::IO::SSLEndpoint
+				expect(subject.endpoint).to be_a ::IO::Endpoint::SSLEndpoint
 				expect(subject.endpoint).to have_attributes(hostname: be == '127.0.0.1')
 				expect(subject.endpoint.endpoint).to have_attributes(hostname: be == '127.0.0.1')
 			end
@@ -49,7 +49,7 @@ describe Async::HTTP::Endpoint do
 			end
 			
 			it "should be connecting to localhost" do
-				expect(subject.endpoint).to be_a Async::IO::SSLEndpoint
+				expect(subject.endpoint).to be_a ::IO::Endpoint::SSLEndpoint
 				expect(subject.endpoint).to have_attributes(hostname: be == '127.0.0.1')
 				expect(subject.endpoint.endpoint).to have_attributes(hostname: be == 'localhost')
 			end

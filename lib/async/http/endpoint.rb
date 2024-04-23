@@ -4,10 +4,9 @@
 # Copyright, 2019-2024, by Samuel Williams.
 # Copyright, 2021-2022, by Adam Daniels.
 
-require 'async/io/host_endpoint'
-require 'async/io/ssl_endpoint'
-require 'async/io/ssl_socket'
-require 'async/io/shared_endpoint'
+require 'io/endpoint'
+require 'io/endpoint/host_endpoint'
+require 'io/endpoint/ssl_endpoint'
 
 require_relative 'protocol/http1'
 require_relative 'protocol/https'
@@ -15,7 +14,7 @@ require_relative 'protocol/https'
 module Async
 	module HTTP
 		# Represents a way to connect to a remote HTTP server.
-		class Endpoint < Async::IO::Endpoint
+		class Endpoint < ::IO::Endpoint::Generic
 			def self.parse(string, endpoint = nil, **options)
 				url = URI.parse(string).normalize
 				
@@ -164,7 +163,7 @@ module Async
 				
 				if secure?
 					# Wrap it in SSL:
-					return Async::IO::SSLEndpoint.new(endpoint,
+					return ::IO::Endpoint::SSLEndpoint.new(endpoint,
 						ssl_context: self.ssl_context,
 						hostname: @url.hostname,
 						timeout: self.timeout,
@@ -226,7 +225,7 @@ module Async
 			end
 			
 			def tcp_endpoint
-				Async::IO::Endpoint.tcp(self.hostname, port, **tcp_options)
+				::IO::Endpoint.tcp(self.hostname, port, **tcp_options)
 			end
 		end
 	end

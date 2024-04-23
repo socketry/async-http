@@ -124,7 +124,7 @@ AProxy = Sus::Shared("a proxy") do
 				end
 				
 				host, port = request.path.split(":", 2)
-				endpoint = Async::IO::Endpoint.tcp(host, port)
+				endpoint = IO::Endpoint.tcp(host, port)
 				
 				Console.logger.debug(self) {"Making connection to #{endpoint}..."}
 				

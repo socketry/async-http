@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2019-2023, by Samuel Williams.
+# Copyright, 2019-2024, by Samuel Williams.
 
 require_relative 'client'
 require_relative 'endpoint'
@@ -46,7 +46,7 @@ module Async
 			# @param host [String] the hostname or address to connect to.
 			# @param port [String] the port number to connect to.
 			# @param headers [Array] an optional list of headers to use when establishing the connection.
-			# @see Async::IO::Endpoint#tcp
+			# @see IO::Endpoint#tcp
 			def self.tcp(client, host, port, headers = nil)
 				self.new(client, "#{host}:#{port}", headers)
 			end

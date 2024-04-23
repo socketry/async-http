@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2018-2023, by Samuel Williams.
+# Copyright, 2018-2024, by Samuel Williams.
 
 require 'async/http/body'
 
@@ -9,6 +9,7 @@ require 'sus/fixtures/async'
 require 'sus/fixtures/openssl'
 require 'sus/fixtures/async/http'
 require 'localhost/authority'
+require 'io/endpoint/ssl_endpoint'
 
 ABody = Sus::Shared("a body") do
 	with 'echo server' do
@@ -97,11 +98,11 @@ describe Async::HTTP::Protocol::HTTPS do
 	let(:client_context) {authority.client_context}
 	
 	def make_server_endpoint(bound_endpoint)
-		Async::IO::SSLEndpoint.new(super, ssl_context: server_context)
+		::IO::Endpoint::SSLEndpoint.new(super, ssl_context: server_context)
 	end
 	
 	def make_client_endpoint(bound_endpoint)
-		Async::IO::SSLEndpoint.new(super, ssl_context: client_context)
+		::IO::Endpoint::SSLEndpoint.new(super, ssl_context: client_context)
 	end
 	
 	it_behaves_like ABody

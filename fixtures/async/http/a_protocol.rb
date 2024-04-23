@@ -135,7 +135,7 @@ module Async
 							
 							Async do |task|
 								body.write("response trailer")
-								task.sleep(0.01)
+								sleep(0.01)
 								headers.add('etag', 'abcd')
 								body.close
 							end
@@ -154,7 +154,7 @@ module Async
 					
 					Async do |task|
 						body.write("Hello")
-						task.sleep(0.01)
+						sleep(0.01)
 						headers.add('etag', 'abcd')
 						body.close
 					end
@@ -413,7 +413,7 @@ module Async
 								chunks << chunk
 								
 								body.write chunk
-								task.sleep 0.25
+								sleep 0.25
 							end
 							
 							body.finish
@@ -570,7 +570,7 @@ module Async
 					end
 					
 					tasks.each do |child|
-						task.sleep 0.01
+						sleep 0.01
 						child.stop
 					end
 					

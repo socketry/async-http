@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2021-2023, by Samuel Williams.
+# Copyright, 2021-2024, by Samuel Williams.
 
 require 'async'
 require_relative '../../lib/async/http/internet'
@@ -38,7 +38,7 @@ Async do |task|
 	end
 	
 	tasks.each do |t|
-		task.sleep 0.1
+		sleep 0.1
 		t.stop
 	end
 end

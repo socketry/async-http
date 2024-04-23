@@ -2,7 +2,7 @@
 
 # Released under the MIT License.
 # Copyright, 2020, by Bruno Sutic.
-# Copyright, 2020-2023, by Samuel Williams.
+# Copyright, 2020-2024, by Samuel Williams.
 
 require 'async'
 require 'async/http/body/pipe'
@@ -29,7 +29,7 @@ describe Async::HTTP::Body::Pipe do
 			Async do |task|
 				first, second = data.split(' ')
 				input.write("#{first} ")
-				task.sleep(input_write_duration) if input_write_duration > 0
+				sleep(input_write_duration) if input_write_duration > 0
 				input.write(second)
 				input.close
 			end

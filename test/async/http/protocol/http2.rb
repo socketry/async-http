@@ -90,7 +90,7 @@ describe Async::HTTP::Protocol::HTTP2 do
 						begin
 							100.times do |i|
 								body.write("Chunk #{i}")
-								task.sleep (0.01)
+								sleep (0.01)
 							end
 						rescue
 							# puts "Response generation failed: #{$!}"

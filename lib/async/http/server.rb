@@ -65,7 +65,7 @@ module Async
 			ensure
 				connection&.close
 			end
-			
+			 
 			def run
 				@endpoint.accept(&self.method(:accept))
 			end

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2019-2023, by Samuel Williams.
+# Copyright, 2019-2024, by Samuel Williams.
 
 require 'sus/fixtures/async'
 require 'async/http'
@@ -21,7 +21,7 @@ describe Rack::Test do
 				Async do |task|
 					chunks.each do |chunk|
 						body.write(chunk)
-						task.sleep(0.1)
+						sleep(0.1)
 					end
 					
 					body.close

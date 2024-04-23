@@ -35,6 +35,10 @@ module Async
 						@write_frame_guard = Async::Semaphore.new(1)
 					end
 					
+					def synchronize(&block)
+						@write_frame_guard.acquire(&block)
+					end
+					
 					def to_s
 						"\#<#{self.class} #{@count} requests, #{@streams.count} active streams>"
 					end
@@ -70,23 +74,6 @@ module Async
 							@reader = nil
 							reader.stop
 						end
-					end
-					
-					def write_frame(frame)
-						# We don't want to write multiple frames at the same time.
-						@write_frame_guard.acquire do
-							super
-						end
-						
-						@stream.flush
-					end
-					
-					def write_frames(&block)
-						@write_frame_guard.acquire do
-							super
-						end
-						
-						@stream.flush
 					end
 					
 					def read_in_background(parent: Task.current)

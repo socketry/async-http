@@ -7,7 +7,6 @@ require 'async/http/server'
 require 'async/http/client'
 require 'async/reactor'
 
-require 'async/io/ssl_socket'
 require 'async/http/endpoint'
 require 'protocol/http/accept_encoding'
 

@@ -64,9 +64,15 @@ module Async
 			ensure
 				connection&.close
 			end
-			 
+			
+			# @returns [Array(Async::Task)] The task that is running the server.
 			def run
-				@endpoint.accept(&self.method(:accept))
+				Async do
+					@endpoint.accept(&self.method(:accept))
+					
+					# Wait for all children to finish:
+					self.children.each(&:wait)
+				end
 			end
 			
 			Traces::Provider(self) do

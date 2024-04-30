@@ -5,6 +5,6 @@
 
 module Async
 	module HTTP
-		VERSION = "0.66.0"
+		VERSION = "0.66.1"
 	end
 end

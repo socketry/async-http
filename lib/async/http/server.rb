@@ -67,11 +67,11 @@ module Async
 			
 			# @returns [Array(Async::Task)] The task that is running the server.
 			def run
-				Async do
+				Async do |task|
 					@endpoint.accept(&self.method(:accept))
 					
 					# Wait for all children to finish:
-					self.children.each(&:wait)
+					task.children.each(&:wait)
 				end
 			end
 			

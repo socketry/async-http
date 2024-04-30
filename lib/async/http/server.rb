@@ -4,10 +4,9 @@
 # Copyright, 2017-2024, by Samuel Williams.
 # Copyright, 2019, by Brian Morearty.
 
+require 'async'
 require 'io/endpoint'
-
 require 'protocol/http/middleware'
-
 require 'traces/provider'
 
 require_relative 'protocol'

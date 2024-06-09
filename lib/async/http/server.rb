@@ -4,10 +4,9 @@
 # Copyright, 2017-2024, by Samuel Williams.
 # Copyright, 2019, by Brian Morearty.
 
+require 'async'
 require 'io/endpoint'
-
 require 'protocol/http/middleware'
-
 require 'traces/provider'
 
 require_relative 'protocol'
@@ -64,9 +63,15 @@ module Async
 			ensure
 				connection&.close
 			end
-			 
+			
+			# @returns [Array(Async::Task)] The task that is running the server.
 			def run
-				@endpoint.accept(&self.method(:accept))
+				Async do |task|
+					@endpoint.accept(&self.method(:accept))
+					
+					# Wait for all children to finish:
+					task.children.each(&:wait)
+				end
 			end
 			
 			Traces::Provider(self) do

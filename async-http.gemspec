@@ -26,8 +26,8 @@ Gem::Specification.new do |spec|
 	
 	spec.add_dependency "async", ">= 2.10.2"
 	spec.add_dependency "async-pool", ">= 0.6.1"
-	spec.add_dependency "io-endpoint", "~> 0.10.0"
-	spec.add_dependency "io-stream", "~> 0.4.0"
+	spec.add_dependency "io-endpoint", "~> 0.10", ">= 0.10.3"
+	spec.add_dependency "io-stream", "~> 0.4"
 	spec.add_dependency "protocol-http", "~> 0.26.0"
 	spec.add_dependency "protocol-http1", "~> 0.19.0"
 	spec.add_dependency "protocol-http2", "~> 0.17.0"

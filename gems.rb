@@ -24,7 +24,7 @@ group :maintenance, optional: true do
 	gem "bake-modernize"
 	gem "bake-gem"
 	
-	gem "bake-github-pages"
+	gem "falcon", "~> 0.46"
 	gem "utopia-project"
 end
 

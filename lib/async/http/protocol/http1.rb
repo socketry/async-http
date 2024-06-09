@@ -2,11 +2,12 @@
 
 # Released under the MIT License.
 # Copyright, 2017-2024, by Samuel Williams.
+# Copyright, 2023, by Thomas Morgan.
 
 require_relative 'http1/client'
 require_relative 'http1/server'
 
-require 'io/stream/buffered'
+require 'io/stream'
 
 module Async
 	module HTTP
@@ -23,13 +24,13 @@ module Async
 				end
 				
 				def self.client(peer)
-					stream = ::IO::Stream::Buffered.wrap(peer)
+					stream = ::IO::Stream(peer)
 					
 					return HTTP1::Client.new(stream, VERSION)
 				end
 				
 				def self.server(peer)
-					stream = ::IO::Stream::Buffered.wrap(peer)
+					stream = ::IO::Stream(peer)
 					
 					return HTTP1::Server.new(stream, VERSION)
 				end

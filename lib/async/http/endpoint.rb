@@ -8,7 +8,7 @@ require 'io/endpoint'
 require 'io/endpoint/host_endpoint'
 require 'io/endpoint/ssl_endpoint'
 
-require_relative 'protocol/http1'
+require_relative 'protocol/http'
 require_relative 'protocol/https'
 
 module Async

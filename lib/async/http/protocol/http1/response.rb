@@ -31,7 +31,8 @@ module Async
 						@connection = connection
 						@reason = reason
 						
-						protocol = headers.delete(UPGRADE)
+						# Technically, there should never be more than one value for the upgrade header, but we'll just take the first one to avoid complexity.
+						protocol = headers.delete(UPGRADE)&.first
 						
 						super(version, status, headers, body, protocol)
 					end

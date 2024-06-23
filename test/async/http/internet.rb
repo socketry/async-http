@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2018-2023, by Samuel Williams.
+# Copyright, 2018-2024, by Samuel Williams.
+# Copyright, 2024, by Igor Sidorov.
+# Copyright, 2024, by Hal Brodigan.
 
 require 'async/http/internet'
 require 'async/reactor'

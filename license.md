@@ -7,7 +7,7 @@ Copyright, 2019, by Denis Talakevich.
 Copyright, 2019-2020, by Brian Morearty.  
 Copyright, 2019, by Cyril Roelandt.  
 Copyright, 2020, by Stefan Wrobel.  
-Copyright, 2020, by Igor Sidorov.  
+Copyright, 2020-2024, by Igor Sidorov.  
 Copyright, 2020, by Bruno Sutic.  
 Copyright, 2020, by Sam Shadwell.  
 Copyright, 2020, by Orgad Shaneh.  
@@ -21,6 +21,7 @@ Copyright, 2023-2024, by Thomas Morgan.
 Copyright, 2023, by dependabot[bot].  
 Copyright, 2023, by Josh Huber.  
 Copyright, 2024, by Anton Zhuravsky.  
+Copyright, 2024, by Hal Brodigan.  
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

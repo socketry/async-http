@@ -2,6 +2,7 @@
 
 # Released under the MIT License.
 # Copyright, 2024, by Thomas Morgan.
+# Copyright, 2024, by Samuel Williams.
 
 require 'async/http/protocol/http'
 require 'async/http/a_protocol'

@@ -2,6 +2,7 @@
 
 # Released under the MIT License.
 # Copyright, 2024, by Thomas Morgan.
+# Copyright, 2024, by Samuel Williams.
 
 require_relative 'http1'
 require_relative 'http2'

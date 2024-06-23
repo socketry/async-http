@@ -33,4 +33,18 @@ describe Async::HTTP::Internet do
 		expect(response).to be(:success?)
 		expect{JSON.parse(response.read)}.not.to raise_exception
 	end
+	
+	it 'can fetch remote website when given custom endpoint instead of url' do
+		ssl_context = OpenSSL::SSL::SSLContext.new
+		ssl_context.set_params(verify_mode: OpenSSL::SSL::VERIFY_NONE)
+		
+		# example of site with invalid certificate that will fail to be fetched without custom SSL options
+		endpoint = Async::HTTP::Endpoint.parse('https://expired.badssl.com', ssl_context: ssl_context)
+		
+		response = internet.get(endpoint, headers)
+		
+		expect(response).to be(:success?)
+	ensure
+		response&.close
+	end
 end

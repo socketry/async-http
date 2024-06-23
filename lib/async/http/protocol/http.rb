@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2023, by Thomas Morgan.
+# Copyright, 2024, by Thomas Morgan.
 
 require_relative 'http1'
 require_relative 'http2'

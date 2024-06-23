@@ -3,6 +3,7 @@
 # Released under the MIT License.
 # Copyright, 2019-2024, by Samuel Williams.
 # Copyright, 2021-2022, by Adam Daniels.
+# Copyright, 2024, by Thomas Morgan.
 
 require 'io/endpoint'
 require 'io/endpoint/host_endpoint'

@@ -2,7 +2,7 @@
 
 # Released under the MIT License.
 # Copyright, 2018-2024, by Samuel Williams.
-# Copyright, 2023, by Thomas Morgan.
+# Copyright, 2024, by Thomas Morgan.
 
 require_relative 'http2/client'
 require_relative 'http2/server'

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2023, by Thomas Morgan.
+# Copyright, 2024, by Thomas Morgan.
 
 require 'async/http/protocol/http'
 require 'async/http/a_protocol'

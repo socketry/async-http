@@ -17,7 +17,7 @@ Copyright, 2021-2022, by Adam Daniels.
 Copyright, 2022, by Ian Ker-Seymer.  
 Copyright, 2022, by Marco Concetto Rudilosso.  
 Copyright, 2022, by Tim Meusel.  
-Copyright, 2023, by Thomas Morgan.  
+Copyright, 2023-2024, by Thomas Morgan.  
 Copyright, 2023, by dependabot[bot].  
 Copyright, 2023, by Josh Huber.  
 Copyright, 2024, by Anton Zhuravsky.  

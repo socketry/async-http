@@ -3,7 +3,7 @@
 # Released under the MIT License.
 # Copyright, 2017-2024, by Samuel Williams.
 # Copyright, 2018, by Janko Marohnić.
-# Copyright, 2023, by Thomas Morgan.
+# Copyright, 2024, by Thomas Morgan.
 
 require_relative 'http1'
 

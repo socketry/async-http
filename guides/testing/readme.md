@@ -1,6 +1,8 @@
-# Mocking
+# Testing
 
-This guide explains how to modify `Async::HTTP::Client` for mocking responses in tests.
+This guide explains how to use `Async::HTTP` clients and servers in your tests.
+
+In general, you should avoid making real HTTP requests in your tests. Instead, you should use a mock server or a fake client.
 
 ## Mocking HTTP Responses
 

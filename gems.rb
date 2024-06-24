@@ -44,7 +44,4 @@ group :test do
 
 	gem "localhost"
 	gem "rack-test"
-	
-	# Optional dependency:
-	gem "thread-local"
 end

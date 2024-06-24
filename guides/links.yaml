@@ -1,2 +1,4 @@
-mocking:
-  order: 5
+getting-started:
+  order: 0
+testing:
+  order: 1

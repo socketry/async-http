@@ -4,13 +4,24 @@
 # Copyright, 2021-2023, by Samuel Williams.
 
 require_relative '../internet'
-require 'thread/local'
+
+::Thread.attr_accessor :async_http_internet_instance
 
 module Async
 	module HTTP
 		class Internet
-			# Provide access to a shared thread-local instance.
-			extend ::Thread::Local
+			# The global instance of the internet.
+			def self.instance
+				::Thread.current.async_http_internet_instance ||= self.new
+			end
+			
+			class << self
+				::Protocol::HTTP::Methods.each do |name, verb|
+					define_method(verb.downcase) do |url, headers = nil, body = nil, &block|
+						self.instance.call(verb, url, headers, body, &block)
+					end
+				end
+			end
 		end
 	end
 end

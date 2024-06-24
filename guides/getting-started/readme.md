@@ -22,10 +22,10 @@ $ bundle add async-http
 
 ### Making a Request
 
-To make a request, create an instance of {ruby Async::HTTP::Internet} and call the appropriate method:
+To make a request, use {ruby Async::HTTP::Internet} and call the appropriate method:
 
 ~~~ ruby
-require 'async/http/internet'
+require 'async/http/internet/instance'
 
 Sync do
 	Async::HTTP::Internet.get("https://httpbin.org/get") do |response|
@@ -44,7 +44,7 @@ Async::HTTP::Internet.methods(false)
 Using a block will automatically close the response when the block completes. If you want to keep the response open, you can manage it manually:
 
 ~~~ ruby
-require 'async/http'
+require 'async/http/internet/instance'
 
 Sync do
 	response = Async::HTTP::Internet.get("https://httpbin.org/get")
@@ -63,7 +63,6 @@ By default, {ruby Async::HTTP::Internet} will create a {ruby Async::HTTP::Client
 ### Downloading a File
 
 ~~~ ruby
-require 'async/http'
 require 'async/http/internet/instance'
 
 Sync do
@@ -82,7 +81,6 @@ end
 To post data, use the `post` method:
 
 ~~~ ruby
-require 'async/http'
 require 'async/http/internet/instance'
 
 data = {'life' => 42}
@@ -109,7 +107,6 @@ For more complex scenarios, including HTTP APIs, consider using [async-rest](htt
 To set a timeout for a request, use the `Task#with_timeout` method:
 
 ~~~ ruby
-require 'async/http'
 require 'async/http/internet/instance'
 
 Sync do |task|

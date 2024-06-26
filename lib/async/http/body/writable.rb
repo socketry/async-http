@@ -25,6 +25,7 @@ module Async
 					
 					@count = 0
 					
+					# Whether there is any more data to read from this body:
 					@finished = false
 					
 					@closed = false
@@ -66,6 +67,11 @@ module Async
 					
 					unless chunk = @queue.dequeue
 						@finished = true
+						
+						# If the queue was closed, and there was an error, raise it.
+						if @closed and @error
+							raise(@error)
+						end
 					end
 					
 					return chunk

@@ -64,7 +64,7 @@ module Async
 				connection&.close
 			end
 			
-			# @returns [Array(Async::Task)] The task that is running the server.
+			# @returns [Async::Task] The task that is running the server.
 			def run
 				Async do |task|
 					@endpoint.accept(&self.method(:accept))

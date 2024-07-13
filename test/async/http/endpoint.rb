@@ -86,11 +86,11 @@ describe Async::HTTP::Endpoint do
 			it "should raise an argument error" do
 				expect do
 					Async::HTTP::Endpoint.for("foo", "localhost")
-				end.to raise_exception(ArgumentError, message: be =~ /scheme/)
+				end.to raise_exception(ArgumentError, message: be =~ /Unsupported scheme: "foo"/)
 				
 				expect do
 					Async::HTTP::Endpoint.for(:http, "localhost", "/foo")
-				end.to raise_exception(ArgumentError, message: be =~ /scheme/)
+				end.to raise_exception(ArgumentError, message: be =~ /Unsupported scheme: :http/)
 			end
 		end
 	end

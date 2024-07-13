@@ -18,9 +18,12 @@ module Async
 	module HTTP
 		# Represents a way to connect to a remote HTTP server.
 		class Endpoint < ::IO::Endpoint::Generic
-			SCHEMES = ['HTTP', 'HTTPS', 'WS', 'WSS'].to_h do |scheme|
-				[scheme.downcase, URI.scheme_list[scheme]]
-			end
+			SCHEMES = {
+				'http' => URI::HTTP,
+				'https' => URI::HTTPS,
+				'ws' => URI::WS,
+				'wss' => URI::WSS,
+			}
 			
 			def self.parse(string, endpoint = nil, **options)
 				url = URI.parse(string).normalize
@@ -36,7 +39,7 @@ module Async
 			def self.for(scheme, hostname, path = "/", **options)
 				# TODO: Consider using URI.for once it becomes available:
 				uri_klass = SCHEMES.fetch(scheme.downcase) do
-					raise ArgumentError, "Unsupported scheme: #{scheme}"
+					raise ArgumentError, "Unsupported scheme: #{scheme.inspect}"
 				end
 				
 				self.new(

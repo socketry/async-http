@@ -81,6 +81,18 @@ describe Async::HTTP::Endpoint do
 				expect(subject).not.to be(:secure?)
 			end
 		end
+		
+		with 'invalid scheme' do
+			it "should raise an argument error" do
+				expect do
+					Async::HTTP::Endpoint.for("foo", "localhost")
+				end.to raise_exception(ArgumentError, message: be =~ /scheme/)
+				
+				expect do
+					Async::HTTP::Endpoint.for(:http, "localhost", "/foo")
+				end.to raise_exception(ArgumentError, message: be =~ /scheme/)
+			end
+		end
 	end
 	
 	with '#secure?' do

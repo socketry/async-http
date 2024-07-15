@@ -18,7 +18,7 @@ describe Async::HTTP::Internet do
 	let(:headers) {[['accept', '*/*'], ['user-agent', 'async-http']]}
 	
 	it "can fetch remote website" do
-		response = internet.get("https://www.codeotaku.com/index", headers)
+		response = internet.get("https://www.google.com/", headers)
 		
 		expect(response).to be(:success?)
 		
@@ -26,7 +26,7 @@ describe Async::HTTP::Internet do
 	end
 	
 	it "can accept URI::HTTP objects" do
-		uri = URI.parse("https://www.codeotaku.com/index")
+		uri = URI.parse("https://www.google.com/")
 		response = internet.get(uri, headers)
 		
 		expect(response).to be(:success?)

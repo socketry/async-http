@@ -247,9 +247,8 @@ module Async
 					with 'with response' do
 						let(:response) {client.get("/")}
 						
-						def after
+						after do
 							response.finish
-							super
 						end
 						
 						it "can finish gracefully" do
@@ -299,9 +298,8 @@ module Async
 				with 'POST' do
 					let(:response) {client.post("/", {}, ["Hello", " ", "World"])}
 					
-					def after
+					after do
 						response.finish
-						super
 					end
 					
 					it "is successful" do

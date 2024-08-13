@@ -30,7 +30,10 @@ describe Async::HTTP::RelativeLocation do
 			end
 			
 			it 'should redirect POST to GET' do
-				response = relative_location.post('/')
+				body = Protocol::HTTP::Body::Buffered.wrap(["Hello, World!"])
+				expect(body).to receive(:finish)
+				
+				response = relative_location.post('/', {}, body)
 				
 				expect(response).to be(:success?)
 				expect(response.read).to be == "GET"
@@ -44,9 +47,22 @@ describe Async::HTTP::RelativeLocation do
 				end
 				
 				it 'should fail with maximum redirects' do
-					expect{
+					expect do
 						response = relative_location.get('/home')
-					}.to raise_exception(Async::HTTP::TooManyRedirects, message: be =~ /maximum/)
+					end.to raise_exception(Async::HTTP::TooManyRedirects, message: be =~ /maximum/)
+				end
+			end
+			
+			with "handle_redirect returning false" do
+				before do
+					expect(relative_location).to receive(:handle_redirect).and_return(false)
+				end
+				
+				it "should not follow the redirect" do
+					response = relative_location.get('/')
+					response.finish
+					
+					expect(response).to be(:redirection?)
 				end
 			end
 		end

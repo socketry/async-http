@@ -4,12 +4,12 @@
 # Copyright, 2018-2023, by Samuel Williams.
 # Copyright, 2019-2020, by Brian Morearty.
 
-require 'async/http/relative_location'
+require 'async/http/middleware/location_redirector'
 require 'async/http/server'
 
 require 'sus/fixtures/async/http'
 
-describe Async::HTTP::RelativeLocation do
+describe Async::HTTP::Middleware::LocationRedirector do
 	include Sus::Fixtures::Async::HTTP::ServerContext
 	
 	let(:relative_location) {subject.new(@client, 1)}
@@ -49,7 +49,7 @@ describe Async::HTTP::RelativeLocation do
 				it 'should fail with maximum redirects' do
 					expect do
 						response = relative_location.get('/home')
-					end.to raise_exception(Async::HTTP::TooManyRedirects, message: be =~ /maximum/)
+					end.to raise_exception(subject::TooManyRedirects, message: be =~ /maximum/)
 				end
 			end
 			

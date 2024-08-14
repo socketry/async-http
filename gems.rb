@@ -24,24 +24,25 @@ group :maintenance, optional: true do
 	gem "bake-modernize"
 	gem "bake-gem"
 	
-	gem "falcon", "~> 0.46"
+	gem "falcon", "~> 0.47"
 	gem "utopia-project"
 end
 
 group :test do
-	gem "covered"
 	gem "sus"
+	gem "covered"
+	gem "decode"
+	gem "rubocop"
+	
 	gem "sus-fixtures-async"
 	gem "sus-fixtures-async-http", "~> 0.8"
 	gem "sus-fixtures-openssl"
 	
-	gem "bake"
 	gem "bake-test"
 	gem "bake-test-external"
 	
 	gem "async-container", "~> 0.14"
-	gem "async-rspec", "~> 1.10"
-
+	
 	gem "localhost"
 	gem "rack-test"
 end

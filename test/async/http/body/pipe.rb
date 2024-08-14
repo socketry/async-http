@@ -25,7 +25,7 @@ describe Async::HTTP::Body::Pipe do
 		def before
 			super
 			
-			 # input writer task
+			# input writer task
 			Async do |task|
 				first, second = data.split(' ')
 				input.write("#{first} ")

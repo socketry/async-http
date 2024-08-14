@@ -22,14 +22,6 @@ We welcome contributions to this project.
 4.  Push to the branch (`git push origin my-new-feature`).
 5.  Create new Pull Request.
 
-### Developer Certificate of Origin
-
-This project uses the [Developer Certificate of Origin](https://developercertificate.org/). All contributors to this project must agree to this document to have their contributions accepted.
-
-### Contributor Covenant
-
-This project is governed by the [Contributor Covenant](https://www.contributor-covenant.org/). All contributors and participants agree to abide by its terms.
-
 ## See Also
 
   - [benchmark-http](https://github.com/socketry/benchmark-http) — A benchmarking tool to report on web server concurrency.
@@ -37,3 +29,11 @@ This project is governed by the [Contributor Covenant](https://www.contributor-c
   - [async-websocket](https://github.com/socketry/async-websocket) — Asynchronous client and server websockets.
   - [async-rest](https://github.com/socketry/async-rest) — A RESTful resource layer built on top of `async-http`.
   - [async-http-faraday](https://github.com/socketry/async-http-faraday) — A faraday adapter to use `async-http`.
+
+### Developer Certificate of Origin
+
+In order to protect users of this project, we require all contributors to comply with the [Developer Certificate of Origin](https://developercertificate.org/). This ensures that all contributions are properly licensed and attributed.
+
+### Community Guidelines
+
+This project is best served by a collaborative and respectful environment. Treat each other professionally, respect differing viewpoints, and engage constructively. Harassment, discrimination, or harmful behavior is not tolerated. Communicate clearly, listen actively, and support one another. If any issues arise, please inform the project maintainers.

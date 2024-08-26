@@ -7,6 +7,7 @@
 # Copyright, 2024, by Anton Zhuravsky.
 
 require_relative 'connection'
+require 'console/event/failure'
 
 module Async
 	module HTTP
@@ -17,8 +18,9 @@ module Async
 						@persistent = false
 						write_response(@version, status, {})
 						write_body(@version, nil)
-					rescue Errno::ECONNRESET, Errno::EPIPE
-						# Nothing we can do...
+					rescue => error
+						# At this point, there is very little we can do to recover:
+						Console::Event::Failure.for(error).emit(self, "Failed to write failure response.", severity: :debug)
 					end
 					
 					def next_request
@@ -33,7 +35,7 @@ module Async
 						end
 						
 						return request
-					rescue Async::TimeoutError
+					rescue Async::TimeoutError, IO::TimeoutError
 						# For an interesting discussion about this behaviour, see https://trac.nginx.org/nginx/ticket/1005
 						# If you enable this, you will see some spec failures...
 						# fail_request(408)

@@ -165,6 +165,10 @@ module Async
 						end
 						
 						super.tap do |response|
+							if version = response&.version
+								span['http.version'] = version
+							end
+							
 							if status = response&.status
 								span['http.status_code'] = status
 							end

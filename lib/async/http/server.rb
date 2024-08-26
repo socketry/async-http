@@ -81,6 +81,7 @@ module Async
 					end
 					
 					attributes = {
+						'http.version': request.version,
 						'http.method': request.method,
 						'http.authority': request.authority,
 						'http.scheme': request.scheme,

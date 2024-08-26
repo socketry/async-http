@@ -62,7 +62,7 @@ module Async
 			# @option hostname [String] the hostname to connect to (or bind to), overrides the URL hostname (used for SNI).
 			# @option port [Integer] the port to bind to, overrides the URL port.
 			# @option ssl_context [OpenSSL::SSL::SSLContext] the context to use for TLS.
-			# @option alpn_protocols [Array<String>] the alpn protocols to negotiate.
+			# @option alpn_protocols [Array(String)] the alpn protocols to negotiate.
 			def initialize(url, endpoint = nil, **options)
 				super(**options)
 				

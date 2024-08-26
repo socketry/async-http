@@ -12,6 +12,14 @@ Please see the [project documentation](https://socketry.github.io/async-http/) f
 
   - [Testing](https://socketry.github.io/async-http/guides/testing/index) - This guide explains how to use `Async::HTTP` clients and servers in your tests.
 
+## See Also
+
+  - [benchmark-http](https://github.com/socketry/benchmark-http) — A benchmarking tool to report on web server concurrency.
+  - [falcon](https://github.com/socketry/falcon) — A rack compatible server built on top of `async-http`.
+  - [async-websocket](https://github.com/socketry/async-websocket) — Asynchronous client and server websockets.
+  - [async-rest](https://github.com/socketry/async-rest) — A RESTful resource layer built on top of `async-http`.
+  - [async-http-faraday](https://github.com/socketry/async-http-faraday) — A faraday adapter to use `async-http`.
+
 ## Contributing
 
 We welcome contributions to this project.
@@ -21,14 +29,6 @@ We welcome contributions to this project.
 3.  Commit your changes (`git commit -am 'Add some feature'`).
 4.  Push to the branch (`git push origin my-new-feature`).
 5.  Create new Pull Request.
-
-## See Also
-
-  - [benchmark-http](https://github.com/socketry/benchmark-http) — A benchmarking tool to report on web server concurrency.
-  - [falcon](https://github.com/socketry/falcon) — A rack compatible server built on top of `async-http`.
-  - [async-websocket](https://github.com/socketry/async-websocket) — Asynchronous client and server websockets.
-  - [async-rest](https://github.com/socketry/async-rest) — A RESTful resource layer built on top of `async-http`.
-  - [async-http-faraday](https://github.com/socketry/async-http-faraday) — A faraday adapter to use `async-http`.
 
 ### Developer Certificate of Origin
 

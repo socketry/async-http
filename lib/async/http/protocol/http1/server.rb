@@ -35,13 +35,9 @@ module Async
 						end
 						
 						return request
-					rescue Async::TimeoutError, IO::TimeoutError
-						# For an interesting discussion about this behaviour, see https://trac.nginx.org/nginx/ticket/1005
-						# If you enable this, you will see some spec failures...
-						# fail_request(408)
-						raise
-					rescue
+					rescue ::Protocol::HTTP1::BadRequest
 						fail_request(400)
+						# Conceivably we could retry here, but we don't really know how bad the error is, so it's better to just fail:
 						raise
 					end
 					

@@ -81,17 +81,7 @@ module Async
 					# We don't want to follow redirects for HEAD requests:
 					return super if request.head?
 					
-					if body = request.body
-						if body.respond_to?(:rewind)
-							# The request body was already rewindable, so use it as is:
-							body = request.body
-						else
-							# The request body was not rewindable, and we might need to resubmit it if we get a response status of 307 or 308, so make it rewindable:
-							body = ::Protocol::HTTP::Body::Rewindable.new(body)
-							request.body = body
-						end
-					end
-					
+					body = ::Protocol::HTTP::Body::Rewindable.wrap(request)
 					hops = 0
 					
 					while hops <= @maximum_hops

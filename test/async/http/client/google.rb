@@ -22,7 +22,7 @@ describe Async::HTTP::Client do
 	end
 	
 	it 'can fetch remote resource' do
-		response = client.get('/', 'accept' => '*/*')
+		response = client.get('/', {'accept' => '*/*'})
 		
 		response.finish
 		

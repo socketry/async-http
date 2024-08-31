@@ -16,7 +16,7 @@ Please see the [project documentation](https://socketry.github.io/async-http/) f
 
 Please see the [project releases](https://socketry.github.io/async-http/releases/index) for all releases.
 
-### Unreleased
+### v0.74.0
 
   - [`Async::HTTP::Internet` accepts keyword arguments](https://socketry.github.io/async-http/releases/index#async::http::internet-accepts-keyword-arguments)
 

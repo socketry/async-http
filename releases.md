@@ -1,12 +1,12 @@
 # Releases
 
-## Unreleased
+## v0.74.0
 
 ### `Async::HTTP::Internet` accepts keyword arguments
 
 `Async::HTTP::Internet` now accepts keyword arguments for making a request, e.g.
 
-```ruby
+``` ruby
 internet = Async::HTTP::Internet.instance
 
 # This will let you override the authority (HTTP/1.1 host header, HTTP/2 :authority header):
@@ -22,7 +22,7 @@ internet.get("https://example.com", scheme: "http")
 
 `Protocol::HTTP::Request` now supports an `interim_response` callback, which will be called with the interim response status and headers. This works on both the client and the server:
 
-```ruby
+``` ruby
 # Server side:
 def call(request)
 	if request.headers['expect'].include?('100-continue')

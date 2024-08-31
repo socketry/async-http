@@ -12,6 +12,18 @@ Please see the [project documentation](https://socketry.github.io/async-http/) f
 
   - [Testing](https://socketry.github.io/async-http/guides/testing/index) - This guide explains how to use `Async::HTTP` clients and servers in your tests.
 
+## Releases
+
+Please see the [project releases](https://socketry.github.io/async-http/releases/index) for all releases.
+
+### Unreleased
+
+  - [`Async::HTTP::Internet` accepts keyword arguments](https://socketry.github.io/async-http/releases/index#async::http::internet-accepts-keyword-arguments)
+
+### v0.73.0
+
+  - [Update support for `interim_response`](https://socketry.github.io/async-http/releases/index#update-support-for-interim_response)
+
 ## See Also
 
   - [benchmark-http](https://github.com/socketry/benchmark-http) — A benchmarking tool to report on web server concurrency.

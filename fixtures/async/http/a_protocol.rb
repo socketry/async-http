@@ -5,6 +5,7 @@
 # Copyright, 2020, by Igor Sidorov.
 
 require 'async'
+require 'async/variable'
 require 'async/clock'
 require 'async/http/client'
 require 'async/http/server'
@@ -128,29 +129,22 @@ module Async
 				end
 			end
 			
-			with 'with trailer' do
+			with 'with request trailer' do
+				let(:request_received) {Async::Variable.new}
+				
 				let(:app) do
 					::Protocol::HTTP::Middleware.for do |request|
 						if trailer = request.headers['trailer']
 							expect(request.headers).not.to have_keys('etag')
+							
+							request_received.value = true
 							request.finish
+							
 							expect(request.headers).to have_keys('etag')
 							
 							::Protocol::HTTP::Response[200, [], "request trailer"]
 						else
-							headers = ::Protocol::HTTP::Headers.new
-							headers.add('trailer', 'etag')
-							
-							body = Async::HTTP::Body::Writable.new
-							
-							Async do |task|
-								body.write("response trailer")
-								sleep(0.01)
-								headers.add('etag', 'abcd')
-								body.close
-							end
-							
-							::Protocol::HTTP::Response[200, headers, body]
+							::Protocol::HTTP::Response[400, headers, body]
 						end
 					end
 				end
@@ -164,15 +158,40 @@ module Async
 					
 					Async do |task|
 						body.write("Hello")
-						sleep(0.01)
+						
+						request_received.wait
 						headers.add('etag', 'abcd')
+						
 						body.close
 					end
 					
 					response = client.post("/", headers, body)
 					expect(response.read).to be == "request trailer"
-					
 					expect(response).to be(:success?)
+				end
+			end
+			
+			with "with response trailer" do
+				let(:response_received) {Async::Variable.new}
+				
+				let(:app) do
+					::Protocol::HTTP::Middleware.for do |request|
+						headers = ::Protocol::HTTP::Headers.new
+						headers.add('trailer', 'etag')
+						
+						body = Async::HTTP::Body::Writable.new
+						
+						Async do |task|
+							body.write("response trailer")
+							
+							response_received.wait
+							headers.add('etag', 'abcd')
+							
+							body.close
+						end
+						
+						::Protocol::HTTP::Response[200, headers, body]
+					end
 				end
 				
 				it "can receive response trailer" do
@@ -182,6 +201,8 @@ module Async
 					expect(response.headers).to have_keys('trailer')
 					headers = response.headers
 					expect(headers).not.to have_keys('etag')
+					
+					response_received.value = true
 					
 					expect(response.read).to be == "response trailer"
 					expect(response).to be(:success?)

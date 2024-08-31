@@ -25,7 +25,7 @@ module Async
 					false
 				end
 				
-				def write_interim_response(response)
+				def write_interim_response(status, headers = nil)
 				end
 				
 				def peer

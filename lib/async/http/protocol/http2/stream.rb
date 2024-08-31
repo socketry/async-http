@@ -51,10 +51,9 @@ module Async
 					end
 					
 					def process_headers(frame)
-						if frame.end_stream? && @headers
+						if @headers and frame.end_stream?
 							self.receive_trailing_headers(super, frame.end_stream?)
 						else
-							@headers ||= ::Protocol::HTTP::Headers.new
 							self.receive_initial_headers(super, frame.end_stream?)
 						end
 						

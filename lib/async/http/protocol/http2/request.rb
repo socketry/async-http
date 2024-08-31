@@ -23,6 +23,8 @@ module Async
 						attr :request
 						
 						def receive_initial_headers(headers, end_stream)
+							@headers = ::Protocol::HTTP::Headers.new
+							
 							headers.each do |key, value|
 								if key == SCHEME
 									raise ::Protocol::HTTP2::HeaderError, "Request scheme already specified!" if @request.scheme
@@ -85,7 +87,7 @@ module Async
 					end
 					
 					def initialize(stream)
-						super(nil, nil, nil, nil, VERSION, nil)
+						super(nil, nil, nil, nil, VERSION, nil, nil, nil, self.public_method(:write_interim_response))
 						
 						@stream = stream
 					end
@@ -117,10 +119,6 @@ module Async
 							[STATUS, response.status],
 						]
 						
-						if protocol = response.protocol
-							protocol_headers << [PROTOCOL, protocol]
-						end
-						
 						if length = response.body&.length
 							protocol_headers << [CONTENT_LENGTH, length]
 						end
@@ -142,14 +140,16 @@ module Async
 						end
 					end
 					
-					def write_interim_response(response)
-						protocol_headers = [
-							[STATUS, response.status]
+					def write_interim_response(status, headers = nil)
+						interim_response_headers = [
+							[STATUS, status]
 						]
 						
-						headers = ::Protocol::HTTP::Headers::Merged.new(protocol_headers, response.headers)
+						if headers
+							interim_response_headers = ::Protocol::HTTP::Headers::Merged.new(interim_response_headers, headers)
+						end
 						
-						@stream.send_headers(nil, headers)
+						@stream.send_headers(nil, interim_response_headers)
 					end
 				end
 			end

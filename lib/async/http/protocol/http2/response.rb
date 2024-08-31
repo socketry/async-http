@@ -38,18 +38,25 @@ module Async
 						
 						# This should be invoked from the background reader, and notifies the task waiting for the headers that we are done.
 						def receive_initial_headers(headers, end_stream)
+							# While in theory, the response pseudo-headers may be extended in the future, currently they only response pseudo-header is :status, so we can assume it is always the first header.
+							status_header = headers.shift
+							
+							if status_header.first != ':status'
+								raise ProtocolError, "Invalid response headers: #{headers.inspect}"
+							end
+							
+							status = Integer(status_header.last)
+							
+							if status >= 100 && status < 200
+								return receive_interim_headers(status, headers)
+							end
+							
+							@response.status = status
+							@headers = ::Protocol::HTTP::Headers.new
+							
 							headers.each do |key, value|
 								# It's guaranteed that this should be the first header:
-								if key == STATUS
-									status = Integer(value)
-									
-									# Ignore informational headers:
-									return if status >= 100 && status < 200
-									
-									@response.status = Integer(value)
-								elsif key == PROTOCOL
-									@response.protocol = value
-								elsif key == CONTENT_LENGTH
+								if key == CONTENT_LENGTH
 									@length = Integer(value)
 								else
 									add_header(key, value)
@@ -72,6 +79,16 @@ module Async
 							self.notify!
 							
 							return headers
+						end
+						
+						def receive_interim_headers(status, headers)
+							if headers.any?
+								headers = ::Protocol::HTTP::Headers[headers]
+							else
+								headers = nil
+							end
+							
+							@response.request.send_interim_response(status, headers)
 						end
 						
 						# Notify anyone waiting on the response headers to be received (or failure).

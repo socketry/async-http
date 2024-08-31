@@ -24,7 +24,7 @@ module Async
 						# HTTP/1 requests with an upgrade header (which can contain zero or more values) are extracted into the protocol field of the request, and we expect a response to select one of those protocols with a status code of 101 Switching Protocols.
 						protocol = headers.delete('upgrade')
 						
-						super(nil, authority, method, path, version, headers, body, protocol)
+						super(nil, authority, method, path, version, headers, body, protocol, self.public_method(:write_interim_response))
 					end
 					
 					def connection
@@ -39,8 +39,8 @@ module Async
 						@connection.hijack!
 					end
 					
-					def write_interim_response(response)
-						@connection.write_interim_response(response.version, response.status, response.headers)
+					def write_interim_response(status, headers = nil)
+						@connection.write_interim_response(@version, status, headers)
 					end
 				end
 			end

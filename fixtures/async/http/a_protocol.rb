@@ -44,18 +44,28 @@ module Async
 			with "interim response" do
 				let(:app) do
 					::Protocol::HTTP::Middleware.for do |request|
-						request.write_interim_response(
-							::Protocol::HTTP::Response[103, [["link", "</style.css>; rel=preload; as=style"]]]
-						)
+						request.send_interim_response(103, [["link", "</style.css>; rel=preload; as=style"]])
 						
 						::Protocol::HTTP::Response[200, {}, ["Hello World"]]
 					end
 				end
 				
 				it "can read informational response" do
-					response = client.get("/")
+					called = false
+					
+					callback = proc do |status, headers|
+						called = true
+						expect(status).to be == 103
+						expect(headers).to have_keys(
+							"link" => be == ["</style.css>; rel=preload; as=style"]
+						)
+					end
+					
+					response = client.get("/", interim_response: callback)
 					expect(response).to be(:success?)
 					expect(response.read).to be == "Hello World"
+					
+					expect(called).to be == true
 				end
 			end
 			

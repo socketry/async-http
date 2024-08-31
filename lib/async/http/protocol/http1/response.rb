@@ -17,6 +17,8 @@ module Async
 							
 							if response.final?
 								return response
+							else
+								request.send_interim_response(response.status, response.headers)
 							end
 						end
 					end

@@ -39,14 +39,14 @@ module Async
 			# @parameter url [String] The URL to request, e.g. `https://www.codeotaku.com`.
 			# @parameter headers [Hash | Protocol::HTTP::Headers] The headers to send with the request.
 			# @parameter body [String | Protocol::HTTP::Body] The body to send with the request.
-			def call(method, url, headers = nil, body = nil, &block)
+			def call(verb, url, *arguments, **options, &block)
 				endpoint = Endpoint[url]
 				client = self.client_for(endpoint)
 				
-				body = Body::Buffered.wrap(body)
-				headers = ::Protocol::HTTP::Headers[headers]
+				options[:authority] ||= endpoint.authority
+				options[:scheme] ||= endpoint.scheme
 				
-				request = ::Protocol::HTTP::Request.new(endpoint.scheme, endpoint.authority, method, endpoint.path, nil, headers, body)
+				request = ::Protocol::HTTP::Request[verb, endpoint.path, *arguments, **options]
 				
 				response = client.call(request)
 				
@@ -68,8 +68,8 @@ module Async
 			end
 			
 			::Protocol::HTTP::Methods.each do |name, verb|
-				define_method(verb.downcase) do |url, headers = nil, body = nil, &block|
-					self.call(verb, url, headers, body, &block)
+				define_method(verb.downcase) do |url, *arguments, **options, &block|
+					self.call(verb, url, *arguments, **options, &block)
 				end
 			end
 			

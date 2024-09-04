@@ -1,8 +1,8 @@
 # Releases
 
-## Unreleased
+## v0.75.0
 
-- Better handling of HTTP/1 <-> HTTP/2 proxying, specifically upgrade/CONNECT requests.
+  - Better handling of HTTP/1 \<-\> HTTP/2 proxying, specifically upgrade/CONNECT requests.
 
 ## v0.74.0
 

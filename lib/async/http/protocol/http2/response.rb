@@ -54,6 +54,11 @@ module Async
 							@response.status = status
 							@headers = ::Protocol::HTTP::Headers.new
 							
+							# If the protocol request was successful, ensure the response protocol matches:
+							if status == 200 and protocol = @response.request.protocol
+								@response.protocol = Array(protocol).first
+							end
+							
 							headers.each do |key, value|
 								# It's guaranteed that this should be the first header:
 								if key == CONTENT_LENGTH

@@ -59,33 +59,40 @@ module Async
 								if response
 									trailer = response.headers.trailer!
 									
-									write_response(@version, response.status, response.headers)
-									
 									# Some operations in this method are long running, that is, it's expected that `body.call(stream)` could literally run indefinitely. In order to facilitate garbage collection, we want to nullify as many local variables before calling the streaming body. This ensures that the garbage collection can clean up as much state as possible during the long running operation, so we don't retain objects that are no longer needed.
-
+									
 									if body and protocol = response.protocol
+										# We force a 101 response if the protocol is upgraded - HTTP/2 CONNECT will return 200 for success, but this won't be understood by HTTP/1 clients:
+										write_response(@version, 101, response.headers)
+										
 										stream = write_upgrade_body(protocol)
 										
 										# At this point, the request body is hijacked, so we don't want to call #finish below.
-										request = response = nil
-										
-										body.call(stream)
-									elsif request.connect? and response.success?
-										stream = write_tunnel_body(request.version)
-										
-										# Same as above:
-										request = response = nil
-										
-										body.call(stream)
-									else
-										head = request.head?
-										version = request.version
-										
-										# Same as above:
 										request = nil unless request.body
 										response = nil
 										
-										write_body(version, body, head, trailer)
+										body.call(stream)
+									else
+										write_response(@version, response.status, response.headers)
+										
+										if request.connect? and response.success?
+											stream = write_tunnel_body(request.version)
+											
+											# Same as above:
+											request = nil unless request.body
+											response = nil
+											
+											body.call(stream)
+										else
+											head = request.head?
+											version = request.version
+											
+											# Same as above:
+											request = nil unless request.body
+											response = nil
+											
+											write_body(version, body, head, trailer)
+										end
 									end
 									
 									# We are done with the body, you shouldn't need to call close on it:

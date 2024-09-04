@@ -62,6 +62,8 @@ module Async
 					end
 					
 					def start_connection
+						connection_ready if respond_to?(:connection_ready)
+						
 						@reader || read_in_background
 					end
 					

@@ -118,7 +118,7 @@ module Async
 							
 							@exception = error
 							
-							notify!
+							self.notify!
 						end
 					end
 					

@@ -66,14 +66,14 @@ module Async
 					end
 					
 					def close(error = nil)
-						super
-						
 						# Ensure the reader task is stopped.
 						if @reader
 							reader = @reader
 							@reader = nil
 							reader.stop
 						end
+						
+						super
 					end
 					
 					def read_in_background(parent: Task.current)
@@ -101,6 +101,8 @@ module Async
 							ensure
 								# Don't call #close twice.
 								if @reader
+									@reader = nil
+									
 									self.close(error)
 								end
 							end

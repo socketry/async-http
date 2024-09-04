@@ -83,6 +83,7 @@ module Async
 						@body.call(stream)
 					rescue => error
 						self.close(error)
+						raise
 					end
 					
 					# Reads chunks from the given body and writes them to the stream as fast as possible.

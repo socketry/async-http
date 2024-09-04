@@ -71,7 +71,8 @@ module Async
 										request = nil unless request.body
 										response = nil
 										
-										body.call(stream)
+										# We must return here as no further request processing can be done:
+										return body.call(stream)
 									else
 										write_response(@version, response.status, response.headers)
 										
@@ -82,7 +83,8 @@ module Async
 											request = nil unless request.body
 											response = nil
 											
-											body.call(stream)
+											# We must return here as no further request processing can be done:
+											return body.call(stream)
 										else
 											head = request.head?
 											version = request.version

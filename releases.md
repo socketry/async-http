@@ -1,5 +1,9 @@
 # Releases
 
+## Unreleased
+
+- Better handling of HTTP/1 <-> HTTP/2 proxying, specifically upgrade/CONNECT requests.
+
 ## v0.74.0
 
 ### `Async::HTTP::Internet` accepts keyword arguments

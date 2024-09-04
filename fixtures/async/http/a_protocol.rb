@@ -508,7 +508,9 @@ module Async
 				
 				it "can't get /" do
 					expect do
-						client.get("/")
+						response = client.get("/")
+					ensure
+						response&.close
 					end.to raise_exception(::IO::TimeoutError)
 				end
 			end

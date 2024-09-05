@@ -86,21 +86,16 @@ module Async
 						}.to raise_exception(RuntimeError, message: be =~ /big/)
 					end
 					
-					it "will stop after finishing" do
-						output_task = reactor.async do
-							body.each do |chunk|
-								expect(chunk).to be == "Hello World!"
-							end
-						end
-						
+					it "can consume chunks" do
 						body.write("Hello World!")
 						body.close
 						
 						expect(body).not.to be(:empty?)
 						
-						::Async::Task.current.yield
+						body.each do |chunk|
+							expect(chunk).to be == "Hello World!"
+						end
 						
-						expect(output_task).to be(:finished?)
 						expect(body).to be(:empty?)
 					end
 				end

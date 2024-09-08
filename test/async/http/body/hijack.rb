@@ -15,7 +15,7 @@ describe Async::HTTP::Body::Hijack do
 			3.times do 
 				stream.write(content)
 			end
-			stream.close
+			stream.close_write
 		end
 	end
 	

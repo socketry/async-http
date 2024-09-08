@@ -395,9 +395,9 @@ module Async
 				let(:app) do
 					::Protocol::HTTP::Middleware.for do |request|
 						Async::HTTP::Body::Hijack.response(request, 200, {}) do |stream|
-							stream.write content
-							stream.write content
-							stream.close
+							stream.write(content)
+							stream.write(content)
+							stream.close_write
 						end
 					end
 				end

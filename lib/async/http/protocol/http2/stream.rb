@@ -98,7 +98,7 @@ module Async
 							end
 							
 							if frame.end_stream?
-								@input.close
+								@input.close_write
 								@input = nil
 							end
 						end

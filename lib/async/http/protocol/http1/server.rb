@@ -68,11 +68,23 @@ module Async
 										stream = write_upgrade_body(protocol)
 										
 										# At this point, the request body is hijacked, so we don't want to call #finish below.
-										request = nil unless request.body
+										request = nil
 										response = nil
 										
 										# We must return here as no further request processing can be done:
 										return body.call(stream)
+									elsif response.status == 101
+										# This code path is to support legacy behavior where the response status is set to 101, but the protocol is not upgraded. This may not be a valid use case, but it is supported for compatibility. We expect the response headers to contain the `upgrade` header.
+										write_response(@version, response.status, response.headers)
+										
+										stream = write_tunnel_body(request.version)
+										
+										# Same as above:
+										request = nil
+										response = nil
+										
+										# We must return here as no further request processing can be done:
+										return body&.call(stream)
 									else
 										write_response(@version, response.status, response.headers)
 										
@@ -80,7 +92,7 @@ module Async
 											stream = write_tunnel_body(request.version)
 											
 											# Same as above:
-											request = nil unless request.body
+											request = nil
 											response = nil
 											
 											# We must return here as no further request processing can be done:

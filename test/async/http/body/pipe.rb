@@ -20,7 +20,7 @@ describe Async::HTTP::Body::Pipe do
 		include Sus::Fixtures::Async::ReactorContext
 		
 		let(:input_write_duration) {0}
-		let(:io) { pipe.to_io }
+		let(:io) {pipe.to_io}
 		
 		def before
 			super
@@ -31,14 +31,12 @@ describe Async::HTTP::Body::Pipe do
 				input.write("#{first} ")
 				sleep(input_write_duration) if input_write_duration > 0
 				input.write(second)
-				input.close
+				input.close_write
 			end
 		end
 		
-		def aftrer
+		after do
 			io.close
-			
-			super
 		end
 		
 		it "returns an io socket" do

@@ -36,7 +36,7 @@ module Async
 				end
 				
 				def call(stream)
-					return @block.call(stream)
+					@block.call(stream)
 				end
 				
 				attr :input

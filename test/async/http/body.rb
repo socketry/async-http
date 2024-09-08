@@ -23,7 +23,7 @@ ABody = Sus::Shared("a body") do
 						output.write(chunk.reverse)
 					end
 					
-					output.close
+					output.close_write
 				end
 				
 				Protocol::HTTP::Response[200, [], output]
@@ -35,7 +35,7 @@ ABody = Sus::Shared("a body") do
 			
 			reactor.async do |task|
 				output.write("Hello World!")
-				output.close
+				output.close_write
 			end
 			
 			response = client.post("/", {}, output)
@@ -58,7 +58,7 @@ ABody = Sus::Shared("a body") do
 						notification.wait
 					end
 					
-					body.close
+					body.close_write
 				end
 				
 				Protocol::HTTP::Response[200, {}, body]

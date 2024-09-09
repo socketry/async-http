@@ -51,17 +51,16 @@ module Async
 					end
 					
 					def close_write(error = nil)
-						close(error)
-					end
-					
-					# This method should only be called from within the context of the output task.
-					def close(error = nil)
-						stop(error)
-						
 						if stream = @stream
 							@stream = nil
 							stream.finish_output(error)
 						end
+					end
+					
+					# This method should only be called from within the context of the output task.
+					def close(error = nil)
+						close_write(error)
+						stop(error)
 					end
 					
 					# This method should only be called from within the context of the HTTP/2 stream.
@@ -99,12 +98,14 @@ module Async
 					rescue => error
 						raise
 					ensure
-						if @body
-							@body.close(error)
+						# Ensure the body we are reading from is fully closed:
+						if body = @body
 							@body = nil
+							body.close(error)
 						end
 						
-						self.close(error)
+						# Ensure the output of this body is closed:
+						self.close_write(error)
 					end
 					
 					# Send `maximum_size` bytes of data using the specified `stream`. If the buffer has no more chunks, `END_STREAM` will be sent on the final chunk.

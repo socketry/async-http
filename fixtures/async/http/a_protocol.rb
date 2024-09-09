@@ -137,8 +137,8 @@ module Async
 						if trailer = request.headers['trailer']
 							expect(request.headers).not.to have_keys('etag')
 							
-							request_received.value = true; pp request.body
-							pp finish: request.finish
+							request_received.value = true
+							request.finish
 							
 							expect(request.headers).to have_keys('etag')
 							

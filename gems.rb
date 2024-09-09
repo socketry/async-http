@@ -20,6 +20,8 @@ gemspec
 # gem "protocol-http2", path: "../protocol-http2"
 # gem "protocol-hpack", path: "../protocol-hpack"
 
+gem "protocol-http", git: "https://github.com/socketry/protocol-http.git"
+
 group :maintenance, optional: true do
 	gem "bake-modernize"
 	gem "bake-gem"

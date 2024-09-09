@@ -137,8 +137,8 @@ module Async
 						if trailer = request.headers['trailer']
 							expect(request.headers).not.to have_keys('etag')
 							
-							request_received.value = true
-							request.finish
+							request_received.value = true; pp request.body
+							pp finish: request.finish
 							
 							expect(request.headers).to have_keys('etag')
 							
@@ -162,7 +162,7 @@ module Async
 						request_received.wait
 						headers.add('etag', 'abcd')
 						
-						body.close
+						body.close_write
 					end
 					
 					response = client.post("/", headers, body)
@@ -187,7 +187,7 @@ module Async
 							response_received.wait
 							headers.add('etag', 'abcd')
 							
-							body.close
+							body.close_write
 						end
 						
 						::Protocol::HTTP::Response[200, headers, body]

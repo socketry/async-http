@@ -162,7 +162,7 @@ module Async
 						request_received.wait
 						headers.add('etag', 'abcd')
 						
-						body.close
+						body.close_write
 					end
 					
 					response = client.post("/", headers, body)
@@ -187,7 +187,7 @@ module Async
 							response_received.wait
 							headers.add('etag', 'abcd')
 							
-							body.close
+							body.close_write
 						end
 						
 						::Protocol::HTTP::Response[200, headers, body]
@@ -395,9 +395,9 @@ module Async
 				let(:app) do
 					::Protocol::HTTP::Middleware.for do |request|
 						Async::HTTP::Body::Hijack.response(request, 200, {}) do |stream|
-							stream.write content
-							stream.write content
-							stream.close
+							stream.write(content)
+							stream.write(content)
+							stream.close_write
 						end
 					end
 				end

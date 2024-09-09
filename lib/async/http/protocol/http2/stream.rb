@@ -59,7 +59,7 @@ module Async
 						
 						# TODO this might need to be in an ensure block:
 						if @input and frame.end_stream?
-							@input.close($!)
+							@input.close_write
 							@input = nil
 						end
 					rescue ::Protocol::HTTP2::HeaderError => error
@@ -98,7 +98,7 @@ module Async
 							end
 							
 							if frame.end_stream?
-								@input.close
+								@input.close_write
 								@input = nil
 							end
 						end
@@ -149,7 +149,7 @@ module Async
 						super
 						
 						if @input
-							@input.close(error)
+							@input.close_write(error)
 							@input = nil
 						end
 						

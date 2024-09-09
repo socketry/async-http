@@ -50,18 +50,25 @@ module Async
 						end
 					end
 					
+					def close_write(error = nil)
+						if stream = @stream
+							@stream = nil
+							stream.finish_output(error)
+						end
+					end
+					
 					# This method should only be called from within the context of the output task.
 					def close(error = nil)
-						if @stream
-							@stream.finish_output(error)
-							@stream = nil
-						end
+						close_write(error)
+						stop(error)
 					end
 					
 					# This method should only be called from within the context of the HTTP/2 stream.
 					def stop(error)
-						@task&.stop
-						@task = nil
+						if task = @task
+							@task = nil
+							task.stop(error)
+						end
 					end
 					
 					private
@@ -70,10 +77,12 @@ module Async
 						task.annotate("Streaming #{@body} to #{@stream}.")
 						
 						input = @stream.wait_for_input
+						stream = ::Protocol::HTTP::Body::Stream.new(input, self)
 						
-						@body.call(::Protocol::HTTP::Body::Stream.new(input, self))
-					rescue Async::Stop
-						# Ignore.
+						@body.call(stream)
+					rescue => error
+						self.close(error)
+						raise
 					end
 					
 					# Reads chunks from the given body and writes them to the stream as fast as possible.
@@ -86,11 +95,17 @@ module Async
 							# chunk.clear unless chunk.frozen?
 							# GC.start
 						end
-						
-						self.close
+					rescue => error
+						raise
 					ensure
-						@body&.close($!)
-						@body = nil
+						# Ensure the body we are reading from is fully closed:
+						if body = @body
+							@body = nil
+							body.close(error)
+						end
+						
+						# Ensure the output of this body is closed:
+						self.close_write(error)
 					end
 					
 					# Send `maximum_size` bytes of data using the specified `stream`. If the buffer has no more chunks, `END_STREAM` will be sent on the final chunk.

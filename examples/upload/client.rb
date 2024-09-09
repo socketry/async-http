@@ -9,9 +9,26 @@ $LOAD_PATH.unshift File.expand_path("../../lib", __dir__)
 
 require 'async'
 require 'protocol/http/body/file'
-require 'async/http/body/delayed'
 require 'async/http/client'
 require 'async/http/endpoint'
+
+class Delayed < ::Protocol::HTTP::Body::Wrapper
+	def initialize(body, delay = 0.01)
+		super(body)
+		
+		@delay = delay
+	end
+	
+	def ready?
+		false
+	end
+	
+	def read
+		sleep(@delay)
+		
+		return super
+	end
+end
 
 Async do
 	endpoint = Async::HTTP::Endpoint.parse("http://localhost:9222")
@@ -21,7 +38,7 @@ Async do
 		['accept', 'text/plain'],
 	]
 	
-	body = Async::HTTP::Body::Delayed.new(Protocol::HTTP::Body::File.open(File.join(__dir__, "data.txt"), block_size: 32))
+	body = Delayed.new(Protocol::HTTP::Body::File.open(File.join(__dir__, "data.txt"), block_size: 32))
 	
 	response = client.post(endpoint.path, headers, body)
 	

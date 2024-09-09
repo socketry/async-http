@@ -17,7 +17,7 @@ module Async
 					
 					head, tail = ::Socket.pair(Socket::AF_UNIX, Socket::SOCK_STREAM)
 					
-					@head = ::IO::Stream::Buffered.new(head)
+					@head = ::IO::Stream(head)
 					@tail = tail
 					
 					@reader = nil
@@ -52,8 +52,10 @@ module Async
 					end
 					
 					@head.close_write
+				rescue => error
+					raise
 				ensure
-					@input.close($!)
+					@input.close(error)
 					
 					close_head if @writer&.finished?
 				end
@@ -68,8 +70,10 @@ module Async
 					while chunk = @head.read_partial
 						@output.write(chunk)
 					end
+				rescue => error
+					raise
 				ensure
-					@output.close($!)
+					@output.close_write(error)
 					
 					close_head if @reader&.finished?
 				end

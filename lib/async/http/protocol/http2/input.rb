@@ -3,14 +3,14 @@
 # Released under the MIT License.
 # Copyright, 2020-2023, by Samuel Williams.
 
-require_relative '../../body/writable'
+require 'protocol/http/body/writable'
 
 module Async
 	module HTTP
 		module Protocol
 			module HTTP2
 				# A writable body which requests window updates when data is read from it.
-				class Input < Body::Writable
+				class Input < ::Protocol::HTTP::Body::Writable
 					def initialize(stream, length)
 						super(length)
 						

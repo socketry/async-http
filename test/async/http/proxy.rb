@@ -57,7 +57,7 @@ AProxy = Sus::Shared("a proxy") do
 			expect(response).to be(:success?)
 			
 			input.write(data)
-			input.close
+			input.close_write
 			
 			expect(response.read).to be == data
 		end
@@ -74,7 +74,7 @@ AProxy = Sus::Shared("a proxy") do
 						stream.flush
 					end
 					
-					stream.close
+					stream.close_write
 				end
 			end
 		end

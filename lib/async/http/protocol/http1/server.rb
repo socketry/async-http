@@ -47,6 +47,7 @@ module Async
 						
 						while request = next_request
 							response = yield(request, self)
+							version = request.version
 							body = response&.body
 							
 							if hijacked?
@@ -77,7 +78,7 @@ module Async
 										# This code path is to support legacy behavior where the response status is set to 101, but the protocol is not upgraded. This may not be a valid use case, but it is supported for compatibility. We expect the response headers to contain the `upgrade` header.
 										write_response(@version, response.status, response.headers)
 										
-										stream = write_tunnel_body(request.version)
+										stream = write_tunnel_body(version)
 										
 										# Same as above:
 										request = nil
@@ -89,7 +90,7 @@ module Async
 										write_response(@version, response.status, response.headers)
 										
 										if request.connect? and response.success?
-											stream = write_tunnel_body(request.version)
+											stream = write_tunnel_body(version)
 											
 											# Same as above:
 											request = nil
@@ -99,7 +100,6 @@ module Async
 											return body.call(stream)
 										else
 											head = request.head?
-											version = request.version
 											
 											# Same as above:
 											request = nil unless request.body
@@ -114,7 +114,7 @@ module Async
 								else
 									# If the request failed to generate a response, it was an internal server error:
 									write_response(@version, 500, {})
-									write_body(request.version, nil)
+									write_body(version, nil)
 								end
 								
 								# Gracefully finish reading the request body if it was not already done so.

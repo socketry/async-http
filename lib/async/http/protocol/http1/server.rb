@@ -46,6 +46,11 @@ module Async
 						task.annotate("Reading #{self.version} requests for #{self.class}.")
 						
 						while request = next_request
+							if body = request.body
+								finishable = Body::Finishable.new(body)
+								request.body = finishable
+							end
+							
 							response = yield(request, self)
 							version = request.version
 							body = response&.body
@@ -102,23 +107,24 @@ module Async
 											head = request.head?
 											
 											# Same as above:
-											request = nil unless request.body
+											request = nil
 											response = nil
 											
 											write_body(version, body, head, trailer)
 										end
 									end
 									
-									# We are done with the body, you shouldn't need to call close on it:
+									# We are done with the body:
 									body = nil
 								else
 									# If the request failed to generate a response, it was an internal server error:
 									write_response(@version, 500, {})
 									write_body(version, nil)
+									
+									request&.finish
 								end
 								
-								# Gracefully finish reading the request body if it was not already done so.
-								request&.each{}
+								finishable&.wait
 								
 								# This ensures we yield at least once every iteration of the loop and allow other fibers to execute.
 								task.yield

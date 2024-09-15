@@ -7,6 +7,8 @@
 # Copyright, 2024, by Anton Zhuravsky.
 
 require_relative 'connection'
+require_relative '../../body/finishable'
+
 require 'console/event/failure'
 
 module Async

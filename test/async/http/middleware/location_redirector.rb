@@ -18,6 +18,8 @@ describe Async::HTTP::Middleware::LocationRedirector do
 		with '301' do
 			let(:app) do
 				Protocol::HTTP::Middleware.for do |request|
+					request.finish # TODO: request.discard - or some default handling?
+					
 					case request.path
 					when '/home'
 						Protocol::HTTP::Response[301, {'location' => '/'}, []]

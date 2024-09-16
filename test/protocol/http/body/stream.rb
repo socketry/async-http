@@ -10,21 +10,25 @@ require "sus/fixtures/async/http"
 AnEchoServer = Sus::Shared("an echo server") do
 	let(:app) do
 		::Protocol::HTTP::Middleware.for do |request|
-			body = ::Protocol::HTTP::Body::Streamable.response(request) do |stream|
-				# $stderr.puts "Server stream: #{stream.inspect}"
+			output = ::Protocol::HTTP::Body::Writable.new
+			
+			Async do
+				stream = ::Protocol::HTTP::Body::Stream.new(request.body, output)
 				
+				Console.debug(self, "Echoing chunks...")
 				while chunk = stream.readpartial(1024)
-					# $stderr.puts "Server reading chunk: #{chunk.inspect}"
+					Console.debug(self, "Reading chunk:", chunk: chunk)
 					stream.write(chunk)
 				end
 			rescue EOFError
+				Console.debug(self, "EOF.")
 				# Ignore.
 			ensure
-				# $stderr.puts "Server closing stream."
+				Console.debug(self, "Closing stream.")
 				stream.close
 			end
 			
-			::Protocol::HTTP::Response[200, {}, body]
+			::Protocol::HTTP::Response[200, {}, output]
 		end
 	end
 	
@@ -32,32 +36,33 @@ AnEchoServer = Sus::Shared("an echo server") do
 		chunks = ["Hello,", "World!"]
 		response_chunks = Queue.new
 		
-		body = ::Protocol::HTTP::Body::Streamable.request do |stream|
-			# $stderr.puts "Client stream: #{stream.inspect}"
-			
+		output = ::Protocol::HTTP::Body::Writable.new
+		response = client.post("/", body: output)
+		stream = ::Protocol::HTTP::Body::Stream.new(response.body, output)
+		
+		begin
+			Console.debug(self, "Echoing chunks...")
 			chunks.each do |chunk|
-				# $stderr.puts "Client writing chunk: #{chunk.inspect}"
+				Console.debug(self, "Writing chunk:", chunk: chunk)
 				stream.write(chunk)
 			end
 			
-			# $stderr.puts "Client closing write."
+			Console.debug(self, "Closing write.")
 			stream.close_write
 			
-			# $stderr.puts "Client reading chunks..."
+			Console.debug(self, "Reading chunks...")
 			while chunk = stream.readpartial(1024)
-				# $stderr.puts "Client reading chunk: #{chunk.inspect}"
+				Console.debug(self, "Reading chunk:", chunk: chunk)
 				response_chunks << chunk
 			end
 		rescue EOFError
+			Console.debug(self, "EOF.")
 			# Ignore.
 		ensure
-			# $stderr.puts "Client closing stream."
+			Console.debug(self, "Closing stream.")
 			stream.close
 			response_chunks.close
 		end
-		
-		response = client.post("/", body: body)
-		body.stream(response.body)
 		
 		chunks.each do |chunk|
 			expect(response_chunks.pop).to be == chunk
@@ -71,40 +76,53 @@ AnEchoClient = Sus::Shared("an echo client") do
 	
 	let(:app) do
 		::Protocol::HTTP::Middleware.for do |request|
-			body = ::Protocol::HTTP::Body::Streamable.response(request) do |stream|
+			output = ::Protocol::HTTP::Body::Writable.new
+			
+			Async do
+				stream = ::Protocol::HTTP::Body::Stream.new(request.body, output)
+				
+				Console.debug(self, "Echoing chunks...")
 				chunks.each do |chunk|
 					stream.write(chunk)
 				end
 				
+				Console.debug(self, "Closing write.")
 				stream.close_write
 				
+				Console.debug(self, "Reading chunks...")
 				while chunk = stream.readpartial(1024)
+					Console.debug(self, "Reading chunk:", chunk: chunk)
 					response_chunks << chunk
 				end
 			rescue EOFError
+				Console.debug(self, "EOF.")
 				# Ignore.
 			ensure
-				# $stderr.puts "Server closing stream."
+				Console.debug(self, "Closing stream.")
 				stream.close
 			end
 			
-			::Protocol::HTTP::Response[200, {}, body]
+			::Protocol::HTTP::Response[200, {}, output]
 		end
 	end
 	
 	it "should echo the response body" do
-		body = ::Protocol::HTTP::Body::Streamable.request do |stream|
+		output = ::Protocol::HTTP::Body::Writable.new
+		response = client.post("/", body: output)
+		stream = ::Protocol::HTTP::Body::Stream.new(response.body, output)
+		
+		begin
+			Console.debug(self, "Echoing chunks...")
 			while chunk = stream.readpartial(1024)
 				stream.write(chunk)
 			end
 		rescue EOFError
+			Console.debug(self, "EOF.")
 			# Ignore.
 		ensure
+			Console.debug(self, "Closing stream.")
 			stream.close
 		end
-		
-		response = client.post("/", body: body)
-		body.stream(response.body)
 		
 		chunks.each do |chunk|
 			expect(response_chunks.pop).to be == chunk
@@ -112,13 +130,13 @@ AnEchoClient = Sus::Shared("an echo client") do
 	end
 end
 
-[Async::HTTP::Protocol::HTTP1].each do |protocol|
-	describe protocol do
+[Async::HTTP::Protocol::HTTP1, Async::HTTP::Protocol::HTTP2].each do |protocol|
+	describe protocol, unique: protocol.name do
 		include Sus::Fixtures::Async::HTTP::ServerContext
 		
 		let(:protocol) {subject}
 		
 		it_behaves_like AnEchoServer
-		# it_behaves_like AnEchoClient
+		it_behaves_like AnEchoClient
 	end
 end

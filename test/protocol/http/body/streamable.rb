@@ -10,11 +10,7 @@ require "sus/fixtures/async/http"
 AnEchoServer = Sus::Shared("an echo server") do
 	let(:app) do
 		::Protocol::HTTP::Middleware.for do |request|
-			output = ::Protocol::HTTP::Body::Writable.new
-			
-			Async do
-				stream = ::Protocol::HTTP::Body::Stream.new(request.body, output)
-				
+			streamable = ::Protocol::HTTP::Body::Streamable.response(request) do |stream|
 				Console.debug(self, "Echoing chunks...")
 				while chunk = stream.readpartial(1024)
 					Console.debug(self, "Reading chunk:", chunk: chunk)
@@ -28,7 +24,7 @@ AnEchoServer = Sus::Shared("an echo server") do
 				stream.close
 			end
 			
-			::Protocol::HTTP::Response[200, {}, output]
+			::Protocol::HTTP::Response[200, {}, streamable]
 		end
 	end
 	
@@ -76,11 +72,7 @@ AnEchoClient = Sus::Shared("an echo client") do
 	
 	let(:app) do
 		::Protocol::HTTP::Middleware.for do |request|
-			output = ::Protocol::HTTP::Body::Writable.new
-			
-			Async do
-				stream = ::Protocol::HTTP::Body::Stream.new(request.body, output)
-				
+			streamable = ::Protocol::HTTP::Body::Streamable.response(request) do |stream|
 				Console.debug(self, "Echoing chunks...")
 				chunks.each do |chunk|
 					stream.write(chunk)
@@ -102,7 +94,7 @@ AnEchoClient = Sus::Shared("an echo client") do
 				stream.close
 			end
 			
-			::Protocol::HTTP::Response[200, {}, output]
+			::Protocol::HTTP::Response[200, {}, streamable]
 		end
 	end
 	
@@ -130,8 +122,8 @@ AnEchoClient = Sus::Shared("an echo client") do
 	end
 end
 
-[Async::HTTP::Protocol::HTTP1].each do |protocol|
-	describe protocol do
+[Async::HTTP::Protocol::HTTP1, Async::HTTP::Protocol::HTTP2].each do |protocol|
+	describe protocol, unique: protocol.name do
 		include Sus::Fixtures::Async::HTTP::ServerContext
 		
 		let(:protocol) {subject}

@@ -188,6 +188,9 @@ module Async
 				
 				# The connection won't be released until the body is completely read/released.
 				::Protocol::HTTP::Body::Completable.wrap(response) do
+					# TODO: We should probably wait until the request is fully consumed and/or the connection is ready before releasing it back into the pool.
+					
+					# Release the connection back into the pool:
 					@pool.release(connection)
 				end
 				

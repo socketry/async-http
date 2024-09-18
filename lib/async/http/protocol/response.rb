@@ -33,6 +33,10 @@ module Async
 				def remote_address= value
 					@remote_address = value
 				end
+				
+				def finished!
+					
+				end
 			end
 		end
 	end

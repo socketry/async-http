@@ -9,12 +9,25 @@ require 'async/variable'
 module Async
 	module HTTP
 		module Body
+			# Keeps track of whether a body is being read, and if so, waits for it to be closed.
 			class Finishable < ::Protocol::HTTP::Body::Wrapper
 				def initialize(body)
 					super(body)
 					
 					@closed = Async::Variable.new
 					@error = nil
+					
+					@reading = false
+				end
+				
+				def reading?
+					@reading
+				end
+				
+				def read
+					@reading = true
+					
+					super
 				end
 				
 				def close(error = nil)
@@ -27,7 +40,11 @@ module Async
 				end
 				
 				def wait
-					@closed.wait
+					if @reading
+						@closed.wait
+					else
+						self.discard
+					end
 				end
 				
 				def inspect

@@ -39,6 +39,14 @@ module Async
 						super(version, status, headers, body, protocol)
 					end
 					
+					def pool=(pool)
+						if @connection.idle? or @connection.closed?
+							pool.release(@connection)
+						else
+							@connection.pool = pool
+						end
+					end
+					
 					def connection
 						@connection
 					end

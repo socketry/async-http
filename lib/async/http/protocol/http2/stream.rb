@@ -20,6 +20,8 @@ module Async
 						
 						@headers = nil
 						
+						@pool = nil
+						
 						# Input buffer, reading request body, or response body (receive_data):
 						@length = nil
 						@input = nil
@@ -29,6 +31,8 @@ module Async
 					end
 					
 					attr_accessor :headers
+					
+					attr_accessor :pool
 					
 					attr :input
 					
@@ -156,6 +160,10 @@ module Async
 						if @output
 							@output.stop(error)
 							@output = nil
+						end
+						
+						if pool = @pool and @connection
+							pool.release(@connection)
 						end
 						
 						return self

@@ -42,6 +42,8 @@ AProxy = Sus::Shared("a proxy") do
 					stream.close_read
 					
 					stream.write(chunk)
+					stream.close_write
+				ensure
 					stream.close
 				end
 			end

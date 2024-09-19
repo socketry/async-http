@@ -14,6 +14,7 @@ require 'protocol/http/methods'
 require 'traces/provider'
 
 require_relative 'protocol'
+require_relative 'body/finishable'
 
 module Async
 	module HTTP
@@ -140,7 +141,7 @@ module Async
 			def inspect
 				"#<#{self.class} authority=#{@authority.inspect}>"
 			end
-
+			
 			Traces::Provider(self) do
 				def call(request)
 					attributes = {
@@ -186,13 +187,7 @@ module Async
 			def make_response(request, connection)
 				response = request.call(connection)
 				
-				# The connection won't be released until the body is completely read/released.
-				::Protocol::HTTP::Body::Completable.wrap(response) do
-					# TODO: We should probably wait until the request is fully consumed and/or the connection is ready before releasing it back into the pool.
-					
-					# Release the connection back into the pool:
-					@pool.release(connection)
-				end
+				response.pool = @pool
 				
 				return response
 			end

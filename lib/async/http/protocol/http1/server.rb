@@ -22,7 +22,7 @@ module Async
 						write_body(@version, nil)
 					rescue => error
 						# At this point, there is very little we can do to recover:
-						Console::Event::Failure.for(error).emit(self, "Failed to write failure response.", severity: :debug)
+						Console::Event::Failure.for(error).emit(self, "Failed to write failure response!", severity: :debug)
 					end
 					
 					def next_request
@@ -37,7 +37,7 @@ module Async
 						end
 						
 						return request
-					rescue ::Protocol::HTTP1::BadRequest
+					rescue ::Protocol::HTTP1::BadRequest => error
 						fail_request(400)
 						# Conceivably we could retry here, but we don't really know how bad the error is, so it's better to just fail:
 						raise

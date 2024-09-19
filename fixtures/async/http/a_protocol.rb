@@ -14,6 +14,7 @@ require 'async/http/body/hijack'
 require 'tempfile'
 
 require 'protocol/http/body/file'
+require "protocol/http/body/buffered"
 
 require 'sus/fixtures/async/http'
 
@@ -100,7 +101,7 @@ module Async
 			end
 			
 			with 'buffered body' do
-				let(:body) {Async::HTTP::Body::Buffered.new(["Hello World"])}
+				let(:body) {::Protocol::HTTP::Body::Buffered.new(["Hello World"])}
 				let(:response) {::Protocol::HTTP::Response[200, {}, body]}
 				
 				let(:app) do
@@ -410,7 +411,7 @@ module Async
 			end
 			
 			with 'body with incorrect length' do
-				let(:bad_body) {Async::HTTP::Body::Buffered.new(["Borked"], 10)}
+				let(:bad_body) {::Protocol::HTTP::Body::Buffered.new(["Borked"], 10)}
 				
 				let(:app) do
 					::Protocol::HTTP::Middleware.for do |request|

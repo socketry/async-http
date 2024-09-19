@@ -137,6 +137,16 @@ module Async
 					attr :stream
 					attr :request
 					
+					def pool=(pool)
+						# If we are already closed, the stream can be released now:
+						if @stream.closed?
+							pool.release(@stream.connection)
+						else
+							# Otherwise, we will release the stream when it is closed:
+							@stream.pool = pool
+						end
+					end
+					
 					def connection
 						@stream.connection
 					end

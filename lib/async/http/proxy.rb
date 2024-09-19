@@ -96,6 +96,7 @@ module Async
 					end
 				else
 					# This ensures we don't leave a response dangling:
+					input.close
 					response.close
 					
 					raise ConnectFailure, response

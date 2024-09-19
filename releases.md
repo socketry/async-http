@@ -1,6 +1,6 @@
 # Releases
 
-## Unreleased
+## v0.77.0
 
   - Improved HTTP/1 connection handling.
   - The input stream is no longer closed when the output stream is closed.

@@ -16,12 +16,11 @@ module Async
 					def initialize(stream, version)
 						super(stream)
 						
-						@ready = true
 						@version = version
 					end
 					
 					def to_s
-						"\#<#{self.class} negotiated #{@version}, currently #{@ready ? 'ready' : 'in-use'}>"
+						"\#<#{self.class} negotiated #{@version}, #{@state}>"
 					end
 					
 					def as_json(...)
@@ -62,11 +61,11 @@ module Async
 					
 					# Can we use this connection to make requests?
 					def viable?
-						@ready && @stream&.readable?
+						self.idle? && @stream&.readable?
 					end
 					
 					def reusable?
-						@ready && @persistent && @stream && !@stream.closed?
+						@persistent && @stream && !@stream.closed?
 					end
 				end
 			end

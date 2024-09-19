@@ -21,7 +21,7 @@ describe Async::HTTP::Protocol::HTTP11 do
 			response = client.get("/")
 			connection = response.connection
 			
-			expect(connection.as_json).to be == "#<Async::HTTP::Protocol::HTTP1::Client negotiated HTTP/1.1, currently ready>"
+			expect(connection.as_json).to be =~ /Async::HTTP::Protocol::HTTP1::Client negotiated HTTP/
 		ensure
 			response&.close
 		end
@@ -109,7 +109,7 @@ describe Async::HTTP::Protocol::HTTP11 do
 		end
 
 		with 'full hijack with empty response' do
-			let(:body) {Async::HTTP::Body::Buffered.new([], 0)}
+			let(:body) {::Protocol::HTTP::Body::Buffered.new([], 0)}
 
 			let(:app) do
 				::Protocol::HTTP::Middleware.for do |request|

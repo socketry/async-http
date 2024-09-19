@@ -10,11 +10,25 @@ module Async
 		module Protocol
 			module HTTP1
 				class Client < Connection
+					def initialize(...)
+						super
+						
+						@pool = nil
+					end
+					
+					attr_accessor :pool
+					
+					def closed!
+						super
+						
+						if pool = @pool
+							@pool = nil
+							pool.release(self)
+						end
+					end
+					
 					# Used by the client to send requests to the remote server.
 					def call(request, task: Task.current)
-						# We need to keep track of connections which are not in the initial "ready" state.
-						@ready = false
-						
 						Console.logger.debug(self) {"#{request.method} #{request.path} #{request.headers.inspect}"}
 						
 						# Mark the start of the trailers:
@@ -54,12 +68,11 @@ module Async
 						end
 						
 						response = Response.read(self, request)
-						@ready = true
 						
 						return response
 					rescue
 						# This will ensure that #reusable? returns false.
-						@stream.close
+						self.close
 						
 						raise
 					end

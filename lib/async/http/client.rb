@@ -187,18 +187,7 @@ module Async
 			def make_response(request, connection)
 				response = request.call(connection)
 				
-				if body = request.body
-					finishable = Body::Finishable.new(body)
-				end
-				
-				# The connection won't be released until the body is completely read/released.
-				::Protocol::HTTP::Body::Completable.wrap(response) do
-					# TODO: We should probably wait until the request is fully consumed and/or the connection is ready before releasing it back into the pool.
-					finishable&.wait
-					
-					# Release the connection back into the pool:
-					@pool.release(connection)
-				end
+				response.pool = @pool
 				
 				return response
 			end

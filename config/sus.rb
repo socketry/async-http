@@ -4,7 +4,7 @@
 # Copyright, 2017-2024, by Samuel Williams.
 # Copyright, 2018, by Janko Marohnić.
 
-ENV["CONSOLE_LEVEL"] ||= "fatal"
+# ENV["CONSOLE_LEVEL"] ||= "fatal"
 
 require "covered/sus"
 include Covered::Sus

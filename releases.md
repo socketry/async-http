@@ -1,5 +1,16 @@
 # Releases
 
+## Unreleased
+
+  - Improved HTTP/1 connection handling.
+  - The input stream is no longer closed when the output stream is closed.
+
+## v0.76.0
+
+  - `Async::HTTP::Body::Writable` is moved to `Protocol::HTTP::Body::Writable`.
+  - Remove `Async::HTTP::Body::Delayed` with no replacement.
+  - Remove `Async::HTTP::Body::Slowloris` with no replacement.
+
 ## v0.75.0
 
   - Better handling of HTTP/1 \<-\> HTTP/2 proxying, specifically upgrade/CONNECT requests.

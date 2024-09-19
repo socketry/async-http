@@ -4,7 +4,7 @@
 # Copyright, 2019-2024, by Samuel Williams.
 # Copyright, 2020, by Bruno Sutic.
 
-require_relative 'writable'
+require_relative "writable"
 
 module Async
 	module HTTP

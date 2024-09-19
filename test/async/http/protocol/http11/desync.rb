@@ -3,9 +3,9 @@
 # Released under the MIT License.
 # Copyright, 2021-2024, by Samuel Williams.
 
-require 'async/http/protocol/http11'
+require "async/http/protocol/http11"
 
-require 'sus/fixtures/async/http/server_context'
+require "sus/fixtures/async/http/server_context"
 
 describe Async::HTTP::Protocol::HTTP11 do
 	include Sus::Fixtures::Async::ReactorContext
@@ -35,7 +35,7 @@ describe Async::HTTP::Protocol::HTTP11 do
 		100.times do
 			tasks << task.async{
 				loop do
-					response = client.get('/a')
+					response = client.get("/a")
 					expect(response.read).to be == "/a"
 				rescue Exception => exception
 					backtraces << exception&.backtrace
@@ -49,7 +49,7 @@ describe Async::HTTP::Protocol::HTTP11 do
 		100.times do
 			tasks << task.async{
 				loop do
-					response = client.get('/b')
+					response = client.get("/b")
 					expect(response.read).to be == "/b"
 				rescue Exception => exception
 					backtraces << exception&.backtrace

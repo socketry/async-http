@@ -4,7 +4,7 @@
 # Copyright, 2018-2024, by Samuel Williams.
 # Copyright, 2023, by Josh Huber.
 
-require_relative '../response'
+require_relative "../response"
 
 module Async
 	module HTTP
@@ -23,7 +23,7 @@ module Async
 						end
 					end
 					
-					UPGRADE = 'upgrade'
+					UPGRADE = "upgrade"
 					
 					# @attribute [String] The HTTP response line reason.
 					attr :reason

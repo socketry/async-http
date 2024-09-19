@@ -36,6 +36,8 @@ jobs:
     
     - uses: actions/upload-artifact@v4
       with:
+        include-hidden-files: true
+        if-no-files-found: error
         name: coverage-${{matrix.os}}-${{matrix.ruby}}
         path: .covered.db
   

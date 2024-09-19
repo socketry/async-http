@@ -2,11 +2,11 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2018-2023, by Samuel Williams.
+# Copyright, 2018-2024, by Samuel Williams.
 
-require 'async'
-require 'async/http/client'
-require 'async/http/endpoint'
+require "async"
+require "async/http/client"
+require "async/http/endpoint"
 
 # Console.logger.level = Logger::DEBUG
 
@@ -16,7 +16,7 @@ Async do |task|
 	client = Async::HTTP::Client.new(endpoint)
 	
 	headers = {
-		'accept' => 'text/html',
+		"accept" => "text/html",
 	}
 	
 	request = Protocol::HTTP::Request.new(client.scheme, "www.google.com", "GET", "/search?q=cats", headers)

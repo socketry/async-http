@@ -2,30 +2,30 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2020-2023, by Samuel Williams.
+# Copyright, 2020-2024, by Samuel Williams.
 
-require 'csv'
-require 'json'
-require 'async/http/internet'
+require "csv"
+require "json"
+require "async/http/internet"
 
 class RateLimitingError < StandardError; end
 
 @internet = Async::HTTP::Internet.new
 
-@user = ENV['GITHUB_USER']
-@token = ENV['GITHUB_TOKEN']
+@user = ENV["GITHUB_USER"]
+@token = ENV["GITHUB_TOKEN"]
 
 unless @user && @token
 	fail "export GITHUB_USER and GITHUB_TOKEN!"
 end
 
 GITHUB_HEADERS = {
-	'user-agent' => 'fetch-github-licenses',
-	'authorization' => Protocol::HTTP::Header::Authorization.basic(@user, @token)
+	"user-agent" => "fetch-github-licenses",
+	"authorization" => Protocol::HTTP::Header::Authorization.basic(@user, @token)
 }
 
 RUBYGEMS_HEADERS = {
-	'user-agent' => 'fetch-github-licenses'
+	"user-agent" => "fetch-github-licenses"
 }
 
 def fetch_github_license(homepage_uri)
@@ -36,7 +36,7 @@ def fetch_github_license(homepage_uri)
 	
 	case response.status
 	when 200
-		return JSON.parse(response.read).dig('license', 'spdx_id')
+		return JSON.parse(response.read).dig("license", "spdx_id")
 	when 404
 		return nil
 	else
@@ -52,7 +52,7 @@ def fetch_rubygem_license(name, version)
 	case response.status
 	when 200
 		body = JSON.parse(response.read)
-		[name, body.dig('licenses', 0) || fetch_github_license(body['homepage_uri'])]
+		[name, body.dig("licenses", 0) || fetch_github_license(body["homepage_uri"])]
 	when 404
 		[name, nil] # from a non rubygems remote
 	when 429

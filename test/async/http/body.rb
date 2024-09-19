@@ -3,16 +3,16 @@
 # Released under the MIT License.
 # Copyright, 2018-2024, by Samuel Williams.
 
-require 'async/http/body'
+require "async/http/body"
 
-require 'sus/fixtures/async'
-require 'sus/fixtures/openssl'
-require 'sus/fixtures/async/http'
-require 'localhost/authority'
-require 'io/endpoint/ssl_endpoint'
+require "sus/fixtures/async"
+require "sus/fixtures/openssl"
+require "sus/fixtures/async/http"
+require "localhost/authority"
+require "io/endpoint/ssl_endpoint"
 
 ABody = Sus::Shared("a body") do
-	with 'echo server' do
+	with "echo server" do
 		let(:app) do
 			Protocol::HTTP::Middleware.for do |request|
 				input = request.body

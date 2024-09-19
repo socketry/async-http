@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2020-2023, by Samuel Williams.
+# Copyright, 2020-2024, by Samuel Williams.
 
-require 'async/http/client'
-require 'async/http/endpoint'
+require "async/http/client"
+require "async/http/endpoint"
 
-require 'sus/fixtures/async/http'
+require "sus/fixtures/async/http"
 
-describe 'consistent retry behaviour' do
+describe "consistent retry behaviour" do
 	include Sus::Fixtures::Async::HTTP::ServerContext
 	
 	let(:delay) {0.1}
@@ -24,7 +24,7 @@ describe 'consistent retry behaviour' do
 	def make_request(body)
 		# This causes the first request to fail with "SocketError" which is retried:
 		Async::Task.current.with_timeout(delay / 2.0, SocketError) do
-			return client.get('/', {}, body)
+			return client.get("/", {}, body)
 		end
 	end
 	

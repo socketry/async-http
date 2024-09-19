@@ -3,8 +3,8 @@
 # Released under the MIT License.
 # Copyright, 2018-2024, by Samuel Williams.
 
-require_relative '../request'
-require_relative 'stream'
+require_relative "../request"
+require_relative "stream"
 
 module Async
 	module HTTP
@@ -53,7 +53,7 @@ module Async
 									@length = Integer(value)
 								elsif key == CONNECTION
 									raise ::Protocol::HTTP2::HeaderError, "Connection header is not allowed!"
-								elsif key.start_with? ':'
+								elsif key.start_with? ":"
 									raise ::Protocol::HTTP2::HeaderError, "Invalid pseudo-header #{key}!"
 								elsif key =~ /[A-Z]/
 									raise ::Protocol::HTTP2::HeaderError, "Invalid characters in header #{key}!"
@@ -107,7 +107,7 @@ module Async
 					end
 					
 					NO_RESPONSE = [
-						[STATUS, '500'],
+						[STATUS, "500"],
 					]
 					
 					def send_response(response)

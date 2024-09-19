@@ -2,18 +2,18 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2020-2023, by Samuel Williams.
+# Copyright, 2020-2024, by Samuel Williams.
 
-require 'csv'
-require 'json'
-require 'net/http'
+require "csv"
+require "json"
+require "net/http"
 
-require 'protocol/http/header/authorization'
+require "protocol/http/header/authorization"
 
 class RateLimitingError < StandardError; end
 
-@user = ENV['GITHUB_USER']
-@token = ENV['GITHUB_TOKEN']
+@user = ENV["GITHUB_USER"]
+@token = ENV["GITHUB_TOKEN"]
 
 unless @user && @token
 	fail "export GITHUB_USER and GITHUB_TOKEN!"
@@ -26,8 +26,8 @@ def fetch_github_license(homepage_uri)
 	url = URI.parse("https://api.github.com/repos/#{owner}/#{repo}/license")
 	request = Net::HTTP::Get.new(url)
 
-	request['user-agent'] = 'fetch-github-licenses'
-	request['authorization'] = Protocol::HTTP::Header::Authorization.basic(@user, @token)
+	request["user-agent"] = "fetch-github-licenses"
+	request["authorization"] = Protocol::HTTP::Header::Authorization.basic(@user, @token)
 
 	response = Net::HTTP.start(url.hostname) do |http|
 		http.request(request)
@@ -35,7 +35,7 @@ def fetch_github_license(homepage_uri)
 
 	case response
 	when Net::HTTPOK
-		JSON.parse(response.body).dig('license', 'spdx_id')
+		JSON.parse(response.body).dig("license", "spdx_id")
 	when Net::HTTPNotFound, Net::HTTPMovedPermanently, Net::HTTPForbidden
 		nil
 	else
@@ -50,7 +50,7 @@ def fetch_rubygem_license(name, version)
 	case response
 	when Net::HTTPOK
 		body = JSON.parse(response.body)
-		[name, body.dig('licenses', 0) || fetch_github_license(body['homepage_uri'])]
+		[name, body.dig("licenses", 0) || fetch_github_license(body["homepage_uri"])]
 	when Net::HTTPNotFound
 		[name, nil] # from a non rubygems remote
 	when Net::HTTPTooManyRequests

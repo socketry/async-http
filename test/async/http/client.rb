@@ -3,18 +3,18 @@
 # Released under the MIT License.
 # Copyright, 2017-2024, by Samuel Williams.
 
-require 'async/http/server'
-require 'async/http/client'
-require 'async/reactor'
+require "async/http/server"
+require "async/http/client"
+require "async/reactor"
 
-require 'async/http/endpoint'
-require 'protocol/http/accept_encoding'
+require "async/http/endpoint"
+require "protocol/http/accept_encoding"
 
-require 'sus/fixtures/async'
-require 'sus/fixtures/async/http'
+require "sus/fixtures/async"
+require "sus/fixtures/async/http"
 
 describe Async::HTTP::Client do
-	with 'basic server' do
+	with "basic server" do
 		include Sus::Fixtures::Async::HTTP::ServerContext
 		
 		it "client can get resource" do
@@ -23,7 +23,7 @@ describe Async::HTTP::Client do
 			expect(response).to be(:success?)
 		end
 		
-		with 'client' do
+		with "client" do
 			with "#as_json" do
 				it "generates a JSON representation" do
 					expect(client.as_json).to be == {
@@ -35,13 +35,13 @@ describe Async::HTTP::Client do
 					}
 				end
 				
-				it 'generates a JSON string' do
+				it "generates a JSON string" do
 					expect(JSON.dump(client)).to be == client.to_json
 				end
 			end
 		end
 		
-		with 'server' do
+		with "server" do
 			with "#as_json" do
 				it "generates a JSON representation" do
 					expect(server.as_json).to be == {
@@ -51,17 +51,17 @@ describe Async::HTTP::Client do
 					}
 				end
 				
-				it 'generates a JSON string' do
+				it "generates a JSON string" do
 					expect(JSON.dump(server)).to be == server.to_json
 				end
 			end
 		end
 	end
 	
-	with 'non-existant host' do
+	with "non-existant host" do
 		include Sus::Fixtures::Async::ReactorContext
 		
-		let(:endpoint) {Async::HTTP::Endpoint.parse('http://the.future')}
+		let(:endpoint) {Async::HTTP::Endpoint.parse("http://the.future")}
 		let(:client) {Async::HTTP::Client.new(endpoint)}
 		
 		it "should fail to connect" do

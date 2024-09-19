@@ -4,10 +4,10 @@
 # Copyright, 2018-2024, by Samuel Williams.
 # Copyright, 2024, by Thomas Morgan.
 
-require_relative 'http2/client'
-require_relative 'http2/server'
+require_relative "http2/client"
+require_relative "http2/server"
 
-require 'io/stream'
+require "io/stream"
 
 module Async
 	module HTTP

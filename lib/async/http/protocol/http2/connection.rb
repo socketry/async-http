@@ -4,25 +4,25 @@
 # Copyright, 2018-2024, by Samuel Williams.
 # Copyright, 2020, by Bruno Sutic.
 
-require_relative 'stream'
+require_relative "stream"
 
-require 'async/semaphore'
+require "async/semaphore"
 
 module Async
 	module HTTP
 		module Protocol
 			module HTTP2
-				HTTPS = 'https'.freeze
-				SCHEME = ':scheme'.freeze
-				METHOD = ':method'.freeze
-				PATH = ':path'.freeze
-				AUTHORITY = ':authority'.freeze
-				STATUS = ':status'.freeze
-				PROTOCOL = ':protocol'.freeze
+				HTTPS = "https".freeze
+				SCHEME = ":scheme".freeze
+				METHOD = ":method".freeze
+				PATH = ":path".freeze
+				AUTHORITY = ":authority".freeze
+				STATUS = ":status".freeze
+				PROTOCOL = ":protocol".freeze
 				
-				CONTENT_LENGTH = 'content-length'.freeze
-				CONNECTION = 'connection'.freeze
-				TRAILER = 'trailer'.freeze
+				CONTENT_LENGTH = "content-length".freeze
+				CONNECTION = "connection".freeze
+				TRAILER = "trailer".freeze
 				
 				module Connection
 					def initialize(*)

@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2018-2023, by Samuel Williams.
+# Copyright, 2018-2024, by Samuel Williams.
 
-require 'async/http/statistics'
-require 'sus/fixtures/async/http'
+require "async/http/statistics"
+require "sus/fixtures/async/http"
 
 describe Async::HTTP::Statistics do
 	include Sus::Fixtures::Async::HTTP::ServerContext

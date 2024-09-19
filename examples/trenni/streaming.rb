@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2019-2023, by Samuel Williams.
+# Copyright, 2019-2024, by Samuel Williams.
 
-require 'trenni/template'
+require "trenni/template"
 
-require 'async'
-require 'async/http/body/writable'
+require "async"
+require "async/http/body/writable"
 
 # The template, using inline text. The sleep could be anything - database query, HTTP request, redis, etc.
 buffer = Trenni::Buffer.new(<<-EOF)
@@ -28,7 +28,7 @@ Async do
 	body = Async::HTTP::Body::Writable.new
 
 	generator = Async do
-		template.to_string({count: 100, drink: 'coffee'}, body)
+		template.to_string({count: 100, drink: "coffee"}, body)
 	end
 
 	while chunk = body.read

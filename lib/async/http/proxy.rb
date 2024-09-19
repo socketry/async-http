@@ -3,10 +3,10 @@
 # Released under the MIT License.
 # Copyright, 2019-2024, by Samuel Williams.
 
-require_relative 'client'
-require_relative 'endpoint'
+require_relative "client"
+require_relative "endpoint"
 
-require_relative 'body/pipe'
+require_relative "body/pipe"
 
 module Async
 	module HTTP

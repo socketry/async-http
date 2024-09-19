@@ -3,10 +3,10 @@
 # Released under the MIT License.
 # Copyright, 2018-2024, by Samuel Williams.
 
-require 'protocol/http1'
+require "protocol/http1"
 
-require_relative 'request'
-require_relative 'response'
+require_relative "request"
+require_relative "response"
 
 module Async
 	module HTTP

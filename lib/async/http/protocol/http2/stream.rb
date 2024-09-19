@@ -5,10 +5,10 @@
 # Copyright, 2022, by Marco Concetto Rudilosso.
 # Copyright, 2023, by Thomas Morgan.
 
-require 'protocol/http2/stream'
+require "protocol/http2/stream"
 
-require_relative 'input'
-require_relative 'output'
+require_relative "input"
+require_relative "output"
 
 module Async
 	module HTTP
@@ -39,7 +39,7 @@ module Async
 					def add_header(key, value)
 						if key == CONNECTION
 							raise ::Protocol::HTTP2::HeaderError, "Connection header is not allowed!"
-						elsif key.start_with? ':'
+						elsif key.start_with? ":"
 							raise ::Protocol::HTTP2::HeaderError, "Invalid pseudo-header #{key}!"
 						elsif key =~ /[A-Z]/
 							raise ::Protocol::HTTP2::HeaderError, "Invalid upper-case characters in header #{key}!"

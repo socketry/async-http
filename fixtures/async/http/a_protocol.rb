@@ -4,19 +4,19 @@
 # Copyright, 2018-2024, by Samuel Williams.
 # Copyright, 2020, by Igor Sidorov.
 
-require 'async'
-require 'async/variable'
-require 'async/clock'
-require 'async/http/client'
-require 'async/http/server'
-require 'async/http/endpoint'
-require 'async/http/body/hijack'
-require 'tempfile'
+require "async"
+require "async/variable"
+require "async/clock"
+require "async/http/client"
+require "async/http/server"
+require "async/http/endpoint"
+require "async/http/body/hijack"
+require "tempfile"
 
-require 'protocol/http/body/file'
+require "protocol/http/body/file"
 require "protocol/http/body/buffered"
 
-require 'sus/fixtures/async/http'
+require "sus/fixtures/async/http"
 
 module Async
 	module HTTP
@@ -29,8 +29,8 @@ module Async
 				expect(client.scheme).to be == "http"
 			end
 			
-			with '#close' do
-				it 'can close the connection' do
+			with "#close" do
+				it "can close the connection" do
 					Async do |task|
 						response = client.get("/")
 						expect(response).to be(:success?)
@@ -100,7 +100,7 @@ module Async
 				end
 			end
 			
-			with 'buffered body' do
+			with "buffered body" do
 				let(:body) {::Protocol::HTTP::Body::Buffered.new(["Hello World"])}
 				let(:response) {::Protocol::HTTP::Response[200, {}, body]}
 				
@@ -118,30 +118,30 @@ module Async
 				end
 			end
 			
-			with 'empty body' do
+			with "empty body" do
 				let(:app) do
 					::Protocol::HTTP::Middleware.for do |request|
 						::Protocol::HTTP::Response[204]
 					end
 				end
 				
-				it 'properly handles no content responses' do
+				it "properly handles no content responses" do
 					expect(client.get("/", {}).read).to be_nil
 				end
 			end
 			
-			with 'with request trailer' do
+			with "with request trailer" do
 				let(:request_received) {Async::Variable.new}
 				
 				let(:app) do
 					::Protocol::HTTP::Middleware.for do |request|
-						if trailer = request.headers['trailer']
-							expect(request.headers).not.to have_keys('etag')
+						if trailer = request.headers["trailer"]
+							expect(request.headers).not.to have_keys("etag")
 							
 							request_received.value = true
 							request.finish
 							
-							expect(request.headers).to have_keys('etag')
+							expect(request.headers).to have_keys("etag")
 							
 							::Protocol::HTTP::Response[200, [], "request trailer"]
 						else
@@ -154,14 +154,14 @@ module Async
 					skip "Protocol does not support trailers!" unless subject.bidirectional?
 					
 					headers = ::Protocol::HTTP::Headers.new
-					headers.add('trailer', 'etag')
+					headers.add("trailer", "etag")
 					body = Async::HTTP::Body::Writable.new
 					
 					Async do |task|
 						body.write("Hello")
 						
 						request_received.wait
-						headers.add('etag', 'abcd')
+						headers.add("etag", "abcd")
 						
 						body.close_write
 					end
@@ -178,7 +178,7 @@ module Async
 				let(:app) do
 					::Protocol::HTTP::Middleware.for do |request|
 						headers = ::Protocol::HTTP::Headers.new
-						headers.add('trailer', 'etag')
+						headers.add("trailer", "etag")
 						
 						body = Async::HTTP::Body::Writable.new
 						
@@ -186,7 +186,7 @@ module Async
 							body.write("response trailer")
 							
 							response_received.wait
-							headers.add('etag', 'abcd')
+							headers.add("etag", "abcd")
 							
 							body.close_write
 						end
@@ -199,9 +199,9 @@ module Async
 					skip "Protocol does not support trailers!" unless subject.bidirectional?
 					
 					response = client.get("/")
-					expect(response.headers).to have_keys('trailer')
+					expect(response.headers).to have_keys("trailer")
 					headers = response.headers
-					expect(headers).not.to have_keys('etag')
+					expect(headers).not.to have_keys("etag")
 					
 					response_received.value = true
 					
@@ -209,20 +209,20 @@ module Async
 					expect(response).to be(:success?)
 					
 					# It was sent as a trailer.
-					expect(headers).to have_keys('etag')
+					expect(headers).to have_keys("etag")
 				end
 			end
 			
-			with 'with working server' do
+			with "with working server" do
 				let(:app) do
 					::Protocol::HTTP::Middleware.for do |request|
-						if request.method == 'POST'
+						if request.method == "POST"
 							# We stream the request body directly to the response.
 							::Protocol::HTTP::Response[200, {}, request.body]
-						elsif request.method == 'GET'
+						elsif request.method == "GET"
 							expect(request.body).to be_nil
 							
-							::Protocol::HTTP::Response[200, {'my-header' => 'my-value'}, ["#{request.method} #{request.version}"]]
+							::Protocol::HTTP::Response[200, {"my-header" => "my-value"}, ["#{request.method} #{request.version}"]]
 						else
 							::Protocol::HTTP::Response[200, {}, ["Hello World"]]
 						end
@@ -252,7 +252,7 @@ module Async
 					# reactor.print_hierarchy
 				end
 				
-				with 'using GET method' do
+				with "using GET method" do
 					let(:expected) {"GET #{protocol::VERSION}"}
 					
 					it "can handle many simultaneous requests" do
@@ -276,7 +276,7 @@ module Async
 						inform "Duration: #{duration.round(2)}"
 					end
 					
-					with 'with response' do
+					with "with response" do
 						let(:response) {client.get("/")}
 						
 						after do
@@ -306,7 +306,7 @@ module Async
 						end
 						
 						it "has response header" do
-							expect(response.headers['my-header']).to be == ['my-value']
+							expect(response.headers["my-header"]).to be == ["my-value"]
 						end
 						
 						it "has protocol version" do
@@ -315,7 +315,7 @@ module Async
 					end
 				end
 				
-				with 'HEAD' do
+				with "HEAD" do
 					let(:response) {client.head("/")}
 					
 					it "is successful and without body" do
@@ -327,7 +327,7 @@ module Async
 					end
 				end
 				
-				with 'POST' do
+				with "POST" do
 					let(:response) {client.post("/", {}, ["Hello", " ", "World"])}
 					
 					after do
@@ -349,7 +349,7 @@ module Async
 					end
 					
 					it "should not contain content-length response header" do
-						expect(response.headers).not.to have_keys('content-length')
+						expect(response.headers).not.to have_keys("content-length")
 					end
 					
 					it "fails gracefully when closing connection" do
@@ -360,7 +360,7 @@ module Async
 				end
 			end
 			
-			with 'content length' do
+			with "content length" do
 				let(:app) do
 					::Protocol::HTTP::Middleware.for do |request|
 						::Protocol::HTTP::Response[200, [], ["Content Length: #{request.body.length}"]]
@@ -376,7 +376,7 @@ module Async
 				end
 			end
 			
-			with 'hijack with nil response' do
+			with "hijack with nil response" do
 				let(:app) do
 					::Protocol::HTTP::Middleware.for do |request|
 						nil
@@ -390,7 +390,7 @@ module Async
 				end
 			end
 			
-			with 'partial hijack' do
+			with "partial hijack" do
 				let(:content) {"Hello World!"}
 				
 				let(:app) do
@@ -410,7 +410,7 @@ module Async
 				end
 			end
 			
-			with 'body with incorrect length' do
+			with "body with incorrect length" do
 				let(:bad_body) {::Protocol::HTTP::Body::Buffered.new(["Borked"], 10)}
 				
 				let(:app) do
@@ -428,7 +428,7 @@ module Async
 				end
 			end
 			
-			with 'streaming server' do
+			with "streaming server" do
 				let(:sent_chunks) {[]}
 				
 				let(:app) do
@@ -464,7 +464,7 @@ module Async
 				end
 			end
 			
-			with 'hijack server' do
+			with "hijack server" do
 				let(:app) do
 					::Protocol::HTTP::Middleware.for do |request|
 						if request.hijack?
@@ -485,10 +485,10 @@ module Async
 				end
 			end
 			
-			with 'broken server' do
+			with "broken server" do
 				let(:app) do
 					::Protocol::HTTP::Middleware.for do |request|
-						raise RuntimeError.new('simulated failure')
+						raise RuntimeError.new("simulated failure")
 					end
 				end
 				
@@ -499,7 +499,7 @@ module Async
 				end
 			end
 			
-			with 'slow server' do
+			with "slow server" do
 				let(:app) do
 					::Protocol::HTTP::Middleware.for do |request|
 						sleep(endpoint.timeout * 2)
@@ -516,7 +516,7 @@ module Async
 				end
 			end
 			
-			with 'bi-directional streaming' do
+			with "bi-directional streaming" do
 				let(:app) do
 					::Protocol::HTTP::Middleware.for do |request|
 						# Echo the request body back to the client.
@@ -556,7 +556,7 @@ module Async
 				end
 			end
 			
-			with 'multiple client requests' do
+			with "multiple client requests" do
 				let(:app) do
 					::Protocol::HTTP::Middleware.for do |request|
 						::Protocol::HTTP::Response[200, {}, [request.path]]
@@ -573,13 +573,13 @@ module Async
 							tasks << child
 							
 							loop do
-								response = client.get('/a')
+								response = client.get("/a")
 								response.finish
 							ensure
 								response&.close
 							end
 						ensure
-							stopped << 'a'
+							stopped << "a"
 						end
 					end
 					
@@ -588,13 +588,13 @@ module Async
 							tasks << child
 							
 							loop do
-								response = client.get('/b')
+								response = client.get("/b")
 								response.finish
 							ensure
 								response&.close
 							end
 						ensure
-							stopped << 'b'
+							stopped << "b"
 						end
 					end
 					

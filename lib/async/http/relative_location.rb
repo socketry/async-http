@@ -4,7 +4,7 @@
 # Copyright, 2018-2024, by Samuel Williams.
 # Copyright, 2019-2020, by Brian Morearty.
 
-require_relative 'middleware/location_redirector'
+require_relative "middleware/location_redirector"
 
 warn "`Async::HTTP::RelativeLocation` is deprecated and will be removed in the next release. Please use `Async::HTTP::Middleware::LocationRedirector` instead.", uplevel: 1
 

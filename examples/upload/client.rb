@@ -2,15 +2,15 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2018-2023, by Samuel Williams.
+# Copyright, 2018-2024, by Samuel Williams.
 # Copyright, 2020, by Bruno Sutic.
 
 $LOAD_PATH.unshift File.expand_path("../../lib", __dir__)
 
-require 'async'
-require 'protocol/http/body/file'
-require 'async/http/client'
-require 'async/http/endpoint'
+require "async"
+require "protocol/http/body/file"
+require "async/http/client"
+require "async/http/endpoint"
 
 class Delayed < ::Protocol::HTTP::Body::Wrapper
 	def initialize(body, delay = 0.01)
@@ -35,7 +35,7 @@ Async do
 	client = Async::HTTP::Client.new(endpoint, protocol: Async::HTTP::Protocol::HTTP2)
 	
 	headers = [
-		['accept', 'text/plain'],
+		["accept", "text/plain"],
 	]
 	
 	body = Delayed.new(Protocol::HTTP::Body::File.open(File.join(__dir__, "data.txt"), block_size: 32))

@@ -4,19 +4,19 @@
 # Copyright, 2019-2024, by Samuel Williams.
 # Copyright, 2020, by Sam Shadwell.
 
-require 'async'
-require 'async/http/proxy'
-require 'async/http/protocol'
-require 'async/http/body/hijack'
+require "async"
+require "async/http/proxy"
+require "async/http/protocol"
+require "async/http/body/hijack"
 
-require 'sus/fixtures/async/http'
+require "sus/fixtures/async/http"
 
 AProxy = Sus::Shared("a proxy") do
 	include Sus::Fixtures::Async::HTTP::ServerContext
 	
 	let(:protocol) {subject}
 	
-	with '.proxied_endpoint' do
+	with ".proxied_endpoint" do
 		it "can construct valid endpoint" do
 			endpoint = Async::HTTP::Endpoint.parse("http://www.codeotaku.com")
 			proxied_endpoint = client.proxied_endpoint(endpoint)
@@ -25,7 +25,7 @@ AProxy = Sus::Shared("a proxy") do
 		end
 	end
 	
-	with '.proxied_client' do
+	with ".proxied_client" do
 		it "can construct valid client" do
 			endpoint = Async::HTTP::Endpoint.parse("http://www.codeotaku.com")
 			proxied_client = client.proxied_client(endpoint)
@@ -34,7 +34,7 @@ AProxy = Sus::Shared("a proxy") do
 		end
 	end
 	
-	with 'CONNECT' do
+	with "CONNECT" do
 		let(:app) do
 			Protocol::HTTP::Middleware.for do |request|
 				Async::HTTP::Body::Hijack.response(request, 200, {}) do |stream|
@@ -65,7 +65,7 @@ AProxy = Sus::Shared("a proxy") do
 		end
 	end
 	
-	with 'echo server' do
+	with "echo server" do
 		let(:app) do
 			Protocol::HTTP::Middleware.for do |request|
 				expect(request.path).to be == "localhost:1"
@@ -116,7 +116,7 @@ AProxy = Sus::Shared("a proxy") do
 		end
 	end
 	
-	with 'proxied client' do
+	with "proxied client" do
 		let(:app) do
 			Protocol::HTTP::Middleware.for do |request|
 				expect(request.method).to be == "CONNECT"
@@ -171,7 +171,7 @@ AProxy = Sus::Shared("a proxy") do
 		
 		let(:authorization_lambda) { ->(request) {true} }
 		
-		it 'can get insecure website' do
+		it "can get insecure website" do
 			endpoint = Async::HTTP::Endpoint.parse("http://www.google.com")
 			proxy_client = client.proxied_client(endpoint)
 			
@@ -188,7 +188,7 @@ AProxy = Sus::Shared("a proxy") do
 			expect(proxy_client.pool).to be(:empty?)
 		end
 		
-		it 'can get secure website' do
+		it "can get secure website" do
 			endpoint = Async::HTTP::Endpoint.parse("https://www.google.com")
 			proxy_client = client.proxied_client(endpoint)
 			
@@ -200,19 +200,19 @@ AProxy = Sus::Shared("a proxy") do
 			proxy_client.close
 		end
 		
-		with 'authorization header required' do
+		with "authorization header required" do
 			let(:authorization_lambda) do
-				->(request) {request.headers['proxy-authorization'] == 'supersecretpassword' }
+				->(request) {request.headers["proxy-authorization"] == "supersecretpassword" }
 			end
 			
-			with 'request includes headers' do
-				let(:headers) { [['proxy-authorization', 'supersecretpassword']] }
+			with "request includes headers" do
+				let(:headers) { [["proxy-authorization", "supersecretpassword"]] }
 				
-				it 'succeeds' do
+				it "succeeds" do
 					endpoint = Async::HTTP::Endpoint.parse("https://www.google.com")
 					proxy_client = client.proxied_client(endpoint, headers)
 					
-					response = proxy_client.get('/search')
+					response = proxy_client.get("/search")
 					
 					expect(response).not.to be(:failure?)
 					expect(response.read).not.to be(:empty?)
@@ -221,14 +221,14 @@ AProxy = Sus::Shared("a proxy") do
 				end
 			end
 			
-			with 'request does not include headers' do
-				it 'does not succeed' do
+			with "request does not include headers" do
+				it "does not succeed" do
 					endpoint = Async::HTTP::Endpoint.parse("https://www.google.com")
 					proxy_client = client.proxied_client(endpoint)
 					
 					expect do
 						# Why is this response not 407? Because the response should come from the proxied connection, but that connection failed to be established. Because of that, there is no response. If we respond here with 407, it would be indistinguisable from the remote server returning 407. That would be an odd case, but none-the-less a valid one.
-						response = proxy_client.get('/search')
+						response = proxy_client.get("/search")
 					end.to raise_exception(Async::HTTP::Proxy::ConnectFailure)
 					
 					proxy_client.close

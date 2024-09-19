@@ -3,13 +3,13 @@
 # Released under the MIT License.
 # Copyright, 2018-2024, by Samuel Williams.
 
-require 'async/http/protocol/http2'
-require 'async/http/a_protocol'
+require "async/http/protocol/http2"
+require "async/http/a_protocol"
 
 describe Async::HTTP::Protocol::HTTP2 do
 	it_behaves_like Async::HTTP::AProtocol
 	
-	with '#as_json' do
+	with "#as_json" do
 		include Sus::Fixtures::Async::HTTP::ServerContext
 		let(:protocol) {subject}
 		
@@ -32,20 +32,20 @@ describe Async::HTTP::Protocol::HTTP2 do
 		end
 	end
 	
-	with 'server' do
+	with "server" do
 		include Sus::Fixtures::Async::HTTP::ServerContext
 		let(:protocol) {subject}
 		
-		with 'bad requests' do
+		with "bad requests" do
 			it "should fail with explicit authority" do
 				expect do
-					client.post("/", [[':authority', 'foo']])
+					client.post("/", [[":authority", "foo"]])
 				end.to raise_exception(Protocol::HTTP2::StreamError)
 			end
 		end
 		
-		with 'closed streams' do
-			it 'should delete stream after response stream is closed' do
+		with "closed streams" do
+			it "should delete stream after response stream is closed" do
 				response = client.get("/")
 				connection = response.connection
 				
@@ -55,7 +55,7 @@ describe Async::HTTP::Protocol::HTTP2 do
 			end
 		end
 		
-		with 'host header' do
+		with "host header" do
 			let(:app) do
 				Protocol::HTTP::Middleware.for do |request|
 					Protocol::HTTP::Response[200, request.headers, ["Authority: #{request.authority.inspect}"]]
@@ -69,17 +69,17 @@ describe Async::HTTP::Protocol::HTTP2 do
 			end
 			
 			it "should not send :authority header if host header is present" do
-				response = client.post("/", [['host', 'foo']])
+				response = client.post("/", [["host", "foo"]])
 				
-				expect(response.headers).to have_keys('host')
-				expect(response.headers['host']).to be == 'foo'
+				expect(response.headers).to have_keys("host")
+				expect(response.headers["host"]).to be == "foo"
 				
 				# TODO Should HTTP/2 respect host header?
 				expect(response.read).to be == "Authority: nil"
 			end
 		end
 		
-		with 'stopping requests' do
+		with "stopping requests" do
 			let(:notification) {Async::Notification.new}
 			
 			let(:app) do

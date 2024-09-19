@@ -3,10 +3,10 @@
 # Released under the MIT License.
 # Copyright, 2024, by Samuel Williams.
 
-require_relative '../reference'
+require_relative "../reference"
 
-require 'protocol/http/middleware'
-require 'protocol/http/body/rewindable'
+require "protocol/http/middleware"
+require "protocol/http/body/rewindable"
 
 module Async
 	module HTTP
@@ -34,10 +34,10 @@ module Async
 				
 				# Header keys which should be deleted when changing a request from a POST to a GET as defined by <https://fetch.spec.whatwg.org/#request-body-header-name>.
 				PROHIBITED_GET_HEADERS = [
-					'content-encoding',
-					'content-language',
-					'content-location',
-					'content-type',
+					"content-encoding",
+					"content-language",
+					"content-location",
+					"content-type",
 				]
 				
 				# maximum_hops is the max number of redirects. Set to 0 to allow 1 request with no redirects.
@@ -91,7 +91,7 @@ module Async
 							hops += 1
 							
 							# Get the redirect location:
-							unless location = response.headers['location']
+							unless location = response.headers["location"]
 								return response
 							end
 							

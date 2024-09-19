@@ -12,7 +12,7 @@ require_relative "../../lib/async/http"
 URL = "https://www.codeotaku.com/index"
 ENDPOINT = Async::HTTP::Endpoint.parse(URL)
 
-if count = ENV['COUNT']&.to_i
+if count = ENV["COUNT"]&.to_i
 	terms = terms.first(count)
 end
 

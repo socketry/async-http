@@ -2,14 +2,14 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2020-2023, by Samuel Williams.
+# Copyright, 2020-2024, by Samuel Williams.
 
-require 'async'
-require 'async/clock'
-require 'async/barrier'
-require 'async/semaphore'
-require_relative '../../lib/async/http/endpoint'
-require_relative '../../lib/async/http/client'
+require "async"
+require "async/clock"
+require "async/barrier"
+require "async/semaphore"
+require_relative "../../lib/async/http/endpoint"
+require_relative "../../lib/async/http/client"
 
 Async do
 	url = "https://static.openfoodfacts.org/data/en.openfoodfacts.org.products.csv"
@@ -17,7 +17,7 @@ Async do
 	endpoint = Async::HTTP::Endpoint.parse(url)
 	client = Async::HTTP::Client.new(endpoint)
 	
-	headers = {'user-agent' => 'curl/7.69.1', 'accept' => '*/*'}
+	headers = {"user-agent" => "curl/7.69.1", "accept" => "*/*"}
 	
 	file = File.open("products.csv", "w")
 	Console.logger.info(self) {"Saving download to #{Dir.pwd}"}
@@ -27,7 +27,7 @@ Async do
 		content_length = nil
 		
 		if response.success?
-			unless response.headers['accept-ranges'].include?('bytes')
+			unless response.headers["accept-ranges"].include?("bytes")
 				raise "Does not advertise support for accept-ranges: bytes!"
 			end
 			

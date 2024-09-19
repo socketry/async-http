@@ -3,11 +3,11 @@
 # Released under the MIT License.
 # Copyright, 2024, by Samuel Williams.
 
-require 'async/http/mock'
-require 'async/http/endpoint'
-require 'async/http/client'
+require "async/http/mock"
+require "async/http/endpoint"
+require "async/http/client"
 
-require 'sus/fixtures/async/reactor_context'
+require "sus/fixtures/async/reactor_context"
 
 describe Async::HTTP::Mock do
 	include Sus::Fixtures::Async::ReactorContext
@@ -29,7 +29,7 @@ describe Async::HTTP::Mock do
 		expect(response.read).to be == "Hello World"
 	end
 	
-	with 'mocked client' do
+	with "mocked client" do
 		it "can mock a client" do
 			server = Async do
 				endpoint.run do |request|

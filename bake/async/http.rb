@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2020-2023, by Samuel Williams.
+# Copyright, 2020-2024, by Samuel Williams.
 
 # Fetch the specified URL and print the response.
 # @param url [String] the URL to parse and fetch.
 # @param method [String] the HTTP method to use.
 def fetch(url, method:)
-	require 'async/http/internet'
-	require 'kernel/sync'
+	require "async/http/internet"
+	require "kernel/sync"
 	
 	terminal = Console::Terminal.for($stdout)
 	terminal[:request] = terminal.style(:blue, nil, :bold)

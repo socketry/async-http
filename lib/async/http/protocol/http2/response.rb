@@ -3,8 +3,8 @@
 # Released under the MIT License.
 # Copyright, 2018-2024, by Samuel Williams.
 
-require_relative '../response'
-require_relative 'stream'
+require_relative "../response"
+require_relative "stream"
 
 module Async
 	module HTTP
@@ -41,7 +41,7 @@ module Async
 							# While in theory, the response pseudo-headers may be extended in the future, currently they only response pseudo-header is :status, so we can assume it is always the first header.
 							status_header = headers.shift
 							
-							if status_header.first != ':status'
+							if status_header.first != ":status"
 								raise ProtocolError, "Invalid response headers: #{headers.inspect}"
 							end
 							
@@ -185,7 +185,7 @@ module Async
 								raise ::Protocol::HTTP2::HeaderError, "Request path already specified!" if request.path
 								
 								request.path = value
-							elsif key.start_with? ':'
+							elsif key.start_with? ":"
 								raise ::Protocol::HTTP2::HeaderError, "Invalid pseudo-header #{key}!"
 							else
 								request.headers[key] = value

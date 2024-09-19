@@ -3,13 +3,13 @@
 # Released under the MIT License.
 # Copyright, 2018-2024, by Samuel Williams.
 
-require 'async/http/server'
-require 'async/http/client'
-require 'async/http/endpoint'
+require "async/http/server"
+require "async/http/client"
+require "async/http/endpoint"
 
-require 'sus/fixtures/async'
-require 'sus/fixtures/openssl'
-require 'sus/fixtures/async/http'
+require "sus/fixtures/async"
+require "sus/fixtures/openssl"
+require "sus/fixtures/async/http"
 
 describe Async::HTTP::Server do
 	include Sus::Fixtures::Async::HTTP::ServerContext

@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2019-2023, by Samuel Williams.
+# Copyright, 2019-2024, by Samuel Williams.
 
-require 'async/http/body/hijack'
+require "async/http/body/hijack"
 
-require 'sus/fixtures/async'
+require "sus/fixtures/async"
 
 describe Async::HTTP::Body::Hijack do
 	include Sus::Fixtures::Async::ReactorContext
@@ -21,7 +21,7 @@ describe Async::HTTP::Body::Hijack do
 	
 	let(:content) {"Hello World!"}
 	
-	with '#call' do
+	with "#call" do
 		let(:stream) {Async::HTTP::Body::Writable.new}
 		
 		it "should generate body using direct invocation" do

@@ -5,7 +5,7 @@
 # Copyright, 2021-2022, by Adam Daniels.
 # Copyright, 2024, by Thomas Morgan.
 
-require 'async/http/endpoint'
+require "async/http/endpoint"
 
 describe Async::HTTP::Endpoint do
 	it "should fail to parse relative url" do
@@ -14,7 +14,7 @@ describe Async::HTTP::Endpoint do
 		end.to raise_exception(ArgumentError, message: be =~ /absolute/)
 	end
 	
-	with '#port' do
+	with "#port" do
 		let(:url_string) {"https://localhost:9292"}
 		
 		it "extracts port from URL" do
@@ -30,34 +30,34 @@ describe Async::HTTP::Endpoint do
 		end
 	end
 	
-	with '#hostname' do
+	with "#hostname" do
 		describe Async::HTTP::Endpoint.parse("https://127.0.0.1:9292") do
-			it 'has correct hostname' do
-				expect(subject).to have_attributes(hostname: be == '127.0.0.1')
+			it "has correct hostname" do
+				expect(subject).to have_attributes(hostname: be == "127.0.0.1")
 			end
 			
 			it "should be connecting to 127.0.0.1" do
 				expect(subject.endpoint).to be_a ::IO::Endpoint::SSLEndpoint
-				expect(subject.endpoint).to have_attributes(hostname: be == '127.0.0.1')
-				expect(subject.endpoint.endpoint).to have_attributes(hostname: be == '127.0.0.1')
+				expect(subject.endpoint).to have_attributes(hostname: be == "127.0.0.1")
+				expect(subject.endpoint.endpoint).to have_attributes(hostname: be == "127.0.0.1")
 			end
 		end
 		
-		describe Async::HTTP::Endpoint.parse("https://127.0.0.1:9292", hostname: 'localhost') do
-			it 'has correct hostname' do
-				expect(subject).to have_attributes(hostname: be == 'localhost')
+		describe Async::HTTP::Endpoint.parse("https://127.0.0.1:9292", hostname: "localhost") do
+			it "has correct hostname" do
+				expect(subject).to have_attributes(hostname: be == "localhost")
 				expect(subject).not.to be(:localhost?)
 			end
 			
 			it "should be connecting to localhost" do
 				expect(subject.endpoint).to be_a ::IO::Endpoint::SSLEndpoint
-				expect(subject.endpoint).to have_attributes(hostname: be == '127.0.0.1')
-				expect(subject.endpoint.endpoint).to have_attributes(hostname: be == 'localhost')
+				expect(subject.endpoint).to have_attributes(hostname: be == "127.0.0.1")
+				expect(subject.endpoint.endpoint).to have_attributes(hostname: be == "localhost")
 			end
 		end
 	end
 	
-	with '.for' do
+	with ".for" do
 		describe Async::HTTP::Endpoint.for("http", "localhost") do
 			it "should have correct attributes" do
 				expect(subject).to have_attributes(
@@ -82,7 +82,7 @@ describe Async::HTTP::Endpoint do
 			end
 		end
 		
-		with 'invalid scheme' do
+		with "invalid scheme" do
 			it "should raise an argument error" do
 				expect do
 					Async::HTTP::Endpoint.for("foo", "localhost")
@@ -95,7 +95,7 @@ describe Async::HTTP::Endpoint do
 		end
 	end
 	
-	with '#secure?' do
+	with "#secure?" do
 		describe Async::HTTP::Endpoint.parse("http://localhost") do
 			it "should not be secure" do
 				expect(subject).not.to be(:secure?)
@@ -108,8 +108,8 @@ describe Async::HTTP::Endpoint do
 			end
 		end
 		
-		with 'scheme: https' do
-			describe Async::HTTP::Endpoint.parse("http://localhost", scheme: 'https') do
+		with "scheme: https" do
+			describe Async::HTTP::Endpoint.parse("http://localhost", scheme: "https") do
 				it "should be secure" do
 					expect(subject).to be(:secure?)
 				end
@@ -117,7 +117,7 @@ describe Async::HTTP::Endpoint do
 		end
 	end
 	
-	with '#localhost?' do
+	with "#localhost?" do
 		describe Async::HTTP::Endpoint.parse("http://localhost") do
 			it "should be localhost" do
 				expect(subject).to be(:localhost?)
@@ -149,14 +149,14 @@ describe Async::HTTP::Endpoint do
 		end
 	end
 	
-	with '#path' do
+	with "#path" do
 		describe Async::HTTP::Endpoint.parse("http://foo.com/bar?baz") do
 			it "should have correct path" do
 				expect(subject).to have_attributes(path: be == "/bar?baz")
 			end
 		end
 		
-		with 'websocket scheme' do
+		with "websocket scheme" do
 			describe Async::HTTP::Endpoint.parse("wss://foo.com/bar?baz") do
 				it "should have correct path" do
 					expect(subject).to have_attributes(path: be == "/bar?baz")
@@ -180,7 +180,7 @@ describe Async::HTTP::Endpoint.parse("http://www.google.com/search") do
 	end
 	
 	it "should not be equal if path is different" do
-		other = Async::HTTP::Endpoint.parse('http://www.google.com/search?q=ruby')
+		other = Async::HTTP::Endpoint.parse("http://www.google.com/search?q=ruby")
 		expect(subject).not.to be == other
 		expect(subject).not.to be(:eql?, other)
 	end

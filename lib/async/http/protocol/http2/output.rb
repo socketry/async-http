@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2020-2023, by Samuel Williams.
+# Copyright, 2020-2024, by Samuel Williams.
 
-require 'protocol/http/body/stream'
+require "protocol/http/body/stream"
 
 module Async
 	module HTTP

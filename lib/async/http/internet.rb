@@ -4,12 +4,12 @@
 # Copyright, 2018-2024, by Samuel Williams.
 # Copyright, 2024, by Igor Sidorov.
 
-require_relative 'client'
-require_relative 'endpoint'
+require_relative "client"
+require_relative "endpoint"
 
-require 'protocol/http/middleware'
-require 'protocol/http/body/buffered'
-require 'protocol/http/accept_encoding'
+require "protocol/http/middleware"
+require "protocol/http/body/buffered"
+require "protocol/http/accept_encoding"
 
 module Async
 	module HTTP

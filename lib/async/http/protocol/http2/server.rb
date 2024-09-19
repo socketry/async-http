@@ -3,10 +3,10 @@
 # Released under the MIT License.
 # Copyright, 2018-2024, by Samuel Williams.
 
-require_relative 'connection'
-require_relative 'request'
+require_relative "connection"
+require_relative "request"
 
-require 'protocol/http2/server'
+require "protocol/http2/server"
 
 module Async
 	module HTTP

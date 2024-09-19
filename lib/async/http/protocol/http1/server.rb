@@ -6,10 +6,10 @@
 # Copyright, 2023, by Thomas Morgan.
 # Copyright, 2024, by Anton Zhuravsky.
 
-require_relative 'connection'
-require_relative '../../body/finishable'
+require_relative "connection"
+require_relative "../../body/finishable"
 
-require 'console/event/failure'
+require "console/event/failure"
 
 module Async
 	module HTTP

@@ -7,22 +7,22 @@
 # Copyright, 2024, by Igor Sidorov.
 # Copyright, 2024, by Hal Brodigan.
 
-require 'io/endpoint'
-require 'io/endpoint/host_endpoint'
-require 'io/endpoint/ssl_endpoint'
+require "io/endpoint"
+require "io/endpoint/host_endpoint"
+require "io/endpoint/ssl_endpoint"
 
-require_relative 'protocol/http'
-require_relative 'protocol/https'
+require_relative "protocol/http"
+require_relative "protocol/https"
 
 module Async
 	module HTTP
 		# Represents a way to connect to a remote HTTP server.
 		class Endpoint < ::IO::Endpoint::Generic
 			SCHEMES = {
-				'http' => URI::HTTP,
-				'https' => URI::HTTPS,
-				'ws' => URI::WS,
-				'wss' => URI::WSS,
+				"http" => URI::HTTP,
+				"https" => URI::HTTPS,
+				"ws" => URI::WS,
+				"wss" => URI::WSS,
 			}
 			
 			def self.parse(string, endpoint = nil, **options)
@@ -102,7 +102,7 @@ module Async
 			end
 			
 			def secure?
-				['https', 'wss'].include?(self.scheme)
+				["https", "wss"].include?(self.scheme)
 			end
 			
 			def protocol

@@ -5,17 +5,17 @@
 # Copyright, 2024, by Igor Sidorov.
 # Copyright, 2024, by Hal Brodigan.
 
-require 'async/http/internet'
-require 'async/reactor'
+require "async/http/internet"
+require "async/reactor"
 
-require 'json'
-require 'sus/fixtures/async'
+require "json"
+require "sus/fixtures/async"
 
 describe Async::HTTP::Internet do
 	include Sus::Fixtures::Async::ReactorContext
 	
 	let(:internet) {subject.new}
-	let(:headers) {[['accept', '*/*'], ['user-agent', 'async-http']]}
+	let(:headers) {[["accept", "*/*"], ["user-agent", "async-http"]]}
 	
 	it "can fetch remote website" do
 		response = internet.get("https://www.google.com/", headers)
@@ -45,12 +45,12 @@ describe Async::HTTP::Internet do
 		expect{JSON.parse(response.read)}.not.to raise_exception
 	end
 	
-	it 'can fetch remote website when given custom endpoint instead of url' do
+	it "can fetch remote website when given custom endpoint instead of url" do
 		ssl_context = OpenSSL::SSL::SSLContext.new
 		ssl_context.set_params(verify_mode: OpenSSL::SSL::VERIFY_NONE)
 		
 		# example of site with invalid certificate that will fail to be fetched without custom SSL options
-		endpoint = Async::HTTP::Endpoint.parse('https://expired.badssl.com', ssl_context: ssl_context)
+		endpoint = Async::HTTP::Endpoint.parse("https://expired.badssl.com", ssl_context: ssl_context)
 		
 		response = internet.get(endpoint, headers)
 		

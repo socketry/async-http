@@ -7,13 +7,13 @@
 # Copyright, 2023, by Josh Huber.
 # Copyright, 2024, by Anton Zhuravsky.
 
-require 'async/http/protocol/http11'
-require 'async/http/a_protocol'
+require "async/http/protocol/http11"
+require "async/http/a_protocol"
 
 describe Async::HTTP::Protocol::HTTP11 do
 	it_behaves_like Async::HTTP::AProtocol
 	
-	with '#as_json' do
+	with "#as_json" do
 		include Sus::Fixtures::Async::HTTP::ServerContext
 		let(:protocol) {subject}
 		
@@ -36,11 +36,11 @@ describe Async::HTTP::Protocol::HTTP11 do
 		end
 	end
 	
-	with 'server' do
+	with "server" do
 		include Sus::Fixtures::Async::HTTP::ServerContext
 		let(:protocol) {subject}
 		
-		with 'bad requests' do
+		with "bad requests" do
 			def around
 				current = Console.logger.level
 				Console.logger.fatal!
@@ -57,7 +57,7 @@ describe Async::HTTP::Protocol::HTTP11 do
 			end
 		end
 		
-		with 'head request' do
+		with "head request" do
 			let(:app) do
 				Protocol::HTTP::Middleware.for do |request|
 					Protocol::HTTP::Response[200, {}, ["Hello", "World"]]
@@ -78,7 +78,7 @@ describe Async::HTTP::Protocol::HTTP11 do
 			end
 		end
 		
-		with 'raw response' do
+		with "raw response" do
 			let(:app) do
 				Protocol::HTTP::Middleware.for do |request|
 					peer = request.hijack!
@@ -108,7 +108,7 @@ describe Async::HTTP::Protocol::HTTP11 do
 			end
 		end
 
-		with 'full hijack with empty response' do
+		with "full hijack with empty response" do
 			let(:body) {::Protocol::HTTP::Body::Buffered.new([], 0)}
 
 			let(:app) do

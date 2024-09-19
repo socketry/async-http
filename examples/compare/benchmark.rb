@@ -2,16 +2,16 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2020-2023, by Samuel Williams.
+# Copyright, 2020-2024, by Samuel Williams.
 
-require 'benchmark'
+require "benchmark"
 
-require 'httpx'
+require "httpx"
 
-require 'async'
-require 'async/barrier'
-require 'async/semaphore'
-require 'async/http/internet'
+require "async"
+require "async/barrier"
+require "async/semaphore"
+require "async/http/internet"
 
 URL = "https://www.codeotaku.com/index"
 REPEATS = 10

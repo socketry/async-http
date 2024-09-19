@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2018-2023, by Samuel Williams.
+# Copyright, 2018-2024, by Samuel Williams.
 
-require 'protocol/http/body/buffered'
-require_relative 'body/writable'
+require "protocol/http/body/buffered"
+require_relative "body/writable"
 
 module Async
 	module HTTP

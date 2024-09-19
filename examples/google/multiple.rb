@@ -2,12 +2,12 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2023, by Samuel Williams.
+# Copyright, 2023-2024, by Samuel Williams.
 
-require 'async'
-require 'async/barrier'
-require 'async/semaphore'
-require 'async/http/internet'
+require "async"
+require "async/barrier"
+require "async/semaphore"
+require "async/http/internet"
 
 TOPICS = ["ruby", "python", "rust"]
 

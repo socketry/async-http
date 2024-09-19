@@ -1,10 +1,10 @@
 #!/usr/bin/env falcon --verbose serve -c
 # frozen_string_literal: true
 
-require 'async'
-require 'async/barrier'
-require 'net/http'
-require 'uri'
+require "async"
+require "async/barrier"
+require "net/http"
+require "uri"
 
 run do |env|
 	i = 1_000_000

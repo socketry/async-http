@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2018-2023, by Samuel Williams.
+# Copyright, 2018-2024, by Samuel Williams.
 
-require 'protocol/http/body/wrapper'
+require "protocol/http/body/wrapper"
 
-require 'async/clock'
+require "async/clock"
 
 module Async
 	module HTTP
@@ -89,7 +89,7 @@ module Async
 						parts << "took #{format_duration(duration)} until first chunk"
 					end
 					
-					return parts.join('; ')
+					return parts.join("; ")
 				end
 				
 				def inspect

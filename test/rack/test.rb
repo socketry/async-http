@@ -3,11 +3,11 @@
 # Released under the MIT License.
 # Copyright, 2019-2024, by Samuel Williams.
 
-require 'sus/fixtures/async'
-require 'async/http'
+require "sus/fixtures/async"
+require "async/http"
 
-require 'rack/test'
-require 'rack/builder'
+require "rack/test"
+require "rack/builder"
 
 describe Rack::Test do
 	include Sus::Fixtures::Async::ReactorContext

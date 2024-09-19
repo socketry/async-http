@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'rack'
+require "rack"
 
 class Echo
 	def initialize(app)
@@ -24,6 +24,6 @@ end
 
 use Echo
 
-use Rack::Static, :urls => [''], :root => 'public', :index => 'index.html'
+use Rack::Static, :urls => [""], :root => "public", :index => "index.html"
 
 run lambda{|env| [404, {}, []]}

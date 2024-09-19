@@ -21,12 +21,12 @@ end
 private
 
 def server
-	require 'async'
-	require 'async/container'
-	require 'async/http/server'
-	require 'io/endpoint/host_endpoint'
+	require "async"
+	require "async/container"
+	require "async/http/server"
+	require "io/endpoint/host_endpoint"
 	
-	endpoint = IO::Endpoint.tcp('127.0.0.1', 7272)
+	endpoint = IO::Endpoint.tcp("127.0.0.1", 7272)
 	
 	container = Async::Container.new
 	
@@ -34,7 +34,7 @@ def server
 	
 	container.run(count: 1) do
 		server = Async::HTTP::Server.for(endpoint, protocol: Async::HTTP::Protocol::HTTP2, scheme: "https") do |request|
-			Protocol::HTTP::Response[200, {'content-type' => 'text/plain'}, ["Hello World"]]
+			Protocol::HTTP::Response[200, {"content-type" => "text/plain"}, ["Hello World"]]
 		end
 		
 		Async do

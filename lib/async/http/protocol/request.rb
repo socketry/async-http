@@ -3,10 +3,10 @@
 # Released under the MIT License.
 # Copyright, 2017-2024, by Samuel Williams.
 
-require 'protocol/http/request'
-require 'protocol/http/headers'
+require "protocol/http/request"
+require "protocol/http/headers"
 
-require_relative '../body/writable'
+require_relative "../body/writable"
 
 module Async
 	module HTTP

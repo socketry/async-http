@@ -3,7 +3,7 @@
 # Released under the MIT License.
 # Copyright, 2017-2024, by Samuel Williams.
 
-source 'https://rubygems.org'
+source "https://rubygems.org"
 
 gemspec
 

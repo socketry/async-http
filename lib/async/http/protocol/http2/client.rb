@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2018-2023, by Samuel Williams.
+# Copyright, 2018-2024, by Samuel Williams.
 
-require_relative 'connection'
-require_relative 'response'
+require_relative "connection"
+require_relative "response"
 
-require 'protocol/http2/client'
+require "protocol/http2/client"
 
 module Async
 	module HTTP

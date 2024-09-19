@@ -5,7 +5,7 @@
 # Copyright, 2018, by Janko Marohnić.
 # Copyright, 2024, by Thomas Morgan.
 
-require_relative 'http1'
+require_relative "http1"
 
 module Async
 	module HTTP

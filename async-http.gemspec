@@ -10,8 +10,8 @@ Gem::Specification.new do |spec|
 	spec.authors = ["Samuel Williams", "Brian Morearty", "Bruno Sutic", "Janko Marohnić", "Thomas Morgan", "Adam Daniels", "Igor Sidorov", "Anton Zhuravsky", "Cyril Roelandt", "Denis Talakevich", "Hal Brodigan", "Ian Ker-Seymer", "Josh Huber", "Marco Concetto Rudilosso", "Olle Jonsson", "Orgad Shaneh", "Sam Shadwell", "Stefan Wrobel", "Tim Meusel", "Trevor Turk", "Viacheslav Koval", "dependabot[bot]"]
 	spec.license = "MIT"
 	
-	spec.cert_chain  = ['release.cert']
-	spec.signing_key = File.expand_path('~/.gem/release.pem')
+	spec.cert_chain  = ["release.cert"]
+	spec.signing_key = File.expand_path("~/.gem/release.pem")
 	
 	spec.homepage = "https://github.com/socketry/async-http"
 	
@@ -20,7 +20,7 @@ Gem::Specification.new do |spec|
 		"source_code_uri" => "https://github.com/socketry/async-http.git",
 	}
 	
-	spec.files = Dir.glob(['{bake,lib}/**/*', '*.md'], File::FNM_DOTMATCH, base: __dir__)
+	spec.files = Dir.glob(["{bake,lib}/**/*", "*.md"], File::FNM_DOTMATCH, base: __dir__)
 	
 	spec.required_ruby_version = ">= 3.1"
 	

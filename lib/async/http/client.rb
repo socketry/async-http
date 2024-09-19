@@ -4,17 +4,17 @@
 # Copyright, 2017-2024, by Samuel Williams.
 # Copyright, 2022, by Ian Ker-Seymer.
 
-require 'io/endpoint'
+require "io/endpoint"
 
-require 'async/pool/controller'
+require "async/pool/controller"
 
-require 'protocol/http/body/completable'
-require 'protocol/http/methods'
+require "protocol/http/body/completable"
+require "protocol/http/methods"
 
-require 'traces/provider'
+require "traces/provider"
 
-require_relative 'protocol'
-require_relative 'body/finishable'
+require_relative "protocol"
+require_relative "body/finishable"
 
 module Async
 	module HTTP
@@ -152,30 +152,30 @@ module Async
 					}
 					
 					if protocol = request.protocol
-						attributes['http.protocol'] = protocol
+						attributes["http.protocol"] = protocol
 					end
 					
 					if length = request.body&.length
-						attributes['http.request.length'] = length
+						attributes["http.request.length"] = length
 					end
 					
-					Traces.trace('async.http.client.call', attributes: attributes) do |span|
+					Traces.trace("async.http.client.call", attributes: attributes) do |span|
 						if context = Traces.trace_context
-							request.headers['traceparent'] = context.to_s
+							request.headers["traceparent"] = context.to_s
 							# request.headers['tracestate'] = context.state
 						end
 						
 						super.tap do |response|
 							if version = response&.version
-								span['http.version'] = version
+								span["http.version"] = version
 							end
 							
 							if status = response&.status
-								span['http.status_code'] = status
+								span["http.status_code"] = status
 							end
 							
 							if length = response.body&.length
-								span['http.response.length'] = length
+								span["http.response.length"] = length
 							end
 						end
 					end

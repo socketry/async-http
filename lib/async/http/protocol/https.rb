@@ -4,10 +4,10 @@
 # Copyright, 2018-2024, by Samuel Williams.
 # Copyright, 2019, by Brian Morearty.
 
-require_relative 'http10'
-require_relative 'http11'
+require_relative "http10"
+require_relative "http11"
 
-require_relative 'http2'
+require_relative "http2"
 
 module Async
 	module HTTP

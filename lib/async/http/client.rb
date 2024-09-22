@@ -14,7 +14,6 @@ require "protocol/http/methods"
 require "traces/provider"
 
 require_relative "protocol"
-require_relative "body/finishable"
 
 module Async
 	module HTTP

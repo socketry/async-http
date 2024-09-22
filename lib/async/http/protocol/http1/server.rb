@@ -7,7 +7,7 @@
 # Copyright, 2024, by Anton Zhuravsky.
 
 require_relative "connection"
-require_relative "../../body/finishable"
+require_relative "finishable"
 
 require "console/event/failure"
 
@@ -16,6 +16,18 @@ module Async
 		module Protocol
 			module HTTP1
 				class Server < Connection
+					def initialize(...)
+						super
+						
+						@ready = Async::Notification.new
+					end
+					
+					def closed!
+						super
+						
+						@ready.signal
+					end
+					
 					def fail_request(status)
 						@persistent = false
 						write_response(@version, status, {})
@@ -26,6 +38,11 @@ module Async
 					end
 					
 					def next_request
+						# Wait for the connection to become idle before reading the next request:
+						unless idle?
+							@ready.wait
+						end
+						
 						# The default is true.
 						return unless @persistent
 						
@@ -49,7 +66,7 @@ module Async
 						
 						while request = next_request
 							if body = request.body
-								finishable = Body::Finishable.new(body)
+								finishable = Finishable.new(body)
 								request.body = finishable
 							end
 							
@@ -126,10 +143,8 @@ module Async
 									request&.finish
 								end
 								
+								# Discard or wait for the input body to be consumed:
 								finishable&.wait
-								
-								# This ensures we yield at least once every iteration of the loop and allow other fibers to execute.
-								task.yield
 							rescue => error
 								raise
 							ensure

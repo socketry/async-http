@@ -33,6 +33,10 @@ module Async
 				def remote_address= value
 					@remote_address = value
 				end
+				
+				def inspect
+					"#<#{self.class}:0x#{self.object_id.to_s(16)} status=#{status}>"
+				end
 			end
 		end
 	end

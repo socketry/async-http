@@ -96,8 +96,8 @@ module Async
 										request = nil
 										response = nil
 										
-										# We must return here as no further request processing can be done:
-										return body.call(stream)
+										# In the case of streaming, `finishable` should wrap a `Remainder` body, which we can safely discard later on.
+										body.call(stream)
 									elsif response.status == 101
 										# This code path is to support legacy behavior where the response status is set to 101, but the protocol is not upgraded. This may not be a valid use case, but it is supported for compatibility. We expect the response headers to contain the `upgrade` header.
 										write_response(@version, response.status, response.headers)
@@ -108,8 +108,7 @@ module Async
 										request = nil
 										response = nil
 										
-										# We must return here as no further request processing can be done:
-										return body&.call(stream)
+										body&.call(stream)
 									else
 										write_response(@version, response.status, response.headers)
 										
@@ -143,8 +142,12 @@ module Async
 									request&.finish
 								end
 								
-								# Discard or wait for the input body to be consumed:
-								finishable&.wait
+								if finishable
+									finishable.wait(@persistent)
+								else
+									# Do not remove this line or you will unleash the gods of concurrency hell.
+									task.yield
+								end
 							rescue => error
 								raise
 							ensure

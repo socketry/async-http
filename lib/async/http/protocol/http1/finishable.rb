@@ -40,11 +40,15 @@ module Async
 						super
 					end
 					
-					def wait
+					def wait(persistent = true)
 						if @reading
 							@closed.wait
-						else
+						elsif persistent
+							# If the connection can be reused, let's gracefully discard the body:
 							self.discard
+						else
+							# Else, we don't care about the body, so we can close it immediately:
+							self.close
 						end
 					end
 					

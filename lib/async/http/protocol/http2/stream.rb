@@ -62,9 +62,9 @@ module Async
 						end
 						
 						# TODO this might need to be in an ensure block:
-						if @input and frame.end_stream?
-							@input.close_write
+						if input = @input and frame.end_stream?
 							@input = nil
+							input.close_write
 						end
 					rescue ::Protocol::HTTP2::HeaderError => error
 						Console.logger.debug(self, error)

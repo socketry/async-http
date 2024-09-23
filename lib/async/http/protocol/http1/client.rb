@@ -50,29 +50,35 @@ module Async
 								task.async(annotation: "Upgrading request...") do
 									# If this fails, this connection will be closed.
 									write_upgrade_body(protocol, body)
+								rescue => error
+									self.close(error)
 								end
 							elsif request.connect?
 								task.async(annotation: "Tunnneling request...") do
 									write_tunnel_body(@version, body)
+								rescue => error
+									self.close(error)
 								end
 							else
 								task.async(annotation: "Streaming request...") do
 									# Once we start writing the body, we can't recover if the request fails. That's because the body might be generated dynamically, streaming, etc.
 									write_body(@version, body, false, trailer)
+								rescue => error
+									self.close(error)
 								end
 							end
 						elsif protocol = request.protocol
 							write_upgrade_body(protocol)
 						else
-							write_body(@version, body, false, trailer)
+							write_body(@version, request.body, false, trailer)
 						end
 						
 						response = Response.read(self, request)
 						
 						return response
-					rescue
+					rescue => error
 						# This will ensure that #reusable? returns false.
-						self.close
+						self.close(error)
 						
 						raise
 					end

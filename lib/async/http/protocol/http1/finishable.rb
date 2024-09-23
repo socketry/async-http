@@ -32,12 +32,12 @@ module Async
 					end
 					
 					def close(error = nil)
+						super
+						
 						unless @closed.resolved?
 							@error = error
 							@closed.value = true
 						end
-						
-						super
 					end
 					
 					def wait(persistent = true)

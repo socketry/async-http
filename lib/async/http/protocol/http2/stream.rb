@@ -123,6 +123,8 @@ module Async
 					
 					# Called when the output terminates normally.
 					def finish_output(error = nil)
+						return if self.closed?
+						
 						trailer = @output&.trailer
 						
 						@output = nil
@@ -152,14 +154,14 @@ module Async
 					def closed(error)
 						super
 						
-						if @input
-							@input.close_write(error)
+						if input = @input
 							@input = nil
+							input.close_write(error)
 						end
 						
-						if @output
-							@output.stop(error)
+						if output = @output
 							@output = nil
+							output.stop(error)
 						end
 						
 						if pool = @pool and @connection

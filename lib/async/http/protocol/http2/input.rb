@@ -37,15 +37,6 @@ module Async
 						
 						return chunk
 					end
-					
-					def close(error = nil)
-						super
-						
-						if stream = @stream
-							@stream = nil
-							stream.finish_input(error)
-						end
-					end
 				end
 			end
 		end

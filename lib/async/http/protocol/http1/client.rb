@@ -18,11 +18,12 @@ module Async
 					
 					attr_accessor :pool
 					
-					def closed!
+					def closed(error = nil)
 						super
 						
 						if pool = @pool
 							@pool = nil
+							# If the connection is not reusable, this will retire it from the connection pool and invoke `#close`.
 							pool.release(self)
 						end
 					end
@@ -73,13 +74,9 @@ module Async
 							write_body(@version, request.body, false, trailer)
 						end
 						
-						response = Response.read(self, request)
-						
-						return response
+						return Response.read(self, request)
 					rescue => error
-						# This will ensure that #reusable? returns false.
 						self.close(error)
-						
 						raise
 					end
 				end

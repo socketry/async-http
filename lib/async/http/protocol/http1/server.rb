@@ -22,7 +22,7 @@ module Async
 						@ready = Async::Notification.new
 					end
 					
-					def closed!
+					def closed(error = nil)
 						super
 						
 						@ready.signal

@@ -38,13 +38,11 @@ module Async
 					end
 					
 					def next_request
-						# Wait for the connection to become idle before reading the next request:
-						unless idle?
+						if closed?
+							return nil
+						elsif !idle?
 							@ready.wait
 						end
-						
-						# The default is true.
-						return unless @persistent
 						
 						# Read an incoming request:
 						return unless request = Request.read(self)

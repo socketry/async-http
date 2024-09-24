@@ -153,8 +153,6 @@ AProxy = Sus::Shared("a proxy") do
 							upstream.write(chunk)
 							upstream.flush
 						end
-					rescue Async::Wrapper::Cancelled
-						#ignore
 					ensure
 						Console.logger.debug(self) {"Finished writing to upstream..."}
 						upstream.close_write

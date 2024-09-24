@@ -18,11 +18,12 @@ module Async
 					
 					attr_accessor :pool
 					
-					def closed!
+					def closed(error = nil)
 						super
 						
 						if pool = @pool
 							@pool = nil
+							# If the connection is not reusable, this will retire it from the connection pool and invoke `#close`.
 							pool.release(self)
 						end
 					end
@@ -50,30 +51,32 @@ module Async
 								task.async(annotation: "Upgrading request...") do
 									# If this fails, this connection will be closed.
 									write_upgrade_body(protocol, body)
+								rescue => error
+									self.close(error)
 								end
 							elsif request.connect?
 								task.async(annotation: "Tunnneling request...") do
 									write_tunnel_body(@version, body)
+								rescue => error
+									self.close(error)
 								end
 							else
 								task.async(annotation: "Streaming request...") do
 									# Once we start writing the body, we can't recover if the request fails. That's because the body might be generated dynamically, streaming, etc.
 									write_body(@version, body, false, trailer)
+								rescue => error
+									self.close(error)
 								end
 							end
 						elsif protocol = request.protocol
 							write_upgrade_body(protocol)
 						else
-							write_body(@version, body, false, trailer)
+							write_body(@version, request.body, false, trailer)
 						end
 						
-						response = Response.read(self, request)
-						
-						return response
-					rescue
-						# This will ensure that #reusable? returns false.
-						self.close
-						
+						return Response.read(self, request)
+					rescue => error
+						self.close(error)
 						raise
 					end
 				end

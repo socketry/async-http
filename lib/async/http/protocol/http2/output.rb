@@ -17,7 +17,8 @@ module Async
 						
 						@task = nil
 						
-						@window_updated = Async::Condition.new
+						@guard = ::Mutex.new
+						@window_updated = ::ConditionVariable.new
 					end
 					
 					attr :trailer
@@ -33,17 +34,26 @@ module Async
 					end
 					
 					def window_updated(size)
-						@window_updated.signal
+						@guard.synchronize do
+							@window_updated.signal
+						end
 					end
 					
 					def write(chunk)
 						until chunk.empty?
 							maximum_size = @stream.available_frame_size
 							
-							while maximum_size <= 0
-								@window_updated.wait
-								
-								maximum_size = @stream.available_frame_size
+							# We try to avoid synchronization if possible:
+							if maximum_size <= 0
+								@guard.synchronize do
+									maximum_size = @stream.available_frame_size
+									
+									while maximum_size <= 0
+										@window_updated.wait(@guard)
+										
+										maximum_size = @stream.available_frame_size
+									end
+								end
 							end
 							
 							break unless chunk = send_data(chunk, maximum_size)

@@ -29,7 +29,7 @@ Please see the [project releases](https://socketry.github.io/async-http/releases
 
 ### v0.75.0
 
-  - Better handling of HTTP/1 \&lt;-\&gt; HTTP/2 proxying, specifically upgrade/CONNECT requests.
+  - Better handling of HTTP/1 &lt;-&gt; HTTP/2 proxying, specifically upgrade/CONNECT requests.
 
 ### v0.74.0
 

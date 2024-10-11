@@ -43,7 +43,8 @@ module Async
 					
 					def read_line?
 						@stream.read_until(CRLF)
-					rescue Errno::ECONNRESET
+					rescue => error
+						# Bascially, any error will cause the connection to be closed:
 						return nil
 					end
 					

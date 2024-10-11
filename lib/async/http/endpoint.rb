@@ -14,6 +14,11 @@ require "io/endpoint/ssl_endpoint"
 require_relative "protocol/http"
 require_relative "protocol/https"
 
+require "uri"
+
+# Compatibility with Ruby 3.1.2
+require "uri/wss"
+
 module Async
 	module HTTP
 		# Represents a way to connect to a remote HTTP server.

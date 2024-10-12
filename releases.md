@@ -1,5 +1,9 @@
 # Releases
 
+## Unreleased
+
+  - Expose `protocol` and `endpoint` as tags to `async-pool` for improved instrumentation.
+
 ## v0.77.0
 
   - Improved HTTP/1 connection handling.

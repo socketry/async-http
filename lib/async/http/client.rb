@@ -18,7 +18,6 @@ require_relative "protocol"
 module Async
 	module HTTP
 		DEFAULT_RETRIES = 3
-		DEFAULT_CONNECTION_LIMIT = nil
 		
 		class Client < ::Protocol::HTTP::Methods
 			# Provides a robust interface to a server.
@@ -30,12 +29,12 @@ module Async
 			# @param protocol [Protocol::HTTP1 | Protocol::HTTP2 | Protocol::HTTPS] the protocol to use.
 			# @param scheme [String] The default scheme to set to requests.
 			# @param authority [String] The default authority to set to requests.
-			def initialize(endpoint, protocol: endpoint.protocol, scheme: endpoint.scheme, authority: endpoint.authority, retries: DEFAULT_RETRIES, connection_limit: DEFAULT_CONNECTION_LIMIT)
+			def initialize(endpoint, protocol: endpoint.protocol, scheme: endpoint.scheme, authority: endpoint.authority, retries: DEFAULT_RETRIES, **options)
 				@endpoint = endpoint
 				@protocol = protocol
 				
 				@retries = retries
-				@pool = make_pool(connection_limit)
+				@pool = make_pool(**options)
 				
 				@scheme = scheme
 				@authority = authority
@@ -191,8 +190,20 @@ module Async
 				return response
 			end
 			
-			def make_pool(connection_limit)
-				Async::Pool::Controller.wrap(limit: connection_limit) do
+			def assign_default_tags(tags)
+				tags[:endpoint] = @endpoint.to_s
+				tags[:protocol] = @protocol.to_s
+			end
+			
+			def make_pool(**options)
+				if connection_limit = options.delete(:connection_limit)
+					warn "The connection_limit: option is deprecated, please use limit: instead.", uplevel: 2
+					options[:limit] = connection_limit
+				end
+				
+				self.assign_default_tags(options[:tags] ||= {})
+				
+				Async::Pool::Controller.wrap(**options) do
 					Console.logger.debug(self) {"Making connection to #{@endpoint.inspect}"}
 					
 					@protocol.client(@endpoint.connect)

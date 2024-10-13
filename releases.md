@@ -1,6 +1,6 @@
 # Releases
 
-## Unreleased
+## v0.81.0
 
   - Expose `protocol` and `endpoint` as tags to `async-pool` for improved instrumentation.
 

@@ -16,6 +16,10 @@ Please see the [project documentation](https://socketry.github.io/async-http/) f
 
 Please see the [project releases](https://socketry.github.io/async-http/releases/index) for all releases.
 
+### v0.81.0
+
+  - Expose `protocol` and `endpoint` as tags to `async-pool` for improved instrumentation.
+
 ### v0.77.0
 
   - Improved HTTP/1 connection handling.

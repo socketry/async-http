@@ -1,5 +1,9 @@
 # Releases
 
+## Unreleased
+
+  - `protocol-http1` introduces a line length limit for request line, response line, header lines and chunk length lines.
+
 ## v0.81.0
 
   - Expose `protocol` and `endpoint` as tags to `async-pool` for improved instrumentation.

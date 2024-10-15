@@ -1,6 +1,6 @@
 # Releases
 
-## Unreleased
+## v0.82.0
 
   - `protocol-http1` introduces a line length limit for request line, response line, header lines and chunk length lines.
 

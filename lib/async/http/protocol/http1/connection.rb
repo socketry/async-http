@@ -41,17 +41,6 @@ module Async
 						false
 					end
 					
-					def read_line?
-						@stream.read_until(CRLF)
-					rescue => error
-						# Bascially, any error will cause the connection to be closed:
-						return nil
-					end
-					
-					def read_line
-						@stream.read_until(CRLF) or raise EOFError, "Could not read line!"
-					end
-					
 					def peer
 						@stream.io
 					end

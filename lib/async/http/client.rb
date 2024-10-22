@@ -101,7 +101,7 @@ module Async
 					# As we cache pool, it's possible these pool go bad (e.g. closed by remote host). In this case, we need to try again. It's up to the caller to impose a timeout on this. If this is the last attempt, we force a new connection.
 					connection = @pool.acquire
 					
-					response = make_response(request, connection)
+					response = make_response(request, connection, attempt)
 					
 					# This signals that the ensure block below should not try to release the connection, because it's bound into the response which will be returned:
 					connection = nil
@@ -138,6 +138,36 @@ module Async
 			
 			def inspect
 				"#<#{self.class} authority=#{@authority.inspect}>"
+			end
+			
+			protected
+			
+			def make_response(request, connection, attempt)
+				response = request.call(connection)
+				
+				response.pool = @pool
+				
+				return response
+			end
+			
+			def assign_default_tags(tags)
+				tags[:endpoint] = @endpoint.to_s
+				tags[:protocol] = @protocol.to_s
+			end
+			
+			def make_pool(**options)
+				if connection_limit = options.delete(:connection_limit)
+					warn "The connection_limit: option is deprecated, please use limit: instead.", uplevel: 2
+					options[:limit] = connection_limit
+				end
+				
+				self.assign_default_tags(options[:tags] ||= {})
+				
+				Async::Pool::Controller.wrap(**options) do
+					Console.logger.debug(self) {"Making connection to #{@endpoint.inspect}"}
+					
+					@protocol.client(@endpoint.connect)
+				end
 			end
 			
 			Traces::Provider(self) do
@@ -178,35 +208,15 @@ module Async
 						end
 					end
 				end
-			end
-			
-			protected
-			
-			def make_response(request, connection)
-				response = request.call(connection)
 				
-				response.pool = @pool
-				
-				return response
-			end
-			
-			def assign_default_tags(tags)
-				tags[:endpoint] = @endpoint.to_s
-				tags[:protocol] = @protocol.to_s
-			end
-			
-			def make_pool(**options)
-				if connection_limit = options.delete(:connection_limit)
-					warn "The connection_limit: option is deprecated, please use limit: instead.", uplevel: 2
-					options[:limit] = connection_limit
-				end
-				
-				self.assign_default_tags(options[:tags] ||= {})
-				
-				Async::Pool::Controller.wrap(**options) do
-					Console.logger.debug(self) {"Making connection to #{@endpoint.inspect}"}
+				def make_response(request, connection, attempt)
+					attributes = {
+						attempt: attempt,
+					}
 					
-					@protocol.client(@endpoint.connect)
+					Traces.trace("async.http.client.make_response", attributes: attributes) do
+						super
+					end
 				end
 			end
 		end

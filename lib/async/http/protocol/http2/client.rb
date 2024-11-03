@@ -6,6 +6,7 @@
 require_relative "connection"
 require_relative "response"
 
+require "traces/provider"
 require "protocol/http2/client"
 
 module Async
@@ -34,10 +35,32 @@ module Async
 						@count += 1
 						
 						response = create_response
-						response.send_request(request)
-						response.wait
+						write_request(response, request)
+						read_response(response)
 						
 						return response
+					end
+					
+					def write_request(response, request)
+						response.send_request(request)
+					end
+					
+					def read_response(response)
+						response.wait
+					end
+					
+					Traces::Provider(self) do
+						def write_request(...)
+							Traces.trace("async.http.protocol.http2.client.write_request") do
+								super
+							end
+						end
+						
+						def read_response(...)
+							Traces.trace("async.http.protocol.http2.client.read_response") do
+								super
+							end
+						end
 					end
 				end
 			end

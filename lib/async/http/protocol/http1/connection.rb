@@ -3,11 +3,11 @@
 # Released under the MIT License.
 # Copyright, 2018-2024, by Samuel Williams.
 
-require "protocol/http1"
-
-require_relative "../peer"
 require_relative "request"
 require_relative "response"
+
+require "protocol/http1"
+require "protocol/http/peer"
 
 module Async
 	module HTTP
@@ -43,7 +43,7 @@ module Async
 					end
 					
 					def peer
-						@peer ||= Peer.for(@stream.io)
+						@peer ||= Protocol::HTTP::Peer.for(@stream.io)
 					end
 					
 					attr :count

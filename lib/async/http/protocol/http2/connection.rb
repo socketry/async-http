@@ -5,8 +5,8 @@
 # Copyright, 2020, by Bruno Sutic.
 
 require_relative "stream"
-require_relative "../peer"
 
+require "protocol/http/peer"
 require "async/semaphore"
 
 module Async
@@ -113,7 +113,7 @@ module Async
 					attr :promises
 					
 					def peer
-						@peer ||= Peer.for(@stream.io)
+						@peer ||= Protocol::HTTP::Peer.for(@stream.io)
 					end
 					
 					attr :count

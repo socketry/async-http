@@ -29,17 +29,11 @@ module Async
 				end
 				
 				def peer
-					if connection = self.connection
-						connection.peer
-					end
+					self.connection&.peer
 				end
 				
 				def remote_address
-					@remote_address ||= peer.remote_address
-				end
-				
-				def remote_address= value
-					@remote_address = value
+					self.peer&.address
 				end
 				
 				def inspect

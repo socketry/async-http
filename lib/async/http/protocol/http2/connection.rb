@@ -113,7 +113,7 @@ module Async
 					attr :promises
 					
 					def peer
-						@peer ||= Protocol::HTTP::Peer.for(@stream.io)
+						@peer ||= ::Protocol::HTTP::Peer.for(@stream.io)
 					end
 					
 					attr :count

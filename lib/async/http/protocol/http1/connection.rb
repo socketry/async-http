@@ -5,6 +5,7 @@
 
 require "protocol/http1"
 
+require_relative "../peer"
 require_relative "request"
 require_relative "response"
 
@@ -42,7 +43,7 @@ module Async
 					end
 					
 					def peer
-						@stream.io
+						@peer ||= Peer.for(@stream.io)
 					end
 					
 					attr :count

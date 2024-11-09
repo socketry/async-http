@@ -52,9 +52,6 @@ module Async
 					# https://tools.ietf.org/html/rfc7230#section-5.5
 					request.scheme ||= self.scheme
 					
-					# This is a slight optimization to avoid having to get the address from the socket.
-					request.remote_address = address
-					
 					# Console.logger.debug(self) {"Incoming request from #{address.inspect}: #{request.method} #{request.path}"}
 					
 					# If this returns nil, we assume that the connection has been hijacked.

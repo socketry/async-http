@@ -229,6 +229,11 @@ module Async
 					end
 				end
 				
+				def endpoint_options
+					# Add a timeout to ensure that slow clients are disconnected:
+					super.merge(timeout: 0.5)
+				end
+				
 				it "should have valid scheme" do
 					expect(server.scheme).to be == "http"
 				end
@@ -505,6 +510,10 @@ module Async
 						sleep(endpoint.timeout * 2)
 						::Protocol::HTTP::Response[200, {}, []]
 					end
+				end
+				
+				def endpoint_options
+					super.merge(timeout: 0.5)
 				end
 				
 				it "can't get /" do

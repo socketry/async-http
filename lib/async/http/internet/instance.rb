@@ -17,8 +17,8 @@ module Async
 			
 			class << self
 				::Protocol::HTTP::Methods.each do |name, verb|
-					define_method(verb.downcase) do |url, headers = nil, body = nil, &block|
-						self.instance.call(verb, url, headers, body, &block)
+					define_method(verb.downcase) do |url, *arguments, **options, &block|
+						self.instance.call(verb, url, *arguments, **options, &block)
 					end
 				end
 			end

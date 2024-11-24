@@ -1,6 +1,6 @@
 # Releases
 
-## Unreleased
+## v0.84.0
 
   - Minor consistency fixes to `Async::HTTP::Internet` singleton methods.
 

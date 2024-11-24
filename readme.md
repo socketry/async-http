@@ -16,6 +16,10 @@ Please see the [project documentation](https://socketry.github.io/async-http/) f
 
 Please see the [project releases](https://socketry.github.io/async-http/releases/index) for all releases.
 
+### v0.84.0
+
+  - Minor consistency fixes to `Async::HTTP::Internet` singleton methods.
+
 ### v0.82.0
 
   - `protocol-http1` introduces a line length limit for request line, response line, header lines and chunk length lines.

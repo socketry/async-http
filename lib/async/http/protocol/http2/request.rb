@@ -112,7 +112,7 @@ module Async
 					
 					def send_response(response)
 						if response.nil?
-							return @stream.send_headers(nil, NO_RESPONSE, ::Protocol::HTTP2::END_STREAM)
+							return @stream.send_headers(NO_RESPONSE, ::Protocol::HTTP2::END_STREAM)
 						end
 						
 						protocol_headers = [
@@ -129,14 +129,14 @@ module Async
 							# This function informs the headers object that any subsequent headers are going to be trailer. Therefore, it must be called *before* sending the headers, to avoid any race conditions.
 							trailer = response.headers.trailer!
 							
-							@stream.send_headers(nil, headers)
+							@stream.send_headers(headers)
 							
 							@stream.send_body(body, trailer)
 						else
 							# Ensure the response body is closed if we are ending the stream:
 							response.close
 							
-							@stream.send_headers(nil, headers, ::Protocol::HTTP2::END_STREAM)
+							@stream.send_headers(headers, ::Protocol::HTTP2::END_STREAM)
 						end
 					end
 					
@@ -149,7 +149,7 @@ module Async
 							interim_response_headers = ::Protocol::HTTP::Headers::Merged.new(interim_response_headers, headers)
 						end
 						
-						@stream.send_headers(nil, interim_response_headers)
+						@stream.send_headers(interim_response_headers)
 					end
 				end
 			end

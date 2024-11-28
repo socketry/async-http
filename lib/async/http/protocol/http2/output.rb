@@ -37,6 +37,8 @@ module Async
 						@guard.synchronize do
 							@window_updated.signal
 						end
+						
+						return true
 					end
 					
 					def write(chunk)

@@ -131,7 +131,7 @@ module Async
 						else
 							# Write trailer?
 							if trailer&.any?
-								send_headers(nil, trailer, ::Protocol::HTTP2::END_STREAM)
+								send_headers(trailer, ::Protocol::HTTP2::END_STREAM)
 							else
 								send_data(nil, ::Protocol::HTTP2::END_STREAM)
 							end
@@ -142,6 +142,8 @@ module Async
 						super
 						
 						@output&.window_updated(size)
+						
+						return true
 					end
 					
 					# When the stream transitions to the closed state, this method is called. There are roughly two ways this can happen:

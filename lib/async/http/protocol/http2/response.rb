@@ -222,7 +222,7 @@ module Async
 						)
 						
 						if request.body.nil?
-							@stream.send_headers(nil, headers, ::Protocol::HTTP2::END_STREAM)
+							@stream.send_headers(headers, ::Protocol::HTTP2::END_STREAM)
 						else
 							if length = request.body.length
 								# This puts it at the end of the pseudo-headers:
@@ -233,7 +233,7 @@ module Async
 							trailer = request.headers.trailer!
 							
 							begin
-								@stream.send_headers(nil, headers)
+								@stream.send_headers(headers)
 							rescue
 								raise RequestFailed
 							end

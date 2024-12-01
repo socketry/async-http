@@ -27,6 +27,7 @@ module Async
 					::Protocol::HTTP2::Settings::ENABLE_PUSH => 0,
 					::Protocol::HTTP2::Settings::MAXIMUM_FRAME_SIZE => 0x100000,
 					::Protocol::HTTP2::Settings::INITIAL_WINDOW_SIZE => 0x800000,
+					::Protocol::HTTP2::Settings::NO_RFC7540_PRIORITIES => 1,
 				}
 				
 				SERVER_SETTINGS = {
@@ -35,6 +36,7 @@ module Async
 					::Protocol::HTTP2::Settings::MAXIMUM_FRAME_SIZE => 0x100000,
 					::Protocol::HTTP2::Settings::INITIAL_WINDOW_SIZE => 0x800000,
 					::Protocol::HTTP2::Settings::ENABLE_CONNECT_PROTOCOL => 1,
+					::Protocol::HTTP2::Settings::NO_RFC7540_PRIORITIES => 1,
 				}
 				
 				def self.client(peer, settings = CLIENT_SETTINGS)

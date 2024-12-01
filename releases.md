@@ -1,5 +1,9 @@
 # Releases
 
+## Unreleased
+
+  - Add support for HTTP/2 `NO_RFC7540_PRIORITIES`. See <https://www.rfc-editor.org/rfc/rfc9218.html> for more details.
+
 ## v0.84.0
 
   - Minor consistency fixes to `Async::HTTP::Internet` singleton methods.

@@ -1,6 +1,6 @@
 # Releases
 
-## Unreleased
+## v0.86.0
 
   - Add support for HTTP/2 `NO_RFC7540_PRIORITIES`. See <https://www.rfc-editor.org/rfc/rfc9218.html> for more details.
 

@@ -11,8 +11,8 @@ module Async
 			module HTTP1
 				class Request < Protocol::Request
 					def self.read(connection)
-						if parts = connection.read_request
-							self.new(connection, *parts)
+						connection.read_request do |authority, method, target, version, headers, body|
+							self.new(connection, authority, method, target, version, headers, body)
 						end
 					end
 					

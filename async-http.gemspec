@@ -29,7 +29,7 @@ Gem::Specification.new do |spec|
 	spec.add_dependency "io-endpoint", "~> 0.14"
 	spec.add_dependency "io-stream", "~> 0.6"
 	spec.add_dependency "protocol-http", "~> 0.43"
-	spec.add_dependency "protocol-http1", ">= 0.28.1"
+	spec.add_dependency "protocol-http1", "~> 0.29"
 	spec.add_dependency "protocol-http2", "~> 0.22"
 	spec.add_dependency "traces", "~> 0.10"
 	spec.add_dependency "metrics", "~> 0.12"

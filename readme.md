@@ -16,6 +16,10 @@ Please see the [project documentation](https://socketry.github.io/async-http/) f
 
 Please see the [project releases](https://socketry.github.io/async-http/releases/index) for all releases.
 
+### v0.87.0
+
+  - [Unify HTTP/1 and HTTP/2 `CONNECT` semantics](https://socketry.github.io/async-http/releases/index#unify-http/1-and-http/2-connect-semantics)
+
 ### v0.86.0
 
   - Add support for HTTP/2 `NO_RFC7540_PRIORITIES`. See <https://www.rfc-editor.org/rfc/rfc9218.html> for more details.

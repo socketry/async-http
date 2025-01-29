@@ -1,18 +1,16 @@
 # Releases
 
-## Unreleased
+## v0.87.0
 
 ### Unify HTTP/1 and HTTP/2 `CONNECT` semantics
 
 HTTP/1 has a request line "target" which takes different forms depending on the kind of request. For `CONNECT` requests, the target is the authority (host and port) of the target server, e.g.
 
-```
-CONNECT example.com:443 HTTP/1.1
-```
+    CONNECT example.com:443 HTTP/1.1
 
 In HTTP/2, the `CONNECT` method uses the `:authority` pseudo-header to specify the target, e.g.
 
-```http
+``` http
 [HEADERS FRAME]
 :method: connect
 :authority: example.com:443
@@ -20,7 +18,7 @@ In HTTP/2, the `CONNECT` method uses the `:authority` pseudo-header to specify t
 
 In HTTP/1, the `Request#path` attribute was previously used to store the target, and this was incorrectly mapped to the `:path` pseudo-header in HTTP/2. This has been corrected, and the `Request#authority` attribute is now used to store the target for both HTTP/1 and HTTP/2, and mapped accordingly. Thus, to make a `CONNECT` request, you should set the `Request#authority` attribute, e.g.
 
-```ruby
+``` ruby
 response = client.connect(authority: "example.com:443")
 ```
 

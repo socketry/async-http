@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2018-2024, by Samuel Williams.
+# Copyright, 2018-2025, by Samuel Williams.
 
 require_relative "../request"
 
@@ -13,7 +13,7 @@ module Async
 					def self.valid_path?(target)
 						if target.start_with?("/")
 							return true
-						elsif target == '*'
+						elsif target == "*"
 							return true
 						else
 							return false

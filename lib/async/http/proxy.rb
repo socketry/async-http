@@ -82,7 +82,7 @@ module Async
 			def connect(&block)
 				input = Body::Writable.new
 				
-				response = @client.connect(@address.to_s, @headers, input)
+				response = @client.connect(authority: @address, headers: @headers, body: input)
 				
 				if response.success?
 					pipe = Body::Pipe.new(response.body, input)

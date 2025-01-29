@@ -99,7 +99,7 @@ module Async
 					end
 					
 					def valid?
-						@scheme and @method and @path
+						@scheme and @method and (@path or @method == ::Protocol::HTTP::Methods::CONNECT)
 					end
 					
 					def hijack?

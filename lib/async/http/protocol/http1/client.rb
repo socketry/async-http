@@ -39,7 +39,16 @@ module Async
 						
 						# We carefully interpret https://tools.ietf.org/html/rfc7230#section-6.3.1 to implement this correctly.
 						begin
-							write_request(request.authority, request.method, request.path, @version, request.headers)
+							target = request.path
+							authority = request.authority
+							
+							# If we are using a CONNECT request, we need to use the authority as the target:
+							if request.connect?
+								target = authority
+								authority = nil
+							end
+							
+							write_request(authority, request.method, target, @version, request.headers)
 						rescue
 							# If we fail to fully write the request and body, we can retry this request.
 							raise RequestFailed

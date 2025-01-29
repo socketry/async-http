@@ -54,7 +54,7 @@ AProxy = Sus::Shared("a proxy") do
 		it "can connect and hijack connection" do
 			input = Async::HTTP::Body::Writable.new
 			
-			response = client.connect("127.0.0.1:1234", [], input)
+			response = client.connect(body: input, authority: "127.0.0.1:1234")
 			
 			expect(response).to be(:success?)
 			
@@ -68,7 +68,7 @@ AProxy = Sus::Shared("a proxy") do
 	with "echo server" do
 		let(:app) do
 			Protocol::HTTP::Middleware.for do |request|
-				expect(request.path).to be == "localhost:1"
+				expect(request.authority).to be == "localhost:1"
 				
 				Async::HTTP::Body::Hijack.response(request, 200, {}) do |stream|
 					while chunk = stream.read_partial(1024)
@@ -125,7 +125,7 @@ AProxy = Sus::Shared("a proxy") do
 					next Protocol::HTTP::Response[407, [], nil]
 				end
 				
-				host, port = request.path.split(":", 2)
+				host, port = request.authority.split(":", 2)
 				endpoint = IO::Endpoint.tcp(host, port)
 				
 				Console.logger.debug(self) {"Making connection to #{endpoint}..."}

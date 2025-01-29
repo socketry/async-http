@@ -204,8 +204,11 @@ module Async
 						pseudo_headers = [
 							[SCHEME, request.scheme],
 							[METHOD, request.method],
-							[PATH, request.path],
 						]
+						
+						if path = request.path
+							pseudo_headers << [PATH, path]
+						end
 						
 						# To ensure that the HTTP/1.1 request line can be reproduced accurately, this pseudo-header field MUST be omitted when translating from an HTTP/1.1 request that has a request target in origin or asterisk form (see [RFC7230], Section 5.3). Clients that generate HTTP/2 requests directly SHOULD use the :authority pseudo-header field instead of the Host header field.
 						if authority = request.authority

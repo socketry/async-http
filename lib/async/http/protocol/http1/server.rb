@@ -34,7 +34,7 @@ module Async
 						write_body(@version, nil)
 					rescue => error
 						# At this point, there is very little we can do to recover:
-						Console::Event::Failure.for(error).emit(self, "Failed to write failure response!", severity: :debug)
+						Console.debug(self, "Failed to write failure response!", error)
 					end
 					
 					def next_request

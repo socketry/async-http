@@ -65,7 +65,7 @@ module Async
 							@input.close_write
 						end
 					rescue ::Protocol::HTTP2::HeaderError => error
-						Console.debug(self, "Error while processing headers!", error: error)
+						Console.debug(self, "Error while processing headers!", error)
 						
 						send_reset_stream(error.code)
 					end

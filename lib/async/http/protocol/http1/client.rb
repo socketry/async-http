@@ -32,7 +32,7 @@ module Async
 					
 					# Used by the client to send requests to the remote server.
 					def call(request, task: Task.current)
-						Console.logger.debug(self) {"#{request.method} #{request.path} #{request.headers.inspect}"}
+						Console.debug(self) {"#{request.method} #{request.path} #{request.headers.inspect}"}
 						
 						# Mark the start of the trailers:
 						trailer = request.headers.trailer!

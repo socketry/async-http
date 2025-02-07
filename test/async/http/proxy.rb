@@ -128,11 +128,11 @@ AProxy = Sus::Shared("a proxy") do
 				host, port = request.authority.split(":", 2)
 				endpoint = IO::Endpoint.tcp(host, port)
 				
-				Console.logger.debug(self) {"Making connection to #{endpoint}..."}
+				Console.debug(self) {"Making connection to #{endpoint}..."}
 				
 				Async::HTTP::Body::Hijack.response(request, 200, {}) do |stream|
 					upstream = ::IO::Stream::Buffered.wrap(endpoint.connect)
-					Console.logger.debug(self) {"Connected to #{upstream}..."}
+					Console.debug(self) {"Connected to #{upstream}..."}
 					
 					reader = Async do |task|
 						task.annotate "Upstream reader."
@@ -142,7 +142,7 @@ AProxy = Sus::Shared("a proxy") do
 							stream.flush
 						end
 					ensure
-						Console.logger.debug(self) {"Finished reading from upstream..."}
+						Console.debug(self) {"Finished reading from upstream..."}
 						stream.close_write
 					end
 					
@@ -154,7 +154,7 @@ AProxy = Sus::Shared("a proxy") do
 							upstream.flush
 						end
 					ensure
-						Console.logger.debug(self) {"Finished writing to upstream..."}
+						Console.debug(self) {"Finished writing to upstream..."}
 						upstream.close_write
 					end
 					

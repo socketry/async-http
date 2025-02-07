@@ -25,7 +25,7 @@ module Async
 					# alpn_protocol is only available if openssl v1.0.2+
 					name = peer.alpn_protocol
 					
-					Console.logger.debug(self) {"Negotiating protocol #{name.inspect}..."}
+					Console.debug(self) {"Negotiating protocol #{name.inspect}..."}
 					
 					if protocol = HANDLERS[name]
 						return protocol

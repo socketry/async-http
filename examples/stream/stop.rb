@@ -16,16 +16,16 @@ Async do |parent|
 		connection = response.connection
 		
 		response.each do |chunk|
-			Console.logger.info(response) {chunk}
+			Console.info(response) {chunk}
 		end
 	ensure
-		Console.logger.info(response) {"Closing response..."}
+		Console.info(response) {"Closing response..."}
 		response&.close
 	end
 	
 	parent.sleep(5)
 	
-	Console.logger.info(parent) {"Killing #{child}..."}
+	Console.info(parent) {"Killing #{child}..."}
 	child.stop
 ensure
 	internet&.close

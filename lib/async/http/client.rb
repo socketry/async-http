@@ -81,7 +81,7 @@ module Async
 			
 			def close
 				while @pool.busy?
-					Console.logger.warn(self) {"Waiting for #{@protocol} pool to drain: #{@pool}"}
+					Console.warn(self) {"Waiting for #{@protocol} pool to drain: #{@pool}"}
 					@pool.wait
 				end
 				
@@ -164,7 +164,7 @@ module Async
 				self.assign_default_tags(options[:tags] ||= {})
 				
 				Async::Pool::Controller.wrap(**options) do
-					Console.logger.debug(self) {"Making connection to #{@endpoint.inspect}"}
+					Console.debug(self) {"Making connection to #{@endpoint.inspect}"}
 					
 					@protocol.client(@endpoint.connect)
 				end

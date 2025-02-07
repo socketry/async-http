@@ -45,14 +45,14 @@ module Async
 			def accept(peer, address, task: Task.current)
 				connection = @protocol.server(peer)
 				
-				Console.logger.debug(self) {"Incoming connnection from #{address.inspect} to #{@protocol}"}
+				Console.debug(self) {"Incoming connnection from #{address.inspect} to #{@protocol}"}
 				
 				connection.each do |request|
 					# We set the default scheme unless it was otherwise specified.
 					# https://tools.ietf.org/html/rfc7230#section-5.5
 					request.scheme ||= self.scheme
 					
-					# Console.logger.debug(self) {"Incoming request from #{address.inspect}: #{request.method} #{request.path}"}
+					# Console.debug(self) {"Incoming request from #{address.inspect}: #{request.method} #{request.path}"}
 					
 					# If this returns nil, we assume that the connection has been hijacked.
 					self.call(request)

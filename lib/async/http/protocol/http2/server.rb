@@ -51,8 +51,6 @@ module Async
 						@requests&.async do |task, request|
 							task.annotate("Incoming request: #{request.method} #{request.path.inspect}.")
 							
-							@count += 1
-							
 							task.defer_stop do
 								response = yield(request)
 							rescue

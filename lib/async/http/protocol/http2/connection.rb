@@ -29,7 +29,6 @@ module Async
 					def initialize(*)
 						super
 						
-						@count = 0
 						@reader = nil
 						
 						# Writing multiple frames at the same time can cause odd problems if frames are only partially written. So we use a semaphore to ensure frames are written in their entirety.
@@ -41,7 +40,7 @@ module Async
 					end
 					
 					def to_s
-						"\#<#{self.class} #{@count} requests, #{@streams.count} active streams>"
+						"\#<#{self.class} #{@streams.count} active streams>"
 					end
 					
 					def as_json(...)

@@ -17,7 +17,7 @@ describe Async::HTTP::Protocol::HTTP2 do
 			response = client.get("/")
 			connection = response.connection
 			
-			expect(connection.as_json).to be =~ /#<Async::HTTP::Protocol::HTTP2::Client 1 requests, \d+ active streams>/
+			expect(connection.as_json).to be =~ /#<Async::HTTP::Protocol::HTTP2::Client \d+ active streams>/
 		ensure
 			response&.close
 		end

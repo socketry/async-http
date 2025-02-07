@@ -32,8 +32,6 @@ module Async
 					def call(request)
 						raise ::Protocol::HTTP2::Error, "Connection closed!" if self.closed?
 						
-						@count += 1
-						
 						response = create_response
 						write_request(response, request)
 						read_response(response)

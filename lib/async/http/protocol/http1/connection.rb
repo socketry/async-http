@@ -14,9 +14,10 @@ module Async
 		module Protocol
 			module HTTP1
 				class Connection < ::Protocol::HTTP1::Connection
-					def initialize(stream, version)
-						super(stream)
+					def initialize(stream, version, **options)
+						super(stream, **options)
 						
+						# On the client side, we need to send the HTTP version with the initial request. On the server side, there are some scenarios (bad request) where we don't know the request version. In those cases, we use this value, which is either hard coded based on the protocol being used, OR could be negotiated during the connection setup (e.g. ALPN).
 						@version = version
 					end
 					

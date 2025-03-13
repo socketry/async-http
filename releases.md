@@ -1,5 +1,66 @@
 # Releases
 
+## Unreleased
+
+### Support custom protocols with options
+
+{ruby Async::HTTP::Protocol} contains classes for specific protocols, e.g. {ruby Async::HTTP::Protocol::HTTP1} and {ruby Async::HTTP::Protocol::HTTP2}. It also contains classes for aggregating protocols, e.g. {ruby Async::HTTP::Protocol::HTTP} and {ruby Async::HTTP::Protocol::HTTPS}. They serve as factories for creating client and server instances.
+
+These classes are now configurable with various options, which are passed as keyword arguments to the relevant connection classes. For example, to configure an HTTP/1.1 protocol without keep-alive:
+
+```ruby
+protocol = Async::HTTP::Protocol::HTTP1.new(persistent: false, maximum_line_length: 32)
+endpoint = Async::HTTP::Endpoint.parse("http://localhost:9292", protocol: protocol)
+server = Async::HTTP::Server.for(endpoint) do |request|
+	Protocol::HTTP::Response[200, {}, ["Hello, world"]]
+end.run
+```
+
+Making a request to the server will now close the connection after the response is received:
+
+```
+> curl -v http://localhost:9292
+* Host localhost:9292 was resolved.
+* IPv6: ::1
+* IPv4: 127.0.0.1
+*   Trying [::1]:9292...
+* Connected to localhost (::1) port 9292
+* using HTTP/1.x
+> GET / HTTP/1.1
+> Host: localhost:9292
+> User-Agent: curl/8.12.1
+> Accept: */*
+> 
+* Request completely sent off
+< HTTP/1.1 200 OK
+< connection: close
+< content-length: 12
+< 
+* shutting down connection #0
+Hello, world
+```
+
+In addition, any line longer than 32 bytes will be rejected:
+
+```
+curl -v http://localhost:9292/012345678901234567890123456789012
+* Host localhost:9292 was resolved.
+* IPv6: ::1
+* IPv4: 127.0.0.1
+*   Trying [::1]:9292...
+* Connected to localhost (::1) port 9292
+* using HTTP/1.x
+> GET /012345678901234567890123456789012 HTTP/1.1
+> Host: localhost:9292
+> User-Agent: curl/8.12.1
+> Accept: */*
+> 
+* Request completely sent off
+* Empty reply from server
+* shutting down connection #0
+curl: (52) Empty reply from server
+```
+
 ## v0.87.0
 
 ### Unify HTTP/1 and HTTP/2 `CONNECT` semantics

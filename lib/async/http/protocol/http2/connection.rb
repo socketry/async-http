@@ -26,7 +26,7 @@ module Async
 				TRAILER = "trailer".freeze
 				
 				module Connection
-					def initialize(*)
+					def initialize(...)
 						super
 						
 						@reader = nil

@@ -40,7 +40,7 @@ module Async
 			#
 			# @parameter scheme [String] The scheme to use, e.g. "http" or "https".
 			# @parameter hostname [String] The hostname to connect to (or bind to).
-			# @parameter *options [Hash] Additional options, passed to {#initialize}.
+			# @parameter *options [Hash] Additional options, passed to {initialize}.
 			def self.for(scheme, hostname, path = "/", **options)
 				# TODO: Consider using URI.for once it becomes available:
 				uri_klass = SCHEMES.fetch(scheme.downcase) do

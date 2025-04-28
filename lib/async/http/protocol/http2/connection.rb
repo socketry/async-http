@@ -94,7 +94,7 @@ module Async
 								# Error is raised if a response is actively reading from the
 								# connection. The connection is silently closed if GOAWAY is
 								# received outside the request/response cycle.
-							rescue SocketError, IOError, EOFError, Errno::ECONNRESET, Errno::EPIPE => ignored_error
+							rescue SocketError, IOError, EOFError, Errno::ECONNRESET, Errno::EPIPE
 								# Ignore.
 							rescue => error
 								# Every other error.

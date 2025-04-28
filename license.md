@@ -22,6 +22,7 @@ Copyright, 2023, by dependabot[bot].
 Copyright, 2023, by Josh Huber.  
 Copyright, 2024, by Anton Zhuravsky.  
 Copyright, 2024, by Hal Brodigan.  
+Copyright, 2025, by Jean Boussier.  
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2018-2024, by Samuel Williams.
+# Copyright, 2018-2025, by Samuel Williams.
 # Copyright, 2020, by Igor Sidorov.
 # Copyright, 2023, by Thomas Morgan.
 # Copyright, 2024, by Anton Zhuravsky.
+# Copyright, 2025, by Jean Boussier.
 
 require_relative "connection"
 require_relative "finishable"

@@ -8,7 +8,6 @@ source "https://rubygems.org"
 gemspec
 
 # gem "async", path: "../async"
-# gem "async-io", path: "../async-io"
 # gem "io-endpoint", path: "../io-endpoint"
 # gem "io-stream", path: "../io-stream"
 # gem "openssl", git: "https://github.com/ruby/openssl.git"

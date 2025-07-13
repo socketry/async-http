@@ -80,9 +80,8 @@ module Async
 			end
 			
 			def close
-				while @pool.busy?
+				@pool.wait_until_free do
 					Console.warn(self) {"Waiting for #{@protocol} pool to drain: #{@pool}"}
-					@pool.wait
 				end
 				
 				@pool.close

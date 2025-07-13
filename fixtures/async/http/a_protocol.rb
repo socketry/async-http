@@ -305,6 +305,7 @@ module Async
 							Tempfile.open do |tempfile|
 								response.save(tempfile.path)
 								expect(tempfile.read).to be == expected
+								tempfile.close!
 							end
 						end
 						

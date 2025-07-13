@@ -9,6 +9,7 @@ require "async/http/body/pipe"
 require "async/http/body/writable"
 
 require "sus/fixtures/async"
+require "io/stream"
 
 describe Async::HTTP::Body::Pipe do
 	let(:input) {Async::HTTP::Body::Writable.new}

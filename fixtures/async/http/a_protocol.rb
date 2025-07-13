@@ -301,13 +301,11 @@ module Async
 							expect(response.body.length).not.to be_nil
 						end
 						
-						let(:tempfile) {Tempfile.new}
-						
 						it "can save to disk" do
-							response.save(tempfile.path)
-							expect(tempfile.read).to be == expected
-							
-							tempfile.close
+							Tempfile.open do |tempfile|
+								response.save(tempfile.path)
+								expect(tempfile.read).to be == expected
+							end
 						end
 						
 						it "has response header" do

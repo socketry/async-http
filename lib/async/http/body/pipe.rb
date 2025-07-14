@@ -53,7 +53,6 @@ module Async
 					
 					@head.close_write
 				rescue => error
-					raise
 				ensure
 					@input.close(error)
 					
@@ -71,7 +70,6 @@ module Async
 						@output.write(chunk)
 					end
 				rescue => error
-					raise
 				ensure
 					@output.close_write(error)
 					

@@ -143,7 +143,7 @@ AProxy = Sus::Shared("a proxy") do
 						end
 					ensure
 						Console.debug(self) {"Finished reading from upstream..."}
-						stream.close_write
+						stream.close_write unless stream.closed?
 					end
 					
 					writer = Async do |task|
@@ -155,7 +155,7 @@ AProxy = Sus::Shared("a proxy") do
 						end
 					ensure
 						Console.debug(self) {"Finished writing to upstream..."}
-						upstream.close_write
+						upstream.close_write unless upstream.closed?
 					end
 					
 					reader.wait

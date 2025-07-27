@@ -1,6 +1,6 @@
 # Async::HTTP
 
-An asynchronous client and server implementation of HTTP/1.0, HTTP/1.1 and HTTP/2 including TLS. Support for streaming requests and responses. Built on top of [async](https://github.com/socketry/async) and [async-io](https://github.com/socketry/async-io). [falcon](https://github.com/socketry/falcon) provides a rack-compatible server.
+An asynchronous client and server implementation of HTTP/1.0, HTTP/1.1 and HTTP/2 including TLS. Support for streaming requests and responses. Built on top of [async](https://github.com/socketry/async), [io-endpoint](https://github.com/socketry/io-endpoint) and [io-stream](https://github.com/socketry/io-stream). [falcon](https://github.com/socketry/falcon) provides a rack-compatible server.
 
 [![Development Status](https://github.com/socketry/async-http/workflows/Test/badge.svg)](https://github.com/socketry/async-http/actions?workflow=Test)
 

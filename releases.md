@@ -1,5 +1,9 @@
 # Releases
 
+## Unreleased
+
+  - Don't emit `resource:` keyword argument in traces - it's unsupported by OpenTelemetry.
+
 ## v0.88.0
 
 ### Support custom protocols with options

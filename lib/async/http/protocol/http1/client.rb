@@ -5,8 +5,6 @@
 
 require_relative "connection"
 
-require "traces/provider"
-
 module Async
 	module HTTP
 		module Protocol
@@ -87,20 +85,6 @@ module Async
 					rescue => error
 						self.close(error)
 						raise
-					end
-					
-					Traces::Provider(self) do
-						def write_request(...)
-							Traces.trace("async.http.protocol.http1.client.write_request") do
-								super
-							end
-						end
-						
-						def read_response(...)
-							Traces.trace("async.http.protocol.http1.client.read_response") do
-								super
-							end
-						end
 					end
 				end
 			end

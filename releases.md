@@ -1,5 +1,9 @@
 # Releases
 
+## Unreleased
+
+  - Move all default trace providers into `traces/provider/async/http`.
+
 ## v0.90.2
 
   - Don't emit `resource:` keyword argument in traces - it's unsupported by OpenTelemetry.

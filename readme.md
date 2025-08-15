@@ -16,6 +16,10 @@ Please see the [project documentation](https://socketry.github.io/async-http/) f
 
 Please see the [project releases](https://socketry.github.io/async-http/releases/index) for all releases.
 
+### v0.90.2
+
+  - Don't emit `resource:` keyword argument in traces - it's unsupported by OpenTelemetry.
+
 ### v0.88.0
 
   - [Support custom protocols with options](https://socketry.github.io/async-http/releases/index#support-custom-protocols-with-options)
@@ -54,10 +58,6 @@ Please see the [project releases](https://socketry.github.io/async-http/releases
 ### v0.75.0
 
   - Better handling of HTTP/1 \<-\> HTTP/2 proxying, specifically upgrade/CONNECT requests.
-
-### v0.74.0
-
-  - [`Async::HTTP::Internet` accepts keyword arguments](https://socketry.github.io/async-http/releases/index#async::http::internet-accepts-keyword-arguments)
 
 ## See Also
 

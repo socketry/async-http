@@ -1,6 +1,6 @@
 # Releases
 
-## Unreleased
+## v0.91.0
 
   - Move all default trace providers into `traces/provider/async/http`.
 

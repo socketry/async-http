@@ -16,6 +16,10 @@ Please see the [project documentation](https://socketry.github.io/async-http/) f
 
 Please see the [project releases](https://socketry.github.io/async-http/releases/index) for all releases.
 
+### v0.91.0
+
+  - Move all default trace providers into `traces/provider/async/http`.
+
 ### v0.90.2
 
   - Don't emit `resource:` keyword argument in traces - it's unsupported by OpenTelemetry.
@@ -54,10 +58,6 @@ Please see the [project releases](https://socketry.github.io/async-http/releases
   - `Async::HTTP::Body::Writable` is moved to `Protocol::HTTP::Body::Writable`.
   - Remove `Async::HTTP::Body::Delayed` with no replacement.
   - Remove `Async::HTTP::Body::Slowloris` with no replacement.
-
-### v0.75.0
-
-  - Better handling of HTTP/1 \<-\> HTTP/2 proxying, specifically upgrade/CONNECT requests.
 
 ## See Also
 

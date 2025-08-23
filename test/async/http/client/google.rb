@@ -5,6 +5,7 @@
 
 require "async/http/client"
 require "async/http/endpoint"
+require "async/http/body"
 
 require "protocol/http/accept_encoding"
 

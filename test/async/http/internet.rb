@@ -37,14 +37,6 @@ describe Async::HTTP::Internet do
 	let(:sample) {{"hello" => "world"}}
 	let(:body) {[JSON.dump(sample)]}
 	
-	# This test is increasingly flakey.
-	it "can fetch remote json" do
-		response = internet.post("https://httpbin.org/anything", headers, body)
-		
-		expect(response).to be(:success?)
-		expect{JSON.parse(response.read)}.not.to raise_exception
-	end
-	
 	it "can fetch remote website when given custom endpoint instead of url" do
 		ssl_context = OpenSSL::SSL::SSLContext.new
 		ssl_context.set_params(verify_mode: OpenSSL::SSL::VERIFY_NONE)

@@ -22,9 +22,11 @@ gemspec
 group :maintenance, optional: true do
 	gem "bake-modernize"
 	gem "bake-gem"
+	gem "bake-releases"
+	
+	gem "agent-context"
 	
 	gem "utopia-project"
-	gem "bake-releases"
 end
 
 group :test do
@@ -36,6 +38,7 @@ group :test do
 	gem "sus-fixtures-async"
 	gem "sus-fixtures-async-http", "~> 0.8"
 	gem "sus-fixtures-openssl"
+	gem "sus-fixtures-benchmark"
 	
 	gem "bake-test"
 	gem "bake-test-external"

@@ -129,26 +129,6 @@ describe Async::HTTP::Server do
 			server_task.stop
 		end
 		
-		it "ignores unreasonable queue times" do
-			server_task = server.run
-			bound_endpoint = server_task.wait_until_ready
-			
-			# Timestamp from 2 hours ago (unreasonable)
-			request_start = Process.clock_gettime(Process::CLOCK_REALTIME) - 7200
-			
-			# Should not emit the queue time metric for unreasonable timestamp
-			expect(Async::HTTP::Server::ASYNC_HTTP_SERVER_REQUEST_QUEUE_TIME).not.to receive(:emit)
-			
-			client = Async::HTTP::Client.new(bound_endpoint)
-			headers = [["x-request-start", "t=#{request_start}"]]
-			response = client.get("/", headers)
-			
-			expect(response.status).to be == 200
-			response.finish
-			
-			client.close
-			server_task.stop
-		end
 	end
 end
 

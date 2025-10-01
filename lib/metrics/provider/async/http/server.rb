@@ -53,8 +53,8 @@ Metrics::Provider(Async::HTTP::Server) do
 			current_time = Process.clock_gettime(Process::CLOCK_REALTIME)
 			queue_time = current_time - timestamp
 			
-			# Sanity check: queue time should be positive and reasonable (< 1 hour)
-			if queue_time > 0 && queue_time < 3600
+			# Sanity check: queue time should be positive
+			if queue_time > 0
 				return queue_time
 			end
 		rescue ArgumentError, TypeError

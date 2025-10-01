@@ -38,31 +38,17 @@ Metrics::Provider(Async::HTTP::Server) do
 	private
 	
 	# Parse x-request-start header and calculate queue time in seconds.
-	# Supports multiple formats:
+	# Supports formats:
 	# - "t=1234567890.123" (nginx format with 't=' prefix)
 	# - "1234567890.123" (Unix timestamp in seconds)
-	# - "1234567890123" (Unix timestamp in milliseconds)
 	def calculate_queue_time(header_value)
 		return nil unless header_value
 		
 		# Remove 't=' prefix if present (nginx format)
-		timestamp_str = header_value.sub(/^t=/, "")
+		timestamp_string = header_value.sub(/^t=/, "")
 		
 		begin
-			timestamp = Float(timestamp_str)
-			
-			# If timestamp is very large, it's likely in milliseconds or microseconds
-			# Convert to seconds if necessary
-			if timestamp > 10_000_000_000
-				# Likely milliseconds (13 digits) or microseconds (16 digits)
-				if timestamp > 10_000_000_000_000
-					# Microseconds (16 digits)
-					timestamp = timestamp / 1_000_000.0
-				else
-					# Milliseconds (13 digits)
-					timestamp = timestamp / 1000.0
-				end
-			end
+			timestamp = Float(timestamp_string)
 			
 			current_time = Process.clock_gettime(Process::CLOCK_REALTIME)
 			queue_time = current_time - timestamp

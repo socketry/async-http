@@ -94,28 +94,6 @@ describe Async::HTTP::Server do
 			server_task.stop
 		end
 		
-		it "handles millisecond timestamp format" do
-			server_task = server.run
-			bound_endpoint = server_task.wait_until_ready
-			
-			request_start_ms = (Process.clock_gettime(Process::CLOCK_REALTIME) * 1000).to_i - 50
-			
-			expect(Async::HTTP::Server::ASYNC_HTTP_SERVER_REQUEST_QUEUE_TIME).to receive(:emit) do |value, tags:|
-				expect(value).to be > 0
-				expect(value).to be < 1
-			end
-			
-			client = Async::HTTP::Client.new(bound_endpoint)
-			headers = [["x-request-start", request_start_ms.to_s]]
-			response = client.get("/", headers)
-			
-			expect(response.status).to be == 200
-			response.finish
-			
-			client.close
-			server_task.stop
-		end
-		
 		it "does not emit queue time metric when x-request-start header is missing" do
 			server_task = server.run
 			bound_endpoint = server_task.wait_until_ready

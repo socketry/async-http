@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2021-2024, by Samuel Williams.
+# Copyright, 2021-2025, by Samuel Williams.
 
 require "async/http/protocol/http11"
 
@@ -33,7 +33,7 @@ describe Async::HTTP::Protocol::HTTP11 do
 		backtraces = []
 		
 		100.times do
-			tasks << task.async{
+			tasks << task.async do
 				loop do
 					response = client.get("/a")
 					expect(response.read).to be == "/a"
@@ -43,11 +43,11 @@ describe Async::HTTP::Protocol::HTTP11 do
 				ensure
 					response&.close
 				end
-			}
+			end
 		end
 		
 		100.times do
-			tasks << task.async{
+			tasks << task.async do
 				loop do
 					response = client.get("/b")
 					expect(response.read).to be == "/b"
@@ -57,7 +57,7 @@ describe Async::HTTP::Protocol::HTTP11 do
 				ensure
 					response&.close
 				end
-			}
+			end
 		end
 		
 		tasks.each do |child|

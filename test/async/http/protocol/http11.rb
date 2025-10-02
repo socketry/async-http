@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2017-2024, by Samuel Williams.
+# Copyright, 2017-2025, by Samuel Williams.
 # Copyright, 2018, by Janko Marohnić.
 # Copyright, 2023, by Thomas Morgan.
 # Copyright, 2023, by Josh Huber.
@@ -49,7 +49,7 @@ describe Async::HTTP::Protocol::HTTP11 do
 			ensure
 				Console.logger.level = current
 			end
-
+			
 			it "should fail cleanly when path is empty" do
 				response = client.get("")
 				
@@ -90,7 +90,7 @@ describe Async::HTTP::Protocol::HTTP11 do
 						"Hello World!"
 					)
 					peer.close
-
+					
 					nil
 				end
 			end
@@ -100,21 +100,21 @@ describe Async::HTTP::Protocol::HTTP11 do
 				
 				expect(response.read).to be == "Hello World!"
 			end
-
+			
 			it "has access to the http reason phrase" do
 				response = client.head("/")
-
+				
 				expect(response.reason).to be == "It worked!"
 			end
 		end
-
+		
 		with "full hijack with empty response" do
 			let(:body) {::Protocol::HTTP::Body::Buffered.new([], 0)}
-
+			
 			let(:app) do
 				::Protocol::HTTP::Middleware.for do |request|
 					peer = request.hijack!
-
+					
 					peer.write(
 						"#{request.version} 200 It worked!\r\n" +
 						"connection: close\r\n" +
@@ -122,16 +122,16 @@ describe Async::HTTP::Protocol::HTTP11 do
 						"Hello World!"
 					)
 					peer.close
-
+					
 					::Protocol::HTTP::Response[-1, {}, body]
 				end
 			end
-
+			
 			it "works properly" do
 				expect(body).to receive(:close)
-
+				
 				response = client.get("/")
-
+				
 				expect(response.read).to be == "Hello World!"
 			end
 		end

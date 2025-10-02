@@ -31,7 +31,7 @@ RUBYGEMS_HEADERS = {
 def fetch_github_license(homepage_uri)
 	%r{github.com/(?<owner>.+?)/(?<repo>.+)} =~ homepage_uri
 	return nil unless repo
-
+	
 	response = @internet.get("https://api.github.com/repos/#{owner}/#{repo}/license", GITHUB_HEADERS)
 	
 	case response.status

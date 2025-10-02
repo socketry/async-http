@@ -145,7 +145,7 @@ internet.get("https://example.com", scheme: "http")
 ``` ruby
 # Server side:
 def call(request)
-	if request.headers['expect'].include?('100-continue')
+	if request.headers["expect"].include?("100-continue")
 		request.send_interim_response(100)
 	end
 	

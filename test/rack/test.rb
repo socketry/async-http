@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2019-2024, by Samuel Williams.
+# Copyright, 2019-2025, by Samuel Williams.
 
 require "sus/fixtures/async"
 require "async/http"
@@ -31,7 +31,7 @@ describe Rack::Test do
 			end
 			
 			# This echos the body back.
-			run lambda { |env| [200, {}, body("Hello", " ", "World", "!")] }
+			run lambda {|env| [200, {}, body("Hello", " ", "World", "!")]}
 		end
 	end
 	

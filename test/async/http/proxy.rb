@@ -167,7 +167,7 @@ AProxy = Sus::Shared("a proxy") do
 			end
 		end
 		
-		let(:authorization_lambda) { ->(request) {true} }
+		let(:authorization_lambda) {->(request) {true}}
 		
 		it "can get insecure website" do
 			endpoint = Async::HTTP::Endpoint.parse("http://www.google.com")
@@ -200,11 +200,11 @@ AProxy = Sus::Shared("a proxy") do
 		
 		with "authorization header required" do
 			let(:authorization_lambda) do
-				->(request) {request.headers["proxy-authorization"] == "supersecretpassword" }
+				->(request) {request.headers["proxy-authorization"] == "supersecretpassword"}
 			end
 			
 			with "request includes headers" do
-				let(:headers) { [["proxy-authorization", "supersecretpassword"]] }
+				let(:headers) {[["proxy-authorization", "supersecretpassword"]]}
 				
 				it "succeeds" do
 					endpoint = Async::HTTP::Endpoint.parse("https://www.google.com")

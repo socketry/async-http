@@ -1,3 +1,8 @@
+# frozen_string_literal: true
+
+# Released under the MIT License.
+# Copyright, 2025, by Samuel Williams.
+
 require_relative "../../../../../../async/http/protocol/http2/client"
 
 Traces::Provider(Async::HTTP::Protocol::HTTP2::Client) do

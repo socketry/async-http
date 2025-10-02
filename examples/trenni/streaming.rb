@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2019-2024, by Samuel Williams.
+# Copyright, 2019-2025, by Samuel Williams.
 
 require "trenni/template"
 
@@ -26,11 +26,11 @@ template = Trenni::Template.new(buffer)
 
 Async do
 	body = Async::HTTP::Body::Writable.new
-
+	
 	generator = Async do
 		template.to_string({count: 100, drink: "coffee"}, body)
 	end
-
+	
 	while chunk = body.read
 		$stdout.write chunk
 	end

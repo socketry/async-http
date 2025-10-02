@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2020-2024, by Samuel Williams.
+# Copyright, 2020-2025, by Samuel Williams.
 
 require "csv"
 require "json"
@@ -22,17 +22,17 @@ end
 def fetch_github_license(homepage_uri)
 	%r{github.com/(?<owner>.+?)/(?<repo>.+)} =~ homepage_uri
 	return nil unless repo
-
+	
 	url = URI.parse("https://api.github.com/repos/#{owner}/#{repo}/license")
 	request = Net::HTTP::Get.new(url)
-
+	
 	request["user-agent"] = "fetch-github-licenses"
 	request["authorization"] = Protocol::HTTP::Header::Authorization.basic(@user, @token)
-
+	
 	response = Net::HTTP.start(url.hostname) do |http|
 		http.request(request)
 	end
-
+	
 	case response
 	when Net::HTTPOK
 		JSON.parse(response.body).dig("license", "spdx_id")
@@ -46,7 +46,7 @@ end
 def fetch_rubygem_license(name, version)
 	url = URI.parse("https://rubygems.org/api/v2/rubygems/#{name}/versions/#{version}.json")
 	response = Net::HTTP.get_response(url)
-
+	
 	case response
 	when Net::HTTPOK
 		body = JSON.parse(response.body)
@@ -68,8 +68,8 @@ threads = ARGF.map do |line|
 	if line == "GEM\n" .. line.chomp.empty?
 		/\A\s{4}(?<name>[a-z].+?) \((?<version>.+)\)\n\z/ =~ line
 		
-		Thread.new { fetch_rubygem_license(name, version) } if name
+		Thread.new {fetch_rubygem_license(name, version)} if name
 	end
 end.compact
 
-puts CSV.generate { |csv| threads.each { csv << _1.value } }
+puts CSV.generate {|csv| threads.each {csv << _1.value}}

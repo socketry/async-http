@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
 	spec.version = Async::HTTP::VERSION
 	
 	spec.summary = "A HTTP client and server library."
-	spec.authors = ["Samuel Williams", "Brian Morearty", "Bruno Sutic", "Janko Marohnić", "Thomas Morgan", "Adam Daniels", "Igor Sidorov", "Anton Zhuravsky", "Cyril Roelandt", "Denis Talakevich", "Hal Brodigan", "Ian Ker-Seymer", "Jean Boussier", "Josh Huber", "Marco Concetto Rudilosso", "Olle Jonsson", "Orgad Shaneh", "Sam Shadwell", "Stefan Wrobel", "Tim Meusel", "Trevor Turk", "Viacheslav Koval", "dependabot[bot]"]
+	spec.authors = ["Samuel Williams", "Brian Morearty", "Bruno Sutic", "Janko Marohnić", "Thomas Morgan", "Adam Daniels", "Igor Sidorov", "William T. Nelson", "Anton Zhuravsky", "Cyril Roelandt", "Denis Talakevich", "Hal Brodigan", "Ian Ker-Seymer", "Jean Boussier", "Josh Huber", "Marco Concetto Rudilosso", "Olle Jonsson", "Orgad Shaneh", "Sam Shadwell", "Stefan Wrobel", "Tim Meusel", "Trevor Turk", "Viacheslav Koval", "Yuuji Yaginuma", "dependabot[bot]"]
 	spec.license = "MIT"
 	
 	spec.cert_chain  = ["release.cert"]

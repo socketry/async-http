@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2018-2024, by Samuel Williams.
+# Copyright, 2018-2025, by Samuel Williams.
 
 require "async/http/server"
 require "async/http/client"
@@ -27,7 +27,7 @@ describe Async::HTTP::Server do
 				context.key = key
 			end
 		end
-
+		
 		let(:client_context) do
 			OpenSSL::SSL::SSLContext.new.tap do |context|
 				context.cert_store = certificate_store
@@ -48,7 +48,7 @@ describe Async::HTTP::Server do
 		
 		it "client can get a resource via https" do
 			response = client.get("/")
-				
+			
 			expect(response).to be(:success?)
 			expect(response.read).to be == "Hello World!"
 		end

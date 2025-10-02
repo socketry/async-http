@@ -6,6 +6,7 @@
 # Copyright, 2024, by Thomas Morgan.
 # Copyright, 2024, by Igor Sidorov.
 # Copyright, 2024, by Hal Brodigan.
+# Copyright, 2025, by William T. Nelson.
 
 require "io/endpoint"
 require "io/endpoint/host_endpoint"

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2023-2024, by Samuel Williams.
+# Copyright, 2023-2025, by Samuel Williams.
 
 require "benchmark/ips"
 
@@ -40,9 +40,9 @@ NORMALIZED_HEADERS = NormalizedHeaders.new(FIELDS)
 HEADERS = Headers.new(FIELDS)
 
 Benchmark.ips do |x|
-	x.report("NormalizedHeaders[Content-Type]") { NORMALIZED_HEADERS["Content-Type"] }
-	x.report("NormalizedHeaders[content-type]") { NORMALIZED_HEADERS["content-type"] }
-	x.report("Headers") { HEADERS["content-type"] }
+	x.report("NormalizedHeaders[Content-Type]") {NORMALIZED_HEADERS["Content-Type"]}
+	x.report("NormalizedHeaders[content-type]") {NORMALIZED_HEADERS["content-type"]}
+	x.report("Headers") {HEADERS["content-type"]}
 	
 	x.compare!
 end

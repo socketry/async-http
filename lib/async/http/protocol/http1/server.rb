@@ -151,8 +151,6 @@ module Async
 									# Do not remove this line or you will unleash the gods of concurrency hell.
 									task.yield
 								end
-							rescue => error
-								raise
 							ensure
 								body&.close(error)
 							end

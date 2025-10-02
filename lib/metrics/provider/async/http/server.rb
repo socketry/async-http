@@ -10,7 +10,7 @@ Metrics::Provider(Async::HTTP::Server) do
 	ASYNC_HTTP_SERVER_REQUEST_INITIATED = Metrics.metric("async.http.server.request.initiated", :counter, description: "The number of HTTP server requests initiated.")
 	ASYNC_HTTP_SERVER_REQUEST_FINISHED = Metrics.metric("async.http.server.request.finished", :counter, description: "The number of HTTP server requests finished.")
 	ASYNC_HTTP_SERVER_REQUEST_QUEUE_TIME = Metrics.metric("async.http.server.request.queue_time", :histogram, description: "The time spent waiting in queue before processing (in seconds), based on the x-request-start header.")
-
+	
 	def call(request)
 		ASYNC_HTTP_SERVER_REQUEST_INITIATED.emit(1, tags: ["method:#{request.method}"])
 		

@@ -10,6 +10,30 @@
 require "async/http/protocol/http11"
 require "async/http/a_protocol"
 
+# Custom error class to track in tests
+class BodyWriteError < StandardError; end
+
+# A custom body class that raises during enumeration.
+class ErrorProneBody < ::Protocol::HTTP::Body::Readable
+	def initialize(...)
+		super(...)
+		
+		@error = nil
+	end
+	
+	attr :error
+	
+	def close(error = nil)
+		@error = error
+		super()
+	end
+	
+	def each
+		super
+		raise BodyWriteError, "error during write"
+	end
+end
+
 describe Async::HTTP::Protocol::HTTP11 do
 	it_behaves_like Async::HTTP::AProtocol
 	
@@ -38,7 +62,29 @@ describe Async::HTTP::Protocol::HTTP11 do
 	
 	with "server" do
 		include Sus::Fixtures::Async::HTTP::ServerContext
+		
 		let(:protocol) {subject}
+		
+		with "error during body write" do
+			let(:body) {ErrorProneBody.new}
+			
+			let(:app) do
+				Protocol::HTTP::Middleware.for do |request|
+					# Return a response with a body that will raise during enumeration:
+					Protocol::HTTP::Response[200, {}, body]
+				end
+			end
+			
+			it "handles error in ensure block without NameError" do
+				response = client.get("/")
+				
+				expect do
+					response.read
+				end.to raise_exception(EOFError)
+				
+				expect(body.error).to be_a(BodyWriteError)
+			end
+		end
 		
 		with "bad requests" do
 			def around

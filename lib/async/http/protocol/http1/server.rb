@@ -151,6 +151,9 @@ module Async
 									# Do not remove this line or you will unleash the gods of concurrency hell.
 									task.yield
 								end
+							rescue => error
+								# We store error (as a local variable) for later use in the ensure block.
+								raise
 							ensure
 								body&.close(error)
 							end

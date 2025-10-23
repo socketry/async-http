@@ -32,5 +32,6 @@ Gem::Specification.new do |spec|
 	spec.add_dependency "protocol-http", "~> 0.49"
 	spec.add_dependency "protocol-http1", "~> 0.30"
 	spec.add_dependency "protocol-http2", "~> 0.22"
+	spec.add_dependency "protocol-url", "~> 0.2"
 	spec.add_dependency "traces", "~> 0.10"
 end

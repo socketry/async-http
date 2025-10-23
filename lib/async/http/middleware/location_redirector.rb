@@ -3,10 +3,9 @@
 # Released under the MIT License.
 # Copyright, 2024, by Samuel Williams.
 
-require_relative "../reference"
-
 require "protocol/http/middleware"
 require "protocol/http/body/rewindable"
+require "protocol/url/reference"
 
 module Async
 	module HTTP
@@ -71,7 +70,7 @@ module Async
 					end
 					
 					# Update the path of the request:
-					request.path = Reference[request.path] + location
+					request.path = ::Protocol::URL::Reference[request.path] + location
 					
 					# Follow the redirect:
 					return true

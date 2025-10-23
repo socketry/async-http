@@ -34,6 +34,9 @@ Layout/BeginEndAlignment:
   Enabled: true
   EnforcedStyleAlignWith: start_of_line
 
+Layout/RescueEnsureAlignment:
+  Enabled: true
+
 Layout/ElseAlignment:
   Enabled: true
 
@@ -42,8 +45,12 @@ Layout/DefEndAlignment:
 
 Layout/CaseIndentation:
   Enabled: true
+  EnforcedStyle: end
 
 Layout/CommentIndentation:
+  Enabled: true
+
+Layout/FirstHashElementIndentation:
   Enabled: true
 
 Layout/EmptyLinesAroundClassBody:

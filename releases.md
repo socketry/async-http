@@ -1,5 +1,9 @@
 # Releases
 
+## Unreleased
+
+  - **Breaking**: Remove `Async::HTTP::Reference`. Use `Protocol::URL::Reference` directly instead.
+
 ## v0.91.0
 
   - Move all default trace providers into `traces/provider/async/http`.

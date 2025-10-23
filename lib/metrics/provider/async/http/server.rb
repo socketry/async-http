@@ -9,7 +9,7 @@ require "metrics/provider"
 Metrics::Provider(Async::HTTP::Server) do
 	ASYNC_HTTP_SERVER_REQUEST_INITIATED = Metrics.metric("async.http.server.request.initiated", :counter, description: "The number of HTTP server requests initiated.")
 	ASYNC_HTTP_SERVER_REQUEST_FINISHED = Metrics.metric("async.http.server.request.finished", :counter, description: "The number of HTTP server requests finished.")
-
+	
 	def call(request)
 		ASYNC_HTTP_SERVER_REQUEST_INITIATED.emit(1, tags: ["method:#{request.method}"])
 		

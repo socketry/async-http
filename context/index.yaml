@@ -1,0 +1,15 @@
+# Automatically generated context index for Utopia::Project guides.
+# Do not edit then files in this directory directly, instead edit the guides and then run `bake utopia:project:agent:context:update`.
+---
+description: A HTTP client and server library.
+metadata:
+  documentation_uri: https://socketry.github.io/async-http/
+  source_code_uri: https://github.com/socketry/async-http.git
+files:
+- path: getting-started.md
+  title: Getting Started
+  description: This guide explains how to get started with `Async::HTTP`.
+- path: testing.md
+  title: Testing
+  description: This guide explains how to use `Async::HTTP` clients and servers in
+    your tests.

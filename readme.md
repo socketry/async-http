@@ -16,6 +16,10 @@ Please see the [project documentation](https://socketry.github.io/async-http/) f
 
 Please see the [project releases](https://socketry.github.io/async-http/releases/index) for all releases.
 
+### v0.92.0
+
+  - **Breaking**: Remove `Async::HTTP::Reference`. Use `Protocol::URL::Reference` directly instead.
+
 ### v0.91.0
 
   - Move all default trace providers into `traces/provider/async/http`.
@@ -52,12 +56,6 @@ Please see the [project releases](https://socketry.github.io/async-http/releases
 
   - Improved HTTP/1 connection handling.
   - The input stream is no longer closed when the output stream is closed.
-
-### v0.76.0
-
-  - `Async::HTTP::Body::Writable` is moved to `Protocol::HTTP::Body::Writable`.
-  - Remove `Async::HTTP::Body::Delayed` with no replacement.
-  - Remove `Async::HTTP::Body::Slowloris` with no replacement.
 
 ## See Also
 

@@ -1,6 +1,6 @@
 # Releases
 
-## Unreleased
+## v0.92.0
 
   - **Breaking**: Remove `Async::HTTP::Reference`. Use `Protocol::URL::Reference` directly instead.
 

@@ -2,5 +2,5 @@
 
 source "https://rubygems.org"
 
-gem "trenni"
+gem "xrb"
 gem "async-http"

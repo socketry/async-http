@@ -221,7 +221,7 @@ module Async
 						
 						headers = ::Protocol::HTTP::Headers::Merged.new(
 							pseudo_headers,
-							request.headers
+							request.headers.header
 						)
 						
 						if request.body.nil?

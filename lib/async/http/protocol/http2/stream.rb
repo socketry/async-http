@@ -36,7 +36,7 @@ module Async
 					
 					attr :input
 					
-					def add_header(key, value)
+					def add_header(key, value, trailer: false)
 						if key == CONNECTION
 							raise ::Protocol::HTTP2::HeaderError, "Connection header is not allowed!"
 						elsif key.start_with? ":"
@@ -44,13 +44,13 @@ module Async
 						elsif key =~ /[A-Z]/
 							raise ::Protocol::HTTP2::HeaderError, "Invalid upper-case characters in header #{key}!"
 						else
-							@headers.add(key, value)
+							@headers.add(key, value, trailer: trailer)
 						end
 					end
 					
 					def receive_trailing_headers(headers, end_stream)
 						headers.each do |key, value|
-							add_header(key, value)
+							add_header(key, value, trailer: true)
 						end
 					end
 					

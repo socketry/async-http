@@ -123,7 +123,10 @@ module Async
 							protocol_headers << [CONTENT_LENGTH, length]
 						end
 						
-						headers = ::Protocol::HTTP::Headers::Merged.new(protocol_headers, response.headers)
+						headers = ::Protocol::HTTP::Headers::Merged.new(
+							protocol_headers,
+							response.headers.header
+						)
 						
 						if body = response.body and !self.head?
 							# This function informs the headers object that any subsequent headers are going to be trailer. Therefore, it must be called *before* sending the headers, to avoid any race conditions.

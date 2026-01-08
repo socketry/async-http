@@ -82,12 +82,13 @@ module Async
 								# If a response was generated, send it:
 								if response
 									trailer = response.headers.trailer!
+									headers = response.headers.header
 									
 									# Some operations in this method are long running, that is, it's expected that `body.call(stream)` could literally run indefinitely. In order to facilitate garbage collection, we want to nullify as many local variables before calling the streaming body. This ensures that the garbage collection can clean up as much state as possible during the long running operation, so we don't retain objects that are no longer needed.
 									
 									if body and protocol = response.protocol
 										# We force a 101 response if the protocol is upgraded - HTTP/2 CONNECT will return 200 for success, but this won't be understood by HTTP/1 clients:
-										write_response(@version, 101, response.headers)
+										write_response(@version, 101, headers)
 										
 										# At this point, the request body is hijacked, so we don't want to call #finish below.
 										request = nil
@@ -100,7 +101,7 @@ module Async
 										end
 									elsif response.status == 101
 										# This code path is to support legacy behavior where the response status is set to 101, but the protocol is not upgraded. This may not be a valid use case, but it is supported for compatibility. We expect the response headers to contain the `upgrade` header.
-										write_response(@version, response.status, response.headers)
+										write_response(@version, response.status, headers)
 										
 										# Same as above:
 										request = nil
@@ -112,7 +113,7 @@ module Async
 											write_tunnel_body(version, body)
 										end
 									else
-										write_response(@version, response.status, response.headers)
+										write_response(@version, response.status, headers)
 										
 										if request.connect? and response.success?
 											# Same as above:

@@ -32,6 +32,7 @@ module Async
 					def call(request, task: Task.current)
 						# Mark the start of the trailers:
 						trailer = request.headers.trailer!
+						headers = request.headers.header
 						
 						# We carefully interpret https://tools.ietf.org/html/rfc7230#section-6.3.1 to implement this correctly.
 						begin
@@ -44,7 +45,7 @@ module Async
 								authority = nil
 							end
 							
-							write_request(authority, request.method, target, @version, request.headers)
+							write_request(authority, request.method, target, @version, headers)
 						rescue
 							# If we fail to fully write the request and body, we can retry this request.
 							raise RequestFailed

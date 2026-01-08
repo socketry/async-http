@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2020-2025, by Samuel Williams.
+# Copyright, 2020-2026, by Samuel Williams.
 
 require "async"
 require "async/clock"
@@ -20,7 +20,7 @@ Async do
 	headers = {"user-agent" => "curl/7.69.1", "accept" => "*/*"}
 	
 	file = File.open("products.csv", "w")
-	Console.info(self) {"Saving download to #{Dir.pwd}"}
+	Console.info(self){"Saving download to #{Dir.pwd}"}
 	
 	begin
 		response = client.head(endpoint.path, headers)
@@ -39,7 +39,7 @@ Async do
 		response&.close
 	end
 	
-	Console.info(self) {"Content length: #{content_length/(1024**2)}MiB"}
+	Console.info(self){"Content length: #{content_length/(1024**2)}MiB"}
 	
 	parts = []
 	offset = 0
@@ -56,7 +56,7 @@ Async do
 		offset += chunk_size
 	end
 	
-	Console.info(self) {"Breaking download into #{parts.size} parts..."}
+	Console.info(self){"Breaking download into #{parts.size} parts..."}
 	
 	semaphore = Async::Semaphore.new(8)
 	barrier = Async::Barrier.new(parent: semaphore)
@@ -65,7 +65,7 @@ Async do
 		barrier.async do
 			part = parts.shift
 			
-			Console.info(self) {"Issuing range request range: bytes=#{part.min}-#{part.max}"}
+			Console.info(self){"Issuing range request range: bytes=#{part.min}-#{part.max}"}
 			
 			response = client.get(endpoint.path, [
 				["range", "bytes=#{part.min}-#{part.max-1}"],
@@ -73,13 +73,13 @@ Async do
 			])
 			
 			if response.success?
-				Console.info(self) {"Got response: #{response}... writing data for #{part}."}
+				Console.info(self){"Got response: #{response}... writing data for #{part}."}
 				written = file.pwrite(response.read, part.min)
 				
 				amount += written
 				
 				duration = Async::Clock.now - start_time
-				Console.info(self) {"Rate: #{((amount.to_f/(1024**2))/duration).round(2)}MiB/s"}
+				Console.info(self){"Rate: #{((amount.to_f/(1024**2))/duration).round(2)}MiB/s"}
 			end
 		end
 	end

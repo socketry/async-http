@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2019-2025, by Samuel Williams.
+# Copyright, 2019-2026, by Samuel Williams.
 
 require "async"
 require "async/clock"
@@ -14,7 +14,7 @@ ENDPOINT = Async::HTTP::Endpoint.parse(URL)
 
 class Google < Protocol::HTTP::Middleware
 	def search(term)
-		Console.info(self) {"Searching for #{term}..."}
+		Console.info(self){"Searching for #{term}..."}
 		
 		self.get("/search?q=#{term}", {"user-agent" => "Hi Google!"})
 	end
@@ -40,10 +40,10 @@ Async do |task|
 			end
 		end.map(&:wait).to_h
 		
-		Console.info(self, name: "counts") {counts}
+		Console.info(self, name: "counts"){counts}
 	end
 	
-	Console.info(self, name: "duration") {duration}
+	Console.info(self, name: "duration"){duration}
 ensure
 	google.close
 end

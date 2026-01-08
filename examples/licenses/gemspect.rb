@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2020-2025, by Samuel Williams.
+# Copyright, 2020-2026, by Samuel Williams.
 
 require "csv"
 require "json"
@@ -68,8 +68,8 @@ threads = ARGF.map do |line|
 	if line == "GEM\n" .. line.chomp.empty?
 		/\A\s{4}(?<name>[a-z].+?) \((?<version>.+)\)\n\z/ =~ line
 		
-		Thread.new {fetch_rubygem_license(name, version)} if name
+		Thread.new{fetch_rubygem_license(name, version)} if name
 	end
 end.compact
 
-puts CSV.generate {|csv| threads.each {csv << _1.value}}
+puts CSV.generate{|csv| threads.each {csv << _1.value}}

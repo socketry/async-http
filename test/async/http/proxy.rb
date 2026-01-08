@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2019-2025, by Samuel Williams.
+# Copyright, 2019-2026, by Samuel Williams.
 # Copyright, 2020, by Sam Shadwell.
 
 require "async"
@@ -128,11 +128,11 @@ AProxy = Sus::Shared("a proxy") do
 				host, port = request.authority.split(":", 2)
 				endpoint = IO::Endpoint.tcp(host, port)
 				
-				Console.debug(self) {"Making connection to #{endpoint}..."}
+				Console.debug(self){"Making connection to #{endpoint}..."}
 				
 				Async::HTTP::Body::Hijack.response(request, 200, {}) do |stream|
 					upstream = ::IO::Stream::Buffered.wrap(endpoint.connect)
-					Console.debug(self) {"Connected to #{upstream}..."}
+					Console.debug(self){"Connected to #{upstream}..."}
 					
 					reader = Async do |task|
 						task.annotate "Upstream reader."
@@ -142,7 +142,7 @@ AProxy = Sus::Shared("a proxy") do
 							stream.flush
 						end
 					ensure
-						Console.debug(self) {"Finished reading from upstream..."}
+						Console.debug(self){"Finished reading from upstream..."}
 						stream.close_write unless stream.closed?
 					end
 					
@@ -154,7 +154,7 @@ AProxy = Sus::Shared("a proxy") do
 							upstream.flush
 						end
 					ensure
-						Console.debug(self) {"Finished writing to upstream..."}
+						Console.debug(self){"Finished writing to upstream..."}
 						upstream.close_write unless upstream.closed?
 					end
 					
@@ -167,7 +167,7 @@ AProxy = Sus::Shared("a proxy") do
 			end
 		end
 		
-		let(:authorization_lambda) {->(request) {true}}
+		let(:authorization_lambda) {->(request){true}}
 		
 		it "can get insecure website" do
 			endpoint = Async::HTTP::Endpoint.parse("http://www.google.com")
@@ -200,7 +200,7 @@ AProxy = Sus::Shared("a proxy") do
 		
 		with "authorization header required" do
 			let(:authorization_lambda) do
-				->(request) {request.headers["proxy-authorization"] == "supersecretpassword"}
+				->(request){request.headers["proxy-authorization"] == "supersecretpassword"}
 			end
 			
 			with "request includes headers" do

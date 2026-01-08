@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2017-2025, by Samuel Williams.
+# Copyright, 2017-2026, by Samuel Williams.
 # Copyright, 2019, by Brian Morearty.
 
 require "async"
@@ -44,7 +44,7 @@ module Async
 			def accept(peer, address, task: Task.current)
 				connection = @protocol.server(peer)
 				
-				Console.debug(self) {"Incoming connnection from #{address.inspect} to #{@protocol}"}
+				Console.debug(self){"Incoming connnection from #{address.inspect} to #{@protocol}"}
 				
 				connection.each do |request|
 					# We set the default scheme unless it was otherwise specified.

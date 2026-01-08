@@ -1,6 +1,6 @@
 # MIT License
 
-Copyright, 2017-2025, by Samuel Williams.  
+Copyright, 2017-2026, by Samuel Williams.  
 Copyright, 2018, by Viacheslav Koval.  
 Copyright, 2018, by Janko Marohnić.  
 Copyright, 2019, by Denis Talakevich.  

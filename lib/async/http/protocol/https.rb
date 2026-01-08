@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2018-2025, by Samuel Williams.
+# Copyright, 2018-2026, by Samuel Williams.
 # Copyright, 2019, by Brian Morearty.
 
 require_relative "defaulton"
@@ -43,7 +43,7 @@ module Async
 					# alpn_protocol is only available if openssl v1.0.2+
 					name = peer.alpn_protocol
 					
-					Console.debug(self) {"Negotiating protocol #{name.inspect}..."}
+					Console.debug(self){"Negotiating protocol #{name.inspect}..."}
 					
 					if protocol = HANDLERS[name]
 						return protocol

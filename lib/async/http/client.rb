@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2017-2025, by Samuel Williams.
+# Copyright, 2017-2026, by Samuel Williams.
 # Copyright, 2022, by Ian Ker-Seymer.
 
 require "io/endpoint"
@@ -79,7 +79,7 @@ module Async
 			
 			def close
 				@pool.wait_until_free do
-					Console.warn(self) {"Waiting for #{@protocol} pool to drain: #{@pool}"}
+					Console.warn(self){"Waiting for #{@protocol} pool to drain: #{@pool}"}
 				end
 				
 				@pool.close
@@ -161,7 +161,7 @@ module Async
 				self.assign_default_tags(options[:tags] ||= {})
 				
 				Async::Pool::Controller.wrap(**options) do
-					Console.debug(self) {"Making connection to #{@endpoint.inspect}"}
+					Console.debug(self){"Making connection to #{@endpoint.inspect}"}
 					
 					@protocol.client(@endpoint.connect)
 				end

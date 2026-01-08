@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2020-2025, by Samuel Williams.
+# Copyright, 2020-2026, by Samuel Williams.
 
 require "csv"
 require "json"
@@ -63,7 +63,7 @@ def fetch_rubygem_license(name, version)
 rescue RateLimitingError
 	response.finish
 	
-	Console.warn(name) {"Rate limited..."}
+	Console.warn(name){"Rate limited..."}
 	Async::Task.current.sleep(1.0)
 	
 	retry

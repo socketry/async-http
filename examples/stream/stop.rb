@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2020-2025, by Samuel Williams.
+# Copyright, 2020-2026, by Samuel Williams.
 
 require "async"
 require "async/http/internet"
@@ -16,16 +16,16 @@ Async do |parent|
 		connection = response.connection
 		
 		response.each do |chunk|
-			Console.info(response) {chunk}
+			Console.info(response){chunk}
 		end
 	ensure
-		Console.info(response) {"Closing response..."}
+		Console.info(response){"Closing response..."}
 		response&.close
 	end
 	
 	parent.sleep(5)
 	
-	Console.info(parent) {"Killing #{child}..."}
+	Console.info(parent){"Killing #{child}..."}
 	child.stop
 ensure
 	internet&.close

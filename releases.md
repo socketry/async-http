@@ -1,6 +1,6 @@
 # Releases
 
-## Unreleased
+## v0.92.2
 
   - Better handling of trailers.
 

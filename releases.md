@@ -2,7 +2,7 @@
 
 ## v0.92.2
 
-  - Better handling of trailers.
+  - Better handling of trailers. If invalid trailers are received, the connection (HTTP/1) or stream (HTTP/2) is reset.
 
 ## v0.92.0
 

@@ -64,6 +64,10 @@ module Async
 						if @input and frame.end_stream?
 							@input.close_write
 						end
+					rescue ::Protocol::HTTP::InvalidTrailerError => error
+						Console.warn(self, error)
+						
+						send_reset_stream(::Protocol::HTTP2::Error::PROTOCOL_ERROR)
 					rescue ::Protocol::HTTP2::HeaderError => error
 						Console.debug(self, "Error while processing headers!", error)
 						

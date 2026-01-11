@@ -1,5 +1,9 @@
 # Releases
 
+## Unreleased
+
+  - Propagate all errors from background reader to active streams so that they are closed correctly (e.g. errors are not missed).
+
 ## v0.92.2
 
   - Better handling of trailers. If invalid trailers are received, the connection (HTTP/1) or stream (HTTP/2) is reset.

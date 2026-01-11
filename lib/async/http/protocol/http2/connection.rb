@@ -91,14 +91,8 @@ module Async
 									self.consume_window
 									self.read_frame
 								end
-							rescue Async::Stop, ::IO::TimeoutError, ::Protocol::HTTP2::GoawayError => error
-								# Error is raised if a response is actively reading from the
-								# connection. The connection is silently closed if GOAWAY is
-								# received outside the request/response cycle.
-							rescue SocketError, IOError, EOFError, Errno::ECONNRESET, Errno::EPIPE
-								# Ignore.
 							rescue => error
-								# Every other error.
+								# Close with error.
 							ensure
 								# Don't call #close twice.
 								if @reader

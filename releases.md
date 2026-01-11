@@ -1,6 +1,6 @@
 # Releases
 
-## Unreleased
+## v0.94.0
 
   - Propagate all errors from background reader to active streams so that they are closed correctly (e.g. errors are not missed).
 

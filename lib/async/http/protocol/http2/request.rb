@@ -24,6 +24,29 @@ module Async
 						
 						attr :request
 						
+						# Write a failure response with the given status code and error class name.
+						# @parameter status [Integer] The HTTP status code to send.
+						# @parameter error [Exception] The error which caused the request to fail.
+						def fail_request(status, error)
+							body = error.class.name
+							headers = [
+								[STATUS, status.to_s],
+								["content-type", "text/plain; charset=utf-8"],
+							]
+							
+							if @request.head?
+								send_headers(headers, ::Protocol::HTTP2::END_STREAM)
+							else
+								send_headers(headers)
+								send_data(body, ::Protocol::HTTP2::END_STREAM)
+							end
+							
+							# The peer may still be sending a request body. The response is complete, so release the stream without reporting a protocol error.
+							send_reset_stream(::Protocol::HTTP2::Error::NO_ERROR) unless closed?
+						rescue => error
+							Console.debug(self, "Failed to write failure response!", error)
+						end
+						
 						# Process the initial headers received from the client and construct the request.
 						# @parameter headers [Array] The list of header key-value pairs.
 						# @parameter end_stream [Boolean] Whether the stream is complete after these headers.
@@ -67,11 +90,13 @@ module Async
 								end
 							end
 							
-							@request.headers = @headers
-							
 							unless @request.valid?
 								raise ::Protocol::HTTP2::HeaderError, "Request is missing required headers!"
 							else
+								# Validate structured headers before exposing the request to the application:
+								@headers.to_h
+								@request.headers = @headers
+								
 								# We only construct the input/body if data is coming.
 								unless end_stream
 									@request.body = prepare_input(@length)
@@ -82,6 +107,8 @@ module Async
 							end
 							
 							return headers
+						rescue ::Protocol::HTTP::BadRequest => error
+							fail_request(400, error)
 						end
 						
 						# Called when the stream is closed.

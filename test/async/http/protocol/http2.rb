@@ -43,6 +43,75 @@ describe Async::HTTP::Protocol::HTTP2 do
 					client.post("/", [[":authority", "foo"]])
 				end.to raise_exception(Protocol::HTTP2::StreamError)
 			end
+			
+			with "a bad request header" do
+				let(:app) do
+					Protocol::HTTP::Middleware.for do
+						@app_called = true
+						Protocol::HTTP::Response[200]
+					end
+				end
+				
+				it "keeps the connection reusable" do
+					@app_called = false
+					response = client.get("/", [["range", "bytes=4-1"]])
+					
+					expect(response.status).to be == 400
+					expect(@app_called).to be == false
+					
+					response.finish
+					response = client.get("/")
+					
+					expect(response.status).to be == 200
+					expect(@app_called).to be == true
+				ensure
+					response&.close
+				end
+				
+				it "does not send response data for HEAD" do
+					response = client.head("/", [["range", "bytes=4-1"]])
+					
+					expect(response.status).to be == 400
+					expect(response.body.length).to be_nil
+					expect(response.read).to be_nil
+				ensure
+					response&.close
+				end
+				
+				it "terminates an unfinished request body" do
+					body = Async::HTTP::Body::Writable.new
+					response = client.post("/", [["range", "bytes=4-1"]], body)
+					connection = response.connection
+					
+					expect(response.status).to be == 400
+					expect(response.read).to be == "Protocol::HTTP::Header::Range::ParseError"
+					expect(response.stream).to be(:closed?)
+					expect(connection.streams).to be(:empty?)
+					expect(connection).to be(:reusable?)
+				ensure
+					body&.close
+					response&.close
+				end
+			end
+			
+			with "a malformed request" do
+				it "prioritizes protocol validation over bad request handling" do
+					client.pool.acquire do |connection|
+						response = connection.create_response
+						response.stream.send_headers([
+							[":method", "GET"],
+							[":path", "/"],
+							["range", "bytes=4-1"],
+						], ::Protocol::HTTP2::END_STREAM)
+						
+						expect do
+							connection.read_response(response)
+						end.to raise_exception(Protocol::HTTP2::StreamError).and(
+							have_attributes(code: be == Protocol::HTTP2::Error::STREAM_CLOSED)
+						)
+					end
+				end
+			end
 		end
 		
 		with "closed streams" do

@@ -44,6 +44,28 @@ module Async
 				end
 			end
 			
+			with "bad requests" do
+				let(:app) do
+					::Protocol::HTTP::Middleware.for do
+						@app_called = true
+						
+						::Protocol::HTTP::Response[200]
+					end
+				end
+				
+				it "responds consistently without invoking the application" do
+					@app_called = false
+					response = client.get("/", [["range", "bytes=4-1"]])
+					
+					expect(response.status).to be == 400
+					expect(response.headers["content-type"]).to be == "text/plain; charset=utf-8"
+					expect(response.read).to be == "Protocol::HTTP::Header::Range::ParseError"
+					expect(@app_called).to be == false
+				ensure
+					response&.close
+				end
+			end
+			
 			with "interim response" do
 				let(:app) do
 					::Protocol::HTTP::Middleware.for do |request|

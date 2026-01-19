@@ -12,6 +12,7 @@ require_relative "finishable"
 
 require "async/promise"
 require "console/event/failure"
+require "protocol/http/body/buffered"
 
 module Async
 	module HTTP
@@ -33,12 +34,15 @@ module Async
 						@ready.resolve(nil)
 					end
 					
-					# Write a failure response with the given status code.
+					# Write a failure response with the given status code and error class name.
 					# @parameter status [Integer] The HTTP status code to send.
-					def fail_request(status)
+					# @parameter error [Exception] The error which caused the request to fail.
+					def fail_request(status, error)
+						body = ::Protocol::HTTP::Body::Buffered.wrap(error.class.name)
+						
 						@persistent = false
-						write_response(@version, status, {})
-						write_body(@version, nil)
+						write_response(@version, status, {"content-type" => "text/plain; charset=utf-8"})
+						write_body(@version, body)
 					rescue => error
 						# At this point, there is very little we can do to recover:
 						Console.debug(self, "Failed to write failure response!", error)
@@ -61,8 +65,8 @@ module Async
 						end
 						
 						return request
-					rescue ::Protocol::HTTP1::BadRequest
-						fail_request(400)
+					rescue ::Protocol::HTTP::BadRequest => error
+						fail_request(400, error)
 						# Conceivably we could retry here, but we don't really know how bad the error is, so it's better to just fail:
 						raise
 					end

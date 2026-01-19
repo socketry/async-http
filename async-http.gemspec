@@ -30,7 +30,7 @@ Gem::Specification.new do |spec|
 	spec.add_dependency "io-stream", "~> 0.6"
 	spec.add_dependency "metrics", "~> 0.12"
 	spec.add_dependency "protocol-http", "~> 0.58"
-	spec.add_dependency "protocol-http1", "~> 0.36"
+	spec.add_dependency "protocol-http1", "~> 0.37"
 	spec.add_dependency "protocol-http2", "~> 0.22"
 	spec.add_dependency "protocol-url", "~> 0.2"
 	spec.add_dependency "traces", "~> 0.10"

@@ -53,7 +53,7 @@ module Async
 						end
 						
 						return request
-					rescue ::Protocol::HTTP1::BadRequest
+					rescue ::Protocol::HTTP::BadRequest
 						fail_request(400)
 						# Conceivably we could retry here, but we don't really know how bad the error is, so it's better to just fail:
 						raise

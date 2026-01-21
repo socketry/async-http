@@ -67,9 +67,6 @@ module Async
 					
 					# Wait for all children to finish:
 					task.children.each(&:wait)
-				ensure
-					# Stop all children (accept loops) on exit:
-					task.children.each(&:stop)
 				end
 			end
 		end

@@ -16,6 +16,10 @@ Please see the [project documentation](https://socketry.github.io/async-http/) f
 
 Please see the [project releases](https://socketry.github.io/async-http/releases/index) for all releases.
 
+### v0.94.1
+
+  - Fix `defer_stop` usage in `HTTP1::Server`, improving server graceful shutdown behavior.
+
 ### v0.94.0
 
   - Propagate all errors from background reader to active streams so that they are closed correctly (e.g. errors are not missed).
@@ -51,10 +55,6 @@ Please see the [project releases](https://socketry.github.io/async-http/releases
 ### v0.84.0
 
   - Minor consistency fixes to `Async::HTTP::Internet` singleton methods.
-
-### v0.82.0
-
-  - `protocol-http1` introduces a line length limit for request line, response line, header lines and chunk length lines.
 
 ## See Also
 

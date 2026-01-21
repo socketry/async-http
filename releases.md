@@ -1,6 +1,6 @@
 # Releases
 
-## Unreleased
+## v0.94.1
 
   - Fix `defer_stop` usage in `HTTP1::Server`, improving server graceful shutdown behavior.
 

@@ -2,7 +2,7 @@
 
 # Released under the MIT License.
 # Copyright, 2020, by Bruno Sutic.
-# Copyright, 2020-2025, by Samuel Williams.
+# Copyright, 2020-2026, by Samuel Williams.
 
 require "async"
 require "async/http/body/pipe"
@@ -57,12 +57,12 @@ describe Async::HTTP::Body::Pipe do
 	with "reactor going out of scope" do
 		it "finishes" do
 			# ensures pipe background tasks are transient
-			Async{pipe}
+			Async {pipe}
 		end
 		
 		with "closed pipe" do
 			it "finishes" do
-				Async{pipe.close}
+				Async {pipe.close}
 			end
 		end
 	end

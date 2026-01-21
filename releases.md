@@ -1,5 +1,9 @@
 # Releases
 
+## Unreleased
+
+  - Fix `defer_stop` usage in `HTTP1::Server`, improving server graceful shutdown behavior.
+
 ## v0.94.0
 
   - Propagate all errors from background reader to active streams so that they are closed correctly (e.g. errors are not missed).

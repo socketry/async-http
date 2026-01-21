@@ -64,21 +64,22 @@ module Async
 						task.annotate("Reading #{self.version} requests for #{self.class}.")
 						
 						while request = next_request
-							if body = request.body
-								finishable = Finishable.new(body)
-								request.body = finishable
-							end
-							
-							response = yield(request, self)
-							version = request.version
-							body = response&.body
-							
-							if hijacked?
-								body&.close
-								return
-							end
-							
+							# We have received complete request (line + headers), so defer stop until the response is generated.
 							task.defer_stop do
+								if body = request.body
+									finishable = Finishable.new(body)
+									request.body = finishable
+								end
+								
+								response = yield(request, self)
+								version = request.version
+								body = response&.body
+								
+								if hijacked?
+									body&.close
+									return
+								end
+								
 								# If a response was generated, send it:
 								if response
 									trailer = response.headers.trailer!

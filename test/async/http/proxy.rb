@@ -161,6 +161,12 @@ AProxy = Sus::Shared("a proxy") do
 					reader.wait
 					writer.wait
 				ensure
+					reader.stop
+					reader.wait rescue nil
+					
+					writer.stop
+					writer.wait rescue nil
+					
 					upstream.close
 					stream.close
 				end

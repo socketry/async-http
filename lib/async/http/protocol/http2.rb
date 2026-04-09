@@ -14,6 +14,7 @@ require "io/stream"
 module Async
 	module HTTP
 		module Protocol
+			# Provides an HTTP/2 client and server protocol implementation.
 			module HTTP2
 				extend Configurable
 				

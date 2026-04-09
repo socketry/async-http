@@ -10,6 +10,7 @@ require_relative "http1"
 module Async
 	module HTTP
 		module Protocol
+			# Provides an HTTP/1.1 client and server protocol implementation.
 			module HTTP11
 				extend Configurable
 				

@@ -13,7 +13,10 @@ require "protocol/http/accept_encoding"
 
 module Async
 	module HTTP
+		# A high-level HTTP client for making requests to any URL, managing a pool of persistent connections keyed by host.
 		class Internet
+			# Initialize the internet client.
+			# @parameter options [Hash] Options to pass to the underlying {Client} instances.
 			def initialize(**options)
 				@clients = Hash.new
 				@options = options
@@ -23,6 +26,9 @@ module Async
 			# @attribute [Hash(URI, Client)]
 			attr :clients
 			
+			# Get or create a client for the given endpoint.
+			# @parameter endpoint [Endpoint] The endpoint to connect to.
+			# @returns [Client] A client suitable for making requests to the endpoint.
 			def client_for(endpoint)
 				key = host_key(endpoint)
 				
@@ -59,6 +65,7 @@ module Async
 				end
 			end
 			
+			# Close all cached clients and release their resources.
 			def close
 				# The order of operations here is to avoid a race condition between iterating over clients (#close may yield) and creating new clients.
 				clients = @clients.values

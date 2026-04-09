@@ -9,7 +9,9 @@ module Async
 	module HTTP
 		module Protocol
 			module HTTP1
+				# An HTTP/1 client connection that sends requests and reads responses.
 				class Client < Connection
+					# Initialize the HTTP/1 client connection.
 					def initialize(...)
 						super
 						
@@ -18,6 +20,7 @@ module Async
 					
 					attr_accessor :pool
 					
+					# Called when the connection is closed, releasing it back to the pool.
 					def closed(error = nil)
 						super
 						

@@ -12,11 +12,20 @@ require_relative "protocol"
 
 module Async
 	module HTTP
+		# An HTTP server that accepts connections on a specific endpoint and dispatches requests to an application handler.
 		class Server < ::Protocol::HTTP::Middleware
+			# Create a server using a block as the application handler.
+			# @parameter arguments [Array] Arguments to pass to {initialize}.
+			# @parameter options [Hash] Options to pass to {initialize}.
 			def self.for(*arguments, **options, &block)
 				self.new(block, *arguments, **options)
 			end
 			
+			# Initialize the server with an application handler and endpoint.
+			# @parameter app [Protocol::HTTP::Middleware] The Rack-compatible application to serve.
+			# @parameter endpoint [Endpoint] The endpoint to bind to.
+			# @parameter protocol [Protocol] The protocol to use for incoming connections.
+			# @parameter scheme [String] The default scheme to set on requests.
 			def initialize(app, endpoint, protocol: endpoint.protocol, scheme: endpoint.scheme)
 				super(app)
 				
@@ -25,6 +34,7 @@ module Async
 				@scheme = scheme
 			end
 			
+			# @returns [Hash] A JSON-compatible representation of this server.
 			def as_json(...)
 				{
 					endpoint: @endpoint.to_s,
@@ -33,6 +43,7 @@ module Async
 				}
 			end
 			
+			# @returns [String] A JSON string representation of this server.
 			def to_json(...)
 				as_json.to_json(...)
 			end
@@ -41,6 +52,9 @@ module Async
 			attr :protocol
 			attr :scheme
 			
+			# Accept an incoming connection and process requests.
+			# @parameter peer [IO] The connected peer.
+			# @parameter address [Addrinfo] The remote address of the peer.
 			def accept(peer, address, task: Task.current)
 				connection = @protocol.server(peer)
 				

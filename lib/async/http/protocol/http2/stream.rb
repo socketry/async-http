@@ -14,7 +14,9 @@ module Async
 	module HTTP
 		module Protocol
 			module HTTP2
+				# An HTTP/2 stream that manages headers, input data, and output data for a single request/response exchange.
 				class Stream < ::Protocol::HTTP2::Stream
+					# Initialize the stream state.
 					def initialize(*)
 						super
 						
@@ -36,6 +38,9 @@ module Async
 					
 					attr :input
 					
+					# Add a header to the stream, validating against HTTP/2 constraints.
+					# @parameter key [String] The header name.
+					# @parameter value [String] The header value.
 					def add_header(key, value, trailer: false)
 						if key == CONNECTION
 							raise ::Protocol::HTTP2::HeaderError, "Connection header is not allowed!"
@@ -48,12 +53,17 @@ module Async
 						end
 					end
 					
+					# Process trailing headers received after the body.
+					# @parameter headers [Array] The trailing header key-value pairs.
+					# @parameter end_stream [Boolean] Whether the stream ends after these headers.
 					def receive_trailing_headers(headers, end_stream)
 						headers.each do |key, value|
 							add_header(key, value, trailer: true)
 						end
 					end
 					
+					# Process an incoming HEADERS frame, dispatching to initial or trailing header handling.
+					# @parameter frame [Protocol::HTTP2::HeadersFrame] The headers frame to process.
 					def process_headers(frame)
 						if @headers and frame.end_stream?
 							self.receive_trailing_headers(super, frame.end_stream?)
@@ -74,6 +84,7 @@ module Async
 						send_reset_stream(error.code)
 					end
 					
+					# @returns [Input | Nil] The input body for this stream, if available.
 					def wait_for_input
 						return @input
 					end
@@ -88,6 +99,8 @@ module Async
 						end
 					end
 					
+					# Update the local flow control window after receiving data.
+					# @parameter frame [Protocol::HTTP2::DataFrame] The received data frame.
 					def update_local_window(frame)
 						consume_local_window(frame)
 						
@@ -95,6 +108,9 @@ module Async
 						# request_window_update
 					end
 					
+					# Process an incoming DATA frame and write it to the input body.
+					# @parameter frame [Protocol::HTTP2::DataFrame] The data frame to process.
+					# @returns [String] The unpacked data.
 					def process_data(frame)
 						data = frame.unpack
 						
@@ -142,6 +158,9 @@ module Async
 						end
 					end
 					
+					# Called when the flow control window is updated.
+					# @parameter size [Integer] The new window size.
+					# @returns [Boolean] Always returns `true`.
 					def window_updated(size)
 						super
 						

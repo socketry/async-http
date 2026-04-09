@@ -9,7 +9,12 @@ module Async
 	module HTTP
 		module Protocol
 			module HTTP2
+				# Writes body data to an HTTP/2 stream, respecting flow control windows.
 				class Output
+					# Initialize the output handler.
+					# @parameter stream [Stream] The HTTP/2 stream to write to.
+					# @parameter body [Protocol::HTTP::Body::Readable] The body to read from.
+					# @parameter trailer [Protocol::HTTP::Headers | Nil] Optional trailing headers.
 					def initialize(stream, body, trailer = nil)
 						@stream = stream
 						@body = body
@@ -23,6 +28,7 @@ module Async
 					
 					attr :trailer
 					
+					# Start an asynchronous task to write the body to the stream.
 					def start(parent: Task.current)
 						raise "Task already started!" if @task
 						
@@ -33,6 +39,9 @@ module Async
 						end
 					end
 					
+					# Signal that the flow control window has been updated.
+					# @parameter size [Integer] The new window size.
+					# @returns [Boolean] Always returns `true`.
 					def window_updated(size)
 						@guard.synchronize do
 							@window_updated.signal
@@ -41,6 +50,8 @@ module Async
 						return true
 					end
 					
+					# Write a chunk of data to the HTTP/2 stream, respecting flow control.
+					# @parameter chunk [String] The data to write.
 					def write(chunk)
 						until chunk.empty?
 							maximum_size = @stream.available_frame_size
@@ -62,6 +73,8 @@ module Async
 						end
 					end
 					
+					# Finish writing to the stream.
+					# @parameter error [Exception | Nil] An optional error that caused the close.
 					def close_write(error = nil)
 						if stream = @stream
 							@stream = nil

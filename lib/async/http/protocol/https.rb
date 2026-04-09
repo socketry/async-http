@@ -23,11 +23,18 @@ module Async
 					nil => HTTP11,
 				}
 				
+				# Initialize the HTTPS protocol negotiator.
+				# @parameter handlers [Hash] A mapping of ALPN protocol names to protocol classes.
+				# @parameter options [Hash] Per-protocol options keyed by protocol class.
 				def initialize(handlers = HANDLERS, **options)
 					@handlers = handlers
 					@options = options
 				end
 				
+				# Register a protocol handler for a given ALPN protocol name.
+				# @parameter name [String] The ALPN protocol name.
+				# @parameter protocol [Class] The protocol class to handle connections.
+				# @parameter options [Hash] Options to pass when creating client or server instances.
 				def add(name, protocol, **options)
 					@handlers[name] = protocol
 					@options[protocol] = options

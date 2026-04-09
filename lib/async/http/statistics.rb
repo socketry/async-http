@@ -9,15 +9,23 @@ require "async/clock"
 
 module Async
 	module HTTP
+		# Tracks response timing statistics including time to first byte and total duration.
 		class Statistics
+			# Start tracking statistics from the current time.
+			# @returns [Statistics] A new statistics instance.
 			def self.start
 				self.new(Clock.now)
 			end
 			
+			# Initialize the statistics tracker.
+			# @parameter start_time [Float] The start time for measuring durations.
 			def initialize(start_time)
 				@start_time = start_time
 			end
 			
+			# Wrap a response body with a statistics-collecting wrapper.
+			# @parameter response [Protocol::HTTP::Response] The response to wrap.
+			# @returns [Protocol::HTTP::Response] The wrapped response.
 			def wrap(response, &block)
 				if response and response.body
 					response.body = Body::Statistics.new(@start_time, response.body, block)
@@ -30,6 +38,10 @@ module Async
 		module Body
 			# Invokes a callback once the body has finished reading.
 			class Statistics < ::Protocol::HTTP::Body::Wrapper
+				# Initialize the statistics body wrapper.
+				# @parameter start_time [Float] The start time for measuring durations.
+				# @parameter body [Protocol::HTTP::Body::Readable] The body to wrap.
+				# @parameter callback [Proc] A callback to invoke when the body is closed.
 				def initialize(start_time, body, callback)
 					super(body)
 					
@@ -48,24 +60,29 @@ module Async
 				
 				attr :sent
 				
+				# @returns [Float | Nil] The total duration from start to close, in seconds.
 				def total_duration
 					if @end_time
 						@end_time - @start_time
 					end
 				end
 				
+				# @returns [Float | Nil] The duration from start until the first chunk was read, in seconds.
 				def first_chunk_duration
 					if @first_chunk_time
 						@first_chunk_time - @start_time
 					end
 				end
 				
+				# Close the body and record the end time.
 				def close(error = nil)
 					complete_statistics(error)
 					
 					super
 				end
 				
+				# Read the next chunk from the body, tracking timing and bytes sent.
+				# @returns [String | Nil] The next chunk of data.
 				def read
 					chunk = super
 					
@@ -78,6 +95,7 @@ module Async
 					return chunk
 				end
 				
+				# @returns [String] A human-readable summary of the statistics.
 				def to_s
 					parts = ["sent #{@sent} bytes"]
 					
@@ -92,6 +110,7 @@ module Async
 					return parts.join("; ")
 				end
 				
+				# @returns [String] A detailed representation including the wrapped body.
 				def inspect
 					"#{super} | \#<#{self.class} #{self.to_s}>"
 				end

@@ -13,7 +13,12 @@ module Async
 	module HTTP
 		module Protocol
 			module HTTP1
+				# An HTTP/1 connection that wraps an IO stream with version and state tracking.
 				class Connection < ::Protocol::HTTP1::Connection
+					# Initialize the connection with an IO stream and HTTP version.
+					# @parameter stream [IO::Stream] The underlying stream.
+					# @parameter version [String] The negotiated HTTP version string.
+					# @parameter options [Hash] Additional options for the connection.
 					def initialize(stream, version, **options)
 						super(stream, **options)
 						
@@ -21,34 +26,41 @@ module Async
 						@version = version
 					end
 					
+					# @returns [String] A string representation of this connection.
 					def to_s
 						"\#<#{self.class} negotiated #{@version}, #{@state}>"
 					end
 					
+					# @returns [String] A JSON-compatible representation.
 					def as_json(...)
 						to_s
 					end
 					
+					# @returns [String] A JSON string representation.
 					def to_json(...)
 						as_json.to_json(...)
 					end
 					
 					attr :version
 					
+					# @returns [Boolean] Whether this is an HTTP/1 connection.
 					def http1?
 						true
 					end
 					
+					# @returns [Boolean] Whether this is an HTTP/2 connection.
 					def http2?
 						false
 					end
 					
+					# @returns [Protocol::HTTP::Peer] The peer information for this connection.
 					def peer
 						@peer ||= ::Protocol::HTTP::Peer.for(@stream.io)
 					end
 					
 					attr :count
 					
+					# @returns [Integer] The maximum number of concurrent requests (always 1 for HTTP/1).
 					def concurrency
 						1
 					end
@@ -58,6 +70,7 @@ module Async
 						self.idle? && @stream&.readable?
 					end
 					
+					# @returns [Boolean] Whether the connection can be reused for another request.
 					def reusable?
 						@persistent && @stream && !@stream.closed?
 					end

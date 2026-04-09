@@ -28,6 +28,11 @@ module Async
 				"wss" => URI::WSS,
 			}
 			
+			# Parse a URL string into an endpoint.
+			# @parameter string [String] The URL to parse.
+			# @parameter endpoint [IO::Endpoint::Generic | Nil] An optional underlying endpoint to use.
+			# @parameter options [Hash] Additional options to pass to {initialize}.
+			# @returns [Endpoint] The parsed endpoint.
 			def self.parse(string, endpoint = nil, **options)
 				url = URI.parse(string).normalize
 				
@@ -80,6 +85,7 @@ module Async
 				end
 			end
 			
+			# @returns [URI] The URL representation of this endpoint, including port if non-default.
 			def to_url
 				url = @url.dup
 				
@@ -90,24 +96,29 @@ module Async
 				return url
 			end
 			
+			# @returns [String] A short string representation of this endpoint.
 			def to_s
 				"\#<#{self.class} #{self.to_url} #{@options}>"
 			end
 			
+			# @returns [String] A detailed string representation of this endpoint.
 			def inspect
 				"\#<#{self.class} #{self.to_url} #{@options.inspect}>"
 			end
 			
 			attr :url
 			
+			# @returns [Addrinfo] The address of the underlying endpoint.
 			def address
 				endpoint.address
 			end
 			
+			# @returns [Boolean] Whether this endpoint uses a secure protocol (HTTPS or WSS).
 			def secure?
 				["https", "wss"].include?(self.scheme)
 			end
 			
+			# @returns [Protocol] The protocol to use for this endpoint.
 			def protocol
 				@options.fetch(:protocol) do
 					if secure?
@@ -118,14 +129,17 @@ module Async
 				end
 			end
 			
+			# @returns [Integer] The default port for this endpoint's scheme.
 			def default_port
 				secure? ? 443 : 80
 			end
 			
+			# @returns [Boolean] Whether the endpoint's port is the default for its scheme.
 			def default_port?
 				port == default_port
 			end
 			
+			# @returns [Integer] The port number for this endpoint.
 			def port
 				@options[:port] || @url.port || default_port
 			end
@@ -135,10 +149,12 @@ module Async
 				@options[:hostname] || @url.hostname
 			end
 			
+			# @returns [String] The URL scheme, e.g. `"http"` or `"https"`.
 			def scheme
 				@options[:scheme] || @url.scheme
 			end
 			
+			# @returns [String] The authority component (hostname and optional port).
 			def authority(ignore_default_port = true)
 				if ignore_default_port and default_port?
 					@url.hostname
@@ -158,10 +174,12 @@ module Async
 				return buffer
 			end
 			
+			# @returns [Array(String)] The ALPN protocol names for TLS negotiation.
 			def alpn_protocols
 				@options.fetch(:alpn_protocols){self.protocol.names}
 			end
 			
+			# @returns [Boolean] Whether the endpoint refers to a localhost address.
 			def localhost?
 				@url.hostname =~ /^(.*?\.)?localhost\.?$/
 			end
@@ -175,6 +193,7 @@ module Async
 				end
 			end
 			
+			# @returns [OpenSSL::SSL::SSLContext] The SSL context for TLS connections.
 			def ssl_context
 				@options[:ssl_context] || OpenSSL::SSL::SSLContext.new.tap do |context|
 					if alpn_protocols = self.alpn_protocols
@@ -187,6 +206,9 @@ module Async
 				end
 			end
 			
+			# Build a suitable endpoint, optionally wrapping in TLS for secure connections.
+			# @parameter endpoint [IO::Endpoint::Generic | Nil] An optional underlying endpoint to wrap.
+			# @returns [IO::Endpoint::Generic] The constructed endpoint.
 			def build_endpoint(endpoint = nil)
 				endpoint ||= tcp_endpoint
 				
@@ -202,22 +224,30 @@ module Async
 				return endpoint
 			end
 			
+			# @returns [IO::Endpoint::Generic] The resolved endpoint, built on demand.
 			def endpoint
 				@endpoint ||= build_endpoint
 			end
 			
+			# Set the underlying endpoint, wrapping it as needed.
+			# @parameter endpoint [IO::Endpoint::Generic] The endpoint to assign.
 			def endpoint=(endpoint)
 				@endpoint = build_endpoint(endpoint)
 			end
 			
+			# Bind to the endpoint.
 			def bind(*arguments, &block)
 				endpoint.bind(*arguments, &block)
 			end
 			
+			# Connect to the endpoint.
 			def connect(&block)
 				endpoint.connect(&block)
 			end
 			
+			# Enumerate all resolved endpoints.
+			# @yields {|endpoint| ...} Each resolved endpoint.
+			# 	@parameter endpoint [Endpoint] The resolved endpoint.
 			def each
 				return to_enum unless block_given?
 				
@@ -226,14 +256,17 @@ module Async
 				end
 			end
 			
+			# @returns [Array] A key suitable for identifying this endpoint in a hash.
 			def key
 				[@url, @options]
 			end
 			
+			# @returns [Boolean] Whether two endpoints are equal.
 			def eql? other
 				self.key.eql? other.key
 			end
 			
+			# @returns [Integer] The hash code for this endpoint.
 			def hash
 				self.key.hash
 			end

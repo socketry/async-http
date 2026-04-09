@@ -13,14 +13,25 @@ module Async
 		module Body
 			# A body which is designed for hijacked server responses - a response which uses a block to read and write the request and response bodies respectively.
 			class Hijack < ::Protocol::HTTP::Body::Readable
+				# Create a response with this hijacked body.
+				# @parameter request [Protocol::HTTP::Request] The request to hijack.
+				# @parameter status [Integer] The HTTP status code.
+				# @parameter headers [Hash] The response headers.
+				# @returns [Protocol::HTTP::Response] The response with the hijacked body.
 				def self.response(request, status, headers, &block)
 					::Protocol::HTTP::Response[status, headers, self.wrap(request, &block)]
 				end
 				
+				# Wrap a request body with a hijacked body.
+				# @parameter request [Protocol::HTTP::Request | Nil] The request to hijack.
+				# @returns [Hijack] The hijacked body instance.
 				def self.wrap(request = nil, &block)
 					self.new(block, request&.body)
 				end
 				
+				# Initialize the hijacked body.
+				# @parameter block [Proc] The block to call with the stream.
+				# @parameter input [Protocol::HTTP::Body::Readable | Nil] The input body to read from.
 				def initialize(block, input = nil)
 					@block = block
 					@input = input
@@ -35,6 +46,8 @@ module Async
 					true
 				end
 				
+				# Invoke the block with the given stream for bidirectional communication.
+				# @parameter stream [Protocol::HTTP::Body::Stream] The stream to pass to the block.
 				def call(stream)
 					@block.call(stream)
 				end
@@ -46,6 +59,8 @@ module Async
 					@output&.empty?
 				end
 				
+				# Whether the body has output ready to be read.
+				# @returns [Boolean | Nil]
 				def ready?
 					@output&.ready?
 				end
@@ -66,10 +81,12 @@ module Async
 					return @output.read
 				end
 				
+				# @returns [String] A detailed representation of this body.
 				def inspect
 					"\#<#{self.class} #{@block.inspect}>"
 				end
 				
+				# @returns [String] A short summary of this body.
 				def to_s
 					"<Hijack #{@block.class}>"
 				end

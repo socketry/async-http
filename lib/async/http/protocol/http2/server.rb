@@ -12,9 +12,12 @@ module Async
 	module HTTP
 		module Protocol
 			module HTTP2
+				# An HTTP/2 server connection that receives requests and sends responses.
 				class Server < ::Protocol::HTTP2::Server
 					include Connection
 					
+					# Initialize the HTTP/2 server with an IO stream.
+					# @parameter stream [IO::Stream] The underlying stream.
 					def initialize(stream)
 						# Used by some generic methods in Connetion:
 						@stream = stream
@@ -28,12 +31,15 @@ module Async
 					
 					attr :requests
 					
+					# Accept a new stream from a client.
+					# @parameter stream_id [Integer] The stream ID assigned by the client.
 					def accept_stream(stream_id)
 						super do
 							Request::Stream.create(self, stream_id)
 						end
 					end
 					
+					# Close the server connection and stop accepting requests.
 					def close(error = nil)
 						if @requests
 							# Stop the request loop:
@@ -44,6 +50,9 @@ module Async
 						super
 					end
 					
+					# Enumerate incoming requests, yielding each one for processing.
+					# @yields {|request| ...} Each incoming request.
+					# 	@parameter request [Request] The incoming HTTP/2 request.
 					def each(task: Task.current)
 						task.annotate("Reading #{version} requests for #{self.class}.")
 						

@@ -9,6 +9,7 @@ require "protocol/url/reference"
 
 module Async
 	module HTTP
+		# @namespace
 		module Middleware
 			# A client wrapper which transparently handles redirects to a given maximum number of hops.
 			#
@@ -28,6 +29,7 @@ module Async
 			# - <https://datatracker.ietf.org/doc/html/rfc7231#section-6-4-7> 307 Temporary Redirect.
 			#
 			class LocationRedirector < ::Protocol::HTTP::Middleware
+				# Raised when the maximum number of redirects has been exceeded.
 				class TooManyRedirects < StandardError
 				end
 				
@@ -49,6 +51,10 @@ module Async
 				# The maximum number of hops which will limit the number of redirects until an error is thrown.
 				attr :maximum_hops
 				
+				# Determine whether the redirect should switch the request method to GET.
+				# @parameter request [Protocol::HTTP::Request] The original request.
+				# @parameter response [Protocol::HTTP::Response] The redirect response.
+				# @returns [Boolean] Whether the method should be changed to GET.
 				def redirect_with_get?(request, response)
 					# We only want to switch to GET if the request method is something other than get, e.g. POST.
 					if request.method != GET
@@ -76,6 +82,9 @@ module Async
 					return true
 				end
 				
+				# Make a request, transparently following redirects up to {maximum_hops} times.
+				# @parameter request [Protocol::HTTP::Request] The request to send.
+				# @returns [Protocol::HTTP::Response] The final response.
 				def call(request)
 					# We don't want to follow redirects for HEAD requests:
 					return super if request.head?

@@ -9,6 +9,7 @@ require_relative "writable"
 module Async
 	module HTTP
 		module Body
+			# A bidirectional pipe that connects an input body to an output body using a Unix socket pair.
 			class Pipe
 				# If the input stream is closed first, it's likely the output stream will also be closed.
 				def initialize(input, output = Writable.new, task: Task.current)
@@ -27,10 +28,12 @@ module Async
 					task.async(transient: true, &self.method(:writer))
 				end
 				
+				# @returns [IO] The underlying IO object for the tail of the pipe.
 				def to_io
 					@tail
 				end
 				
+				# Close the pipe and stop the reader and writer tasks.
 				def close
 					@reader&.stop
 					@writer&.stop

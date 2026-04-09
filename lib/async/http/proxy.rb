@@ -13,7 +13,10 @@ module Async
 		# Wraps a client, address and headers required to initiate a connectio to a remote host using the CONNECT verb.
 		# Behaves like a TCP endpoint for the purposes of connecting to a remote host.
 		class Proxy
+			# Raised when a CONNECT tunnel through a proxy cannot be established.
 			class ConnectFailure < StandardError
+				# Initialize the failure with the unsuccessful response.
+				# @parameter response [Protocol::HTTP::Response] The failed response from the proxy.
 				def initialize(response)
 					super "Failed to connect: #{response.status}"
 					@response = response
@@ -22,7 +25,12 @@ module Async
 				attr :response
 			end
 			
+			# Extends {Async::HTTP::Client} with proxy capabilities.
 			module Client
+				# Create a proxy instance for the given endpoint.
+				# @parameter endpoint [Endpoint] The target endpoint to tunnel to.
+				# @parameter headers [Hash | Nil] Optional headers to send with the CONNECT request.
+				# @returns [Proxy] A proxy instance for establishing tunnels.
 				def proxy(endpoint, headers = nil)
 					Proxy.new(self, endpoint.authority(false), headers)
 				end
@@ -34,6 +42,10 @@ module Async
 					return self.class.new(proxy.wrap_endpoint(endpoint))
 				end
 				
+				# Create an endpoint that connects via this proxy.
+				# @parameter endpoint [Endpoint] The target endpoint.
+				# @parameter headers [Hash | Nil] Optional headers for the CONNECT request.
+				# @returns [Endpoint] An endpoint that tunnels through the proxy.
 				def proxied_endpoint(endpoint, headers = nil)
 					proxy = self.proxy(endpoint, headers)
 					

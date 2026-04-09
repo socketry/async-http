@@ -17,6 +17,7 @@ module Async
 	module HTTP
 		DEFAULT_RETRIES = 3
 		
+		# An HTTP client that manages persistent connections to a specific endpoint, with automatic retries for idempotent requests.
 		class Client < ::Protocol::HTTP::Methods
 			# Provides a robust interface to a server.
 			# * If there are no connections, it will create one.
@@ -38,16 +39,18 @@ module Async
 				@authority = authority
 			end
 			
+			# @returns [Hash] A JSON-compatible representation of this client.
 			def as_json(...)
 				{
 					endpoint: @endpoint.to_s,
-					protocol: @protocol,
-					retries: @retries,
-					scheme: @scheme,
-					authority: @authority,
+						protocol: @protocol,
+						retries: @retries,
+						scheme: @scheme,
+						authority: @authority,
 				}
 			end
 			
+			# @returns [String] A JSON string representation of this client.
 			def to_json(...)
 				as_json.to_json(...)
 			end
@@ -61,10 +64,14 @@ module Async
 			attr :scheme
 			attr :authority
 			
+			# @returns [Boolean] Whether the client uses a secure (TLS) connection.
 			def secure?
 				@endpoint.secure?
 			end
 			
+			# Open a client and optionally yield it, ensuring it is closed afterwards.
+			# @parameter arguments [Array] Arguments to pass to {initialize}.
+			# @parameter options [Hash] Options to pass to {initialize}.
 			def self.open(*arguments, **options, &block)
 				client = self.new(*arguments, **options)
 				
@@ -77,6 +84,7 @@ module Async
 				end
 			end
 			
+			# Close the client and all associated connections.
 			def close
 				@pool.wait_until_free do
 					Console.warn(self){"Waiting for #{@protocol} pool to drain: #{@pool}"}
@@ -85,6 +93,9 @@ module Async
 				@pool.close
 			end
 			
+			# Send a request to the remote server, with automatic retries for idempotent requests.
+			# @parameter request [Protocol::HTTP::Request] The request to send.
+			# @returns [Protocol::HTTP::Response] The response from the server.
 			def call(request)
 				request.scheme ||= self.scheme
 				request.authority ||= self.authority
@@ -133,6 +144,7 @@ module Async
 				end
 			end
 			
+			# @returns [String] A summary of this client.
 			def inspect
 				"#<#{self.class} authority=#{@authority.inspect}>"
 			end

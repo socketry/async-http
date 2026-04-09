@@ -26,7 +26,9 @@ module Async
 				CONNECTION = "connection".freeze
 				TRAILER = "trailer".freeze
 				
+				# Provides shared connection behaviour for HTTP/2 client and server connections.
 				module Connection
+					# Initialize the connection state.
 					def initialize(...)
 						super
 						
@@ -36,36 +38,45 @@ module Async
 						@write_frame_guard = Async::Semaphore.new(1)
 					end
 					
+					# Synchronize write access to the connection.
+					# @yields {|...| ...} The block to execute while holding the write lock.
 					def synchronize(&block)
 						@write_frame_guard.acquire(&block)
 					end
 					
+					# @returns [String] A string representation of this connection.
 					def to_s
 						"\#<#{self.class} #{@streams.count} active streams>"
 					end
 					
+					# @returns [String] A JSON-compatible representation.
 					def as_json(...)
 						to_s
 					end
 					
+					# @returns [String] A JSON string representation.
 					def to_json(...)
 						as_json.to_json(...)
 					end
 					
 					attr :stream
 					
+					# @returns [Boolean] Whether this is an HTTP/1 connection.
 					def http1?
 						false
 					end
 					
+					# @returns [Boolean] Whether this is an HTTP/2 connection.
 					def http2?
 						true
 					end
 					
+					# Start the background reader task if it is not already running.
 					def start_connection
 						@reader || read_in_background
 					end
 					
+					# Close the connection and stop the background reader.
 					def close(error = nil)
 						# Ensure the reader task is stopped.
 						if @reader
@@ -77,6 +88,7 @@ module Async
 						super
 					end
 					
+					# Start a transient background task that reads frames from the connection.
 					def read_in_background(parent: Task.current)
 						raise RuntimeError, "Connection is closed!" if closed?
 						
@@ -106,12 +118,14 @@ module Async
 					
 					attr :promises
 					
+					# @returns [Protocol::HTTP::Peer] The peer information for this connection.
 					def peer
 						@peer ||= ::Protocol::HTTP::Peer.for(@stream.io)
 					end
 					
 					attr :count
 					
+					# @returns [Integer] The maximum number of concurrent streams allowed.
 					def concurrency
 						self.maximum_concurrent_streams
 					end
@@ -121,10 +135,12 @@ module Async
 						@stream&.readable?
 					end
 					
+					# @returns [Boolean] Whether the connection can be reused.
 					def reusable?
 						!self.closed?
 					end
 					
+					# @returns [String] The HTTP version string.
 					def version
 						VERSION
 					end

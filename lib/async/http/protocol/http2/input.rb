@@ -11,6 +11,9 @@ module Async
 			module HTTP2
 				# A writable body which requests window updates when data is read from it.
 				class Input < ::Protocol::HTTP::Body::Writable
+					# Initialize the input body.
+					# @parameter stream [Stream] The HTTP/2 stream to read from.
+					# @parameter length [Integer | Nil] The expected content length.
 					def initialize(stream, length)
 						super(length)
 						
@@ -18,6 +21,8 @@ module Async
 						@remaining = length
 					end
 					
+					# Read the next chunk of data, requesting window updates as needed.
+					# @returns [String | Nil] The next chunk, or `nil` if the body is complete.
 					def read
 						if chunk = super
 							# If we read a chunk fron the stream, we want to extend the window if required so more data will be provided.

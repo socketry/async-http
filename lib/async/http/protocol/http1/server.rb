@@ -16,19 +16,24 @@ module Async
 	module HTTP
 		module Protocol
 			module HTTP1
+				# An HTTP/1 server connection that receives requests and sends responses.
 				class Server < Connection
+					# Initialize the HTTP/1 server connection.
 					def initialize(...)
 						super
 						
 						@ready = Async::Notification.new
 					end
 					
+					# Called when the connection is closed, signalling any waiting tasks.
 					def closed(error = nil)
 						super
 						
 						@ready.signal
 					end
 					
+					# Write a failure response with the given status code.
+					# @parameter status [Integer] The HTTP status code to send.
 					def fail_request(status)
 						@persistent = false
 						write_response(@version, status, {})
@@ -38,6 +43,8 @@ module Async
 						Console.debug(self, "Failed to write failure response!", error)
 					end
 					
+					# Read the next incoming request from the connection.
+					# @returns [Request | Nil] The next request, or `nil` if the connection is closed.
 					def next_request
 						if closed?
 							return nil

@@ -12,9 +12,12 @@ module Async
 	module HTTP
 		module Protocol
 			module HTTP2
+				# An HTTP/2 client connection that sends requests and reads responses.
 				class Client < ::Protocol::HTTP2::Client
 					include Connection
 					
+					# Initialize the HTTP/2 client with an IO stream.
+					# @parameter stream [IO::Stream] The underlying stream.
 					def initialize(stream)
 						@stream = stream
 						
@@ -23,6 +26,8 @@ module Async
 						super(framer)
 					end
 					
+					# Create a new response stream for the next request.
+					# @returns [Response] The response object to be populated.
 					def create_response
 						Response::Stream.create(self, self.next_stream_id).response
 					end
@@ -38,10 +43,15 @@ module Async
 						return response
 					end
 					
+					# Write a request to the remote server via the given response stream.
+					# @parameter response [Response] The response stream to write through.
+					# @parameter request [Protocol::HTTP::Request] The request to send.
 					def write_request(response, request)
 						response.send_request(request)
 					end
 					
+					# Wait for the response headers to arrive.
+					# @parameter response [Response] The response to wait on.
 					def read_response(response)
 						response.wait
 					end

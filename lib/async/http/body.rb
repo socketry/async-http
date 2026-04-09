@@ -6,8 +6,11 @@
 require "protocol/http/body/buffered"
 require_relative "body/writable"
 
+# @namespace
 module Async
+	# @namespace
 	module HTTP
+		# @namespace
 		module Body
 			include ::Protocol::HTTP::Body
 		end

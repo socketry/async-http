@@ -14,6 +14,7 @@ require "io/stream"
 module Async
 	module HTTP
 		module Protocol
+			# Provides HTTP/1.0 and HTTP/1.1 client and server implementations.
 			module HTTP1
 				extend Configurable
 				

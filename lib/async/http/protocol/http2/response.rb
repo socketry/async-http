@@ -12,7 +12,9 @@ module Async
 			module HTTP2
 				# Typically used on the client side for writing a request and reading the incoming response.
 				class Response < Protocol::Response
+					# Represents the HTTP/2 stream associated with an outgoing client-side response.
 					class Stream < HTTP2::Stream
+						# Initialize the response stream.
 						def initialize(*)
 							super
 							
@@ -24,6 +26,8 @@ module Async
 						
 						attr :response
 						
+						# Wait for the response headers and return the response body.
+						# @returns [Protocol::HTTP::Body::Readable | Nil] The response body.
 						def wait_for_input
 							# The input isn't ready until the response headers have been received:
 							@response.wait
@@ -32,6 +36,9 @@ module Async
 							return @response.body
 						end
 						
+						# Handle a push promise stream from the server.
+						# @parameter promised_stream_id [Integer] The stream ID for the promised resource.
+						# @parameter headers [Array] The promise headers.
 						def accept_push_promise_stream(promised_stream_id, headers)
 							raise ProtocolError, "Cannot accept push promise stream!"
 						end
@@ -86,6 +93,9 @@ module Async
 							return headers
 						end
 						
+						# Process interim (1xx) response headers.
+						# @parameter status [Integer] The interim status code.
+						# @parameter headers [Array] The interim response headers.
 						def receive_interim_headers(status, headers)
 							if headers.any?
 								headers = ::Protocol::HTTP::Headers[headers]
@@ -114,6 +124,8 @@ module Async
 							end
 						end
 						
+						# Called when the stream is closed.
+						# @parameter error [Exception | Nil] The error that caused the close, if any.
 						def closed(error)
 							super
 							
@@ -127,6 +139,8 @@ module Async
 						end
 					end
 					
+					# Initialize the response from an HTTP/2 stream.
+					# @parameter stream [Stream] The HTTP/2 stream for this response.
 					def initialize(stream)
 						super(stream.connection.version, nil, nil)
 						
@@ -137,6 +151,8 @@ module Async
 					attr :stream
 					attr :request
 					
+					# Assign the connection pool, releasing the connection when the stream is closed.
+					# @parameter pool [Async::Pool::Controller] The connection pool.
 					def pool=(pool)
 						# If we are already closed, the stream can be released now:
 						if @stream.closed?
@@ -147,22 +163,29 @@ module Async
 						end
 					end
 					
+					# @returns [Connection] The underlying HTTP/2 connection.
 					def connection
 						@stream.connection
 					end
 					
+					# Wait for the response headers to be received.
 					def wait
 						@stream.wait
 					end
 					
+					# @returns [Boolean] Whether the original request was a HEAD request.
 					def head?
 						@request&.head?
 					end
 					
+					# @returns [Boolean] Whether the response has a valid status.
 					def valid?
 						!!@status
 					end
 					
+					# Build a request object from push promise headers.
+					# @parameter headers [Array] The push promise pseudo-headers and headers.
+					# @returns [Protocol::HTTP::Request] The constructed request.
 					def build_request(headers)
 						request = ::Protocol::HTTP::Request.new
 						request.headers = ::Protocol::HTTP::Headers.new

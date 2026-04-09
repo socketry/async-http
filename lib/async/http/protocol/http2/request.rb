@@ -12,7 +12,9 @@ module Async
 			module HTTP2
 				# Typically used on the server side to represent an incoming request, and write the response.
 				class Request < Protocol::Request
+					# Represents the HTTP/2 stream associated with an incoming server-side request.
 					class Stream < HTTP2::Stream
+						# Initialize the request stream.
 						def initialize(*)
 							super
 							
@@ -22,6 +24,9 @@ module Async
 						
 						attr :request
 						
+						# Process the initial headers received from the client and construct the request.
+						# @parameter headers [Array] The list of header key-value pairs.
+						# @parameter end_stream [Boolean] Whether the stream is complete after these headers.
 						def receive_initial_headers(headers, end_stream)
 							@headers = ::Protocol::HTTP::Headers.new
 							
@@ -79,6 +84,8 @@ module Async
 							return headers
 						end
 						
+						# Called when the stream is closed.
+						# @parameter error [Exception | Nil] The error that caused the close, if any.
 						def closed(error)
 							@request = nil
 							
@@ -86,6 +93,8 @@ module Async
 						end
 					end
 					
+					# Initialize the request from an HTTP/2 stream.
+					# @parameter stream [Stream] The HTTP/2 stream for this request.
 					def initialize(stream)
 						super(nil, nil, nil, nil, VERSION, nil, nil, nil, self.public_method(:write_interim_response))
 						
@@ -94,14 +103,17 @@ module Async
 					
 					attr :stream
 					
+					# @returns [Connection] The underlying HTTP/2 connection.
 					def connection
 						@stream.connection
 					end
 					
+					# @returns [Boolean] Whether the request has the required pseudo-headers.
 					def valid?
 						@scheme and @method and (@path or @method == ::Protocol::HTTP::Methods::CONNECT)
 					end
 					
+					# @returns [Boolean] Whether connection hijacking is supported (not available for HTTP/2).
 					def hijack?
 						false
 					end
@@ -110,6 +122,8 @@ module Async
 						[STATUS, "500"],
 					]
 					
+					# Send a response back to the client via the HTTP/2 stream.
+					# @parameter response [Protocol::HTTP::Response | Nil] The response to send.
 					def send_response(response)
 						if response.nil?
 							return @stream.send_headers(NO_RESPONSE, ::Protocol::HTTP2::END_STREAM)
@@ -143,6 +157,9 @@ module Async
 						end
 					end
 					
+					# Write an interim (1xx) response to the client.
+					# @parameter status [Integer] The interim HTTP status code.
+					# @parameter headers [Hash | Nil] Optional interim response headers.
 					def write_interim_response(status, headers = nil)
 						interim_response_headers = [
 							[STATUS, status]

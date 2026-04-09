@@ -60,6 +60,8 @@ module Async
 						@requests&.async do |task, request|
 							task.annotate("Incoming request: #{request.method} #{request.path.inspect}.")
 							
+							response = nil
+							
 							task.defer_stop do
 								response = yield(request)
 							rescue
@@ -69,6 +71,11 @@ module Async
 								raise
 							else
 								request.send_response(response)
+								# If send response is successful, we clear it so that we don't close it below.
+								response = nil
+							ensure
+								# If some failure occurs and we didn't send the response correctly, ensure that it's closed:
+								response&.close
 							end
 						end
 						

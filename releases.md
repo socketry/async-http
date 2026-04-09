@@ -3,6 +3,8 @@
 ## v0.94.1
 
   - Fix `defer_stop` usage in `HTTP1::Server`, improving server graceful shutdown behavior.
+  - Use more generic `Protocol::HTTP::BadRequest` exception in `HTTP1::Server` to handle bad requests, improving handling of more generic bad request errors.
+  - Ignore `Protocol::HTTP::BadRequest` exceptions for the purpose of logging, to reduce noise from "expected" bad requests.
 
 ## v0.94.0
 

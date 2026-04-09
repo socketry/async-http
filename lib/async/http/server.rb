@@ -70,6 +70,8 @@ module Async
 					# If this returns nil, we assume that the connection has been hijacked.
 					self.call(request)
 				end
+			rescue Protocol::HTTP::BadRequest
+				# Ignore bad requests, just close the connection.
 			ensure
 				connection&.close
 			end

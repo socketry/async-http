@@ -22,7 +22,7 @@ Gem::Specification.new do |spec|
 	
 	spec.files = Dir.glob(["{bake,context,lib}/**/*", "*.md"], File::FNM_DOTMATCH, base: __dir__)
 	
-	spec.required_ruby_version = ">= 3.2"
+	spec.required_ruby_version = ">= 3.3"
 	
 	spec.add_dependency "async", ">= 2.10.2"
 	spec.add_dependency "async-pool", "~> 0.11"

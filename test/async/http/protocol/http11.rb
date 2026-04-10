@@ -13,24 +13,27 @@ require "async/http/a_protocol"
 # Custom error class to track in tests
 class BodyWriteError < StandardError; end
 
-# A custom body class that raises during enumeration.
+# A custom body class that raises during reading.
 class ErrorProneBody < ::Protocol::HTTP::Body::Readable
 	def initialize(...)
 		super(...)
 		
 		@error = nil
+		@count = 0
 	end
 	
 	attr :error
 	
+	def read
+		@count += 1
+		raise BodyWriteError, "error during write" if @count > 1
+		
+		"Hello"
+	end
+	
 	def close(error = nil)
 		@error = error
 		super()
-	end
-	
-	def each
-		super
-		raise BodyWriteError, "error during write"
 	end
 end
 
@@ -70,7 +73,6 @@ describe Async::HTTP::Protocol::HTTP11 do
 			
 			let(:app) do
 				Protocol::HTTP::Middleware.for do |request|
-					# Return a response with a body that will raise during enumeration:
 					Protocol::HTTP::Response[200, {}, body]
 				end
 			end

@@ -1,6 +1,6 @@
 # Releases
 
-## Unreleased
+## v0.94.3
 
   - Fix response body leak in HTTP/2 server when stream is reset before `send_response` completes (e.g. client-side gRPC cancellation). The response body's `close` was never called, leaking any resources tied to body lifecycle (such as `rack.response_finished` callbacks and utilization metrics).
 

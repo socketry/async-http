@@ -16,6 +16,10 @@ Please see the [project documentation](https://socketry.github.io/async-http/) f
 
 Please see the [project releases](https://socketry.github.io/async-http/releases/index) for all releases.
 
+### v0.94.3
+
+  - Fix response body leak in HTTP/2 server when stream is reset before `send_response` completes (e.g. client-side gRPC cancellation). The response body's `close` was never called, leaking any resources tied to body lifecycle (such as `rack.response_finished` callbacks and utilization metrics).
+
 ### v0.94.1
 
   - Fix `defer_stop` usage in `HTTP1::Server`, improving server graceful shutdown behavior.
@@ -51,10 +55,6 @@ Please see the [project releases](https://socketry.github.io/async-http/releases
 ### v0.86.0
 
   - Add support for HTTP/2 `NO_RFC7540_PRIORITIES`. See <https://www.rfc-editor.org/rfc/rfc9218.html> for more details.
-
-### v0.84.0
-
-  - Minor consistency fixes to `Async::HTTP::Internet` singleton methods.
 
 ## See Also
 

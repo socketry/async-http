@@ -15,7 +15,7 @@ describe Async::HTTP::Protocol::HTTP2 do
 		let(:body_closed) {Async::Variable.new}
 		
 		let(:app) do
-			variable = body_closed
+			body_closed = self.body_closed
 			
 			Protocol::HTTP::Middleware.for do |request|
 				inner_body = Protocol::HTTP::Body::Buffered.new(["Hello World"])
@@ -23,7 +23,7 @@ describe Async::HTTP::Protocol::HTTP2 do
 				tracking_body = Class.new(Protocol::HTTP::Body::Wrapper) do
 					define_method(:close) do |error = nil|
 						super(error)
-						variable.value = true
+						body_closed.value = true
 					end
 				end.new(inner_body)
 				

@@ -261,7 +261,7 @@ module Async
 							begin
 								@stream.send_headers(headers)
 							rescue
-								raise RequestFailed
+								raise ::Protocol::HTTP::RefusedError
 							end
 							
 							@stream.send_body(request.body, trailer)

@@ -1,11 +1,11 @@
 # Releases
 
-## Unreleased
+## v0.95.0
 
   - Use `Protocol::HTTP::RefusedError` for safe retry of requests not processed by the server, including non-idempotent methods like PUT.
-    - Remove `Async::HTTP::Protocol::RequestFailed` in favour of `Protocol::HTTP::RefusedError`.
-    - HTTP/1: Delegate request write failure handling to `protocol-http1`.
-    - HTTP/2: Handle GOAWAY and REFUSED_STREAM via `protocol-http2`, enabling automatic retry of unprocessed requests.
+      - Remove `Async::HTTP::Protocol::RequestFailed` in favour of `Protocol::HTTP::RefusedError`.
+      - HTTP/1: Delegate request write failure handling to `protocol-http1`.
+      - HTTP/2: Handle GOAWAY and REFUSED\_STREAM via `protocol-http2`, enabling automatic retry of unprocessed requests.
 
 ## v0.94.3
 

@@ -16,6 +16,13 @@ Please see the [project documentation](https://socketry.github.io/async-http/) f
 
 Please see the [project releases](https://socketry.github.io/async-http/releases/index) for all releases.
 
+### v0.95.0
+
+  - Use `Protocol::HTTP::RefusedError` for safe retry of requests not processed by the server, including non-idempotent methods like PUT.
+      - Remove `Async::HTTP::Protocol::RequestFailed` in favour of `Protocol::HTTP::RefusedError`.
+      - HTTP/1: Delegate request write failure handling to `protocol-http1`.
+      - HTTP/2: Handle GOAWAY and REFUSED\_STREAM via `protocol-http2`, enabling automatic retry of unprocessed requests.
+
 ### v0.94.3
 
   - Fix response body leak in HTTP/2 server when stream is reset before `send_response` completes (e.g. client-side gRPC cancellation). The response body's `close` was never called, leaking any resources tied to body lifecycle (such as `rack.response_finished` callbacks and utilization metrics).
@@ -51,10 +58,6 @@ Please see the [project releases](https://socketry.github.io/async-http/releases
 ### v0.87.0
 
   - [Unify HTTP/1 and HTTP/2 `CONNECT` semantics](https://socketry.github.io/async-http/releases/index#unify-http/1-and-http/2-connect-semantics)
-
-### v0.86.0
-
-  - Add support for HTTP/2 `NO_RFC7540_PRIORITIES`. See <https://www.rfc-editor.org/rfc/rfc9218.html> for more details.
 
 ## See Also
 

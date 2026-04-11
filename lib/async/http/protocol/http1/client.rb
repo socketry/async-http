@@ -38,21 +38,16 @@ module Async
 						headers = request.headers.header
 						
 						# We carefully interpret https://tools.ietf.org/html/rfc7230#section-6.3.1 to implement this correctly.
-						begin
-							target = request.path
-							authority = request.authority
-							
-							# If we are using a CONNECT request, we need to use the authority as the target:
-							if request.connect?
-								target = authority
-								authority = nil
-							end
-							
-							write_request(authority, request.method, target, @version, headers)
-						rescue
-							# If we fail to fully write the request and body, we can retry this request.
-							raise RequestFailed
+						target = request.path
+						authority = request.authority
+						
+						# If we are using a CONNECT request, we need to use the authority as the target:
+						if request.connect?
+							target = authority
+							authority = nil
 						end
+						
+						write_request(authority, request.method, target, @version, headers)
 						
 						if request.body?
 							body = request.body

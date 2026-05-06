@@ -57,12 +57,12 @@ describe Async::HTTP::Body::Pipe do
 	with "reactor going out of scope" do
 		it "finishes" do
 			# ensures pipe background tasks are transient
-			Async {pipe}
+			Async{pipe}
 		end
 		
 		with "closed pipe" do
 			it "finishes" do
-				Async {pipe.close}
+				Async{pipe.close}
 			end
 		end
 	end

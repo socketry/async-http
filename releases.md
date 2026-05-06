@@ -1,5 +1,9 @@
 # Releases
 
+## Unreleased
+
+  - Fix handling of reset stream causing complete connection failure.
+
 ## v0.95.0
 
   - Use `Protocol::HTTP::RefusedError` for safe retry of requests not processed by the server, including non-idempotent methods like PUT.

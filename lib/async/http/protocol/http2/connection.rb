@@ -44,6 +44,16 @@ module Async
 						@write_frame_guard.acquire(&block)
 					end
 					
+					# Write a single frame, deferring stop until the frame is written.
+					def write_frame(frame)
+						Task.current.defer_stop{super}
+					end
+					
+					# Write multiple frames, deferring stop until the frames are written.
+					def write_frames
+						Task.current.defer_stop{super}
+					end
+					
 					# @returns [String] A string representation of this connection.
 					def to_s
 						"\#<#{self.class} #{@streams.count} active streams>"

@@ -1,6 +1,6 @@
 # Releases
 
-## Unreleased
+## v0.95.1
 
   - Fix handling of reset stream causing complete connection failure.
 

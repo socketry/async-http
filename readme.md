@@ -16,6 +16,10 @@ Please see the [project documentation](https://socketry.github.io/async-http/) f
 
 Please see the [project releases](https://socketry.github.io/async-http/releases/index) for all releases.
 
+### v0.95.1
+
+  - Fix handling of reset stream causing complete connection failure.
+
 ### v0.95.0
 
   - Use `Protocol::HTTP::RefusedError` for safe retry of requests not processed by the server, including non-idempotent methods like PUT.
@@ -54,10 +58,6 @@ Please see the [project releases](https://socketry.github.io/async-http/releases
 ### v0.88.0
 
   - [Support custom protocols with options](https://socketry.github.io/async-http/releases/index#support-custom-protocols-with-options)
-
-### v0.87.0
-
-  - [Unify HTTP/1 and HTTP/2 `CONNECT` semantics](https://socketry.github.io/async-http/releases/index#unify-http/1-and-http/2-connect-semantics)
 
 ## See Also
 

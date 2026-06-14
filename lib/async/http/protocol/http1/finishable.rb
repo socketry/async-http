@@ -17,6 +17,8 @@ module Async
 					def initialize(body)
 						super(body)
 						
+						$stderr.puts "Finishable#initialize: #{body.inspect}"
+						
 						@closed = Async::Variable.new
 						@error = nil
 						
@@ -33,12 +35,16 @@ module Async
 					def read
 						@reading = true
 						
-						super
+						super.tap do |chunk|
+							$stderr.puts "Finishable#read: #{chunk.inspect}"
+						end
 					end
 					
 					# Close the body and signal any waiting tasks.
 					def close(error = nil)
 						super
+						
+						$stderr.puts "Finishable#close: #{error.inspect}"
 						
 						unless @closed.resolved?
 							@error = error

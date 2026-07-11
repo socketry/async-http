@@ -5,7 +5,7 @@
 # Copyright, 2020, by Igor Sidorov.
 
 require "async"
-require "async/variable"
+require "async/promise"
 require "async/clock"
 require "async/http/client"
 require "async/http/server"
@@ -131,14 +131,14 @@ module Async
 			end
 			
 			with "with request trailer" do
-				let(:request_received) {Async::Variable.new}
+				let(:request_received) {Async::Promise.new}
 				
 				let(:app) do
 					::Protocol::HTTP::Middleware.for do |request|
 						if trailer = request.headers["trailer"]
 							expect(request.headers).not.to have_keys("etag")
 							
-							request_received.value = true
+							request_received.resolve(true)
 							request.finish
 							
 							expect(request.headers).to have_keys("etag")
@@ -173,7 +173,7 @@ module Async
 			end
 			
 			with "with response trailer" do
-				let(:response_received) {Async::Variable.new}
+				let(:response_received) {Async::Promise.new}
 				
 				let(:app) do
 					::Protocol::HTTP::Middleware.for do |request|
@@ -203,7 +203,7 @@ module Async
 					headers = response.headers
 					expect(headers).not.to have_keys("etag")
 					
-					response_received.value = true
+					response_received.resolve(true)
 					
 					expect(response.read).to be == "response trailer"
 					expect(response).to be(:success?)
@@ -441,7 +441,7 @@ module Async
 					::Protocol::HTTP::Middleware.for do |request|
 						body = Async::HTTP::Body::Writable.new
 						
-						Async::Reactor.run do |task|
+						Async do |task|
 							10.times do |i|
 								chunk = "Chunk #{i}"
 								chunks << chunk
@@ -556,7 +556,7 @@ module Async
 						else
 							count += 1
 							body.write chunk*2
-							Async::Task.current.sleep(0.1)
+							sleep(0.1)
 						end
 					end
 					

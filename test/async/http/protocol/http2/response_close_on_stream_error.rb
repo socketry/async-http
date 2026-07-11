@@ -4,6 +4,7 @@
 # Copyright, 2026, by Samuel Williams.
 
 require "async/http/protocol/http2"
+require "async/promise"
 require "sus/fixtures/async/http"
 require "protocol/http/body/wrapper"
 
@@ -12,7 +13,7 @@ describe Async::HTTP::Protocol::HTTP2 do
 		include Sus::Fixtures::Async::HTTP::ServerContext
 		let(:protocol) {subject}
 		
-		let(:body_closed) {Async::Variable.new}
+		let(:body_closed) {Async::Promise.new}
 		
 		let(:app) do
 			body_closed = self.body_closed
@@ -23,7 +24,7 @@ describe Async::HTTP::Protocol::HTTP2 do
 				tracking_body = Class.new(Protocol::HTTP::Body::Wrapper) do
 					define_method(:close) do |error = nil|
 						super(error)
-						body_closed.value = true
+						body_closed.resolve(true)
 					end
 				end.new(inner_body)
 				

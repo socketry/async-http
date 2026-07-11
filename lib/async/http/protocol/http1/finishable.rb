@@ -4,7 +4,7 @@
 # Copyright, 2024, by Samuel Williams.
 
 require "protocol/http/body/wrapper"
-require "async/variable"
+require "async/promise"
 
 module Async
 	module HTTP
@@ -17,7 +17,7 @@ module Async
 					def initialize(body)
 						super(body)
 						
-						@closed = Async::Variable.new
+						@closed = Async::Promise.new
 						@error = nil
 						
 						@reading = false
@@ -42,7 +42,7 @@ module Async
 						
 						unless @closed.resolved?
 							@error = error
-							@closed.value = true
+							@closed.resolve(true)
 						end
 					end
 					

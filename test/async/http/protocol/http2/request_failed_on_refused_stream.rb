@@ -4,6 +4,7 @@
 # Copyright, 2026, by Samuel Williams.
 
 require "async/http/protocol/http2"
+require "async/promise"
 require "sus/fixtures/async/http"
 
 describe Async::HTTP::Protocol::HTTP2 do
@@ -11,7 +12,7 @@ describe Async::HTTP::Protocol::HTTP2 do
 		include Sus::Fixtures::Async::HTTP::ServerContext
 		let(:protocol) {subject}
 		
-		let(:request_count) {Async::Variable.new}
+		let(:request_count) {Async::Promise.new}
 		
 		let(:app) do
 			request_count = self.request_count
@@ -19,7 +20,7 @@ describe Async::HTTP::Protocol::HTTP2 do
 			
 			Protocol::HTTP::Middleware.for do |request|
 				count += 1
-				request_count.value = count
+				request_count.resolve(count)
 				
 				Protocol::HTTP::Response[200, {}, ["OK"]]
 			end

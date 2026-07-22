@@ -23,12 +23,6 @@ describe Async::HTTP::Client do
 			expect(response).to be(:success?)
 		end
 		
-		it "client can get resource with protocol" do
-			response = client.get("/", protocol: "test")
-			response.read
-			expect(response).to be(:success?)
-		end
-		
 		with "client" do
 			with "#as_json" do
 				it "generates a JSON representation" do

@@ -4,6 +4,7 @@
 # Copyright, 2025, by Samuel Williams.
 
 require_relative "../../../../../../async/http/protocol/http1/client"
+require "traces/provider"
 
 Traces::Provider(Async::HTTP::Protocol::HTTP1::Client) do
 	def write_request(...)

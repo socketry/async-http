@@ -16,6 +16,10 @@ Please see the [project documentation](https://socketry.github.io/async-http/) f
 
 Please see the [project releases](https://socketry.github.io/async-http/releases/index) for all releases.
 
+### v0.96.0
+
+  - Made `metrics` and `traces` optional runtime dependencies. Applications that use the providers should depend on the corresponding gem and require the provider explicitly.
+
 ### v0.95.1
 
   - Fix handling of reset stream causing complete connection failure.
@@ -54,10 +58,6 @@ Please see the [project releases](https://socketry.github.io/async-http/releases
 ### v0.90.2
 
   - Don't emit `resource:` keyword argument in traces - it's unsupported by OpenTelemetry.
-
-### v0.88.0
-
-  - [Support custom protocols with options](https://socketry.github.io/async-http/releases/index#support-custom-protocols-with-options)
 
 ## See Also
 

@@ -37,6 +37,8 @@ group :test do
 	gem "rubocop"
 	gem "rubocop-md"
 	gem "rubocop-socketry"
+	gem "metrics", "~> 0.12"
+	gem "traces", "~> 0.10"
 	
 	gem "sus-fixtures-async"
 	gem "sus-fixtures-async-http", "~> 0.8"

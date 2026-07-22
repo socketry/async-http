@@ -4,6 +4,7 @@
 # Copyright, 2025, by Samuel Williams.
 
 require_relative "../../../../async/http/server"
+require "traces/provider"
 
 Traces::Provider(Async::HTTP::Server) do
 	def call(request)

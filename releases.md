@@ -1,5 +1,9 @@
 # Releases
 
+## Unreleased
+
+  - Made `metrics` and `traces` optional runtime dependencies. Applications that use the providers should depend on the corresponding gem and require the provider explicitly.
+
 ## v0.95.1
 
   - Fix handling of reset stream causing complete connection failure.

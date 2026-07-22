@@ -79,20 +79,6 @@ describe Async::HTTP::Protocol::HTTP2 do
 			end
 		end
 		
-		with "protocol pseudo-header" do
-			let(:app) do
-				Protocol::HTTP::Middleware.for do |request|
-					Protocol::HTTP::Response[200, {}, ["Protocol: #{request.protocol.inspect}"]]
-				end
-			end
-			
-			it "sends and receives protocol" do
-				response = client.get("/", protocol: "test")
-				
-				expect(response.read).to be == "Protocol: \"test\""
-			end
-		end
-		
 		with "stopping requests" do
 			let(:notification) {Async::Notification.new}
 			

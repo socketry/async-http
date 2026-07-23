@@ -14,6 +14,18 @@ describe Async::HTTP::Protocol::HTTP do
 		it "has a default instance" do
 			expect(protocol).to be_a Async::HTTP::Protocol::HTTP
 		end
+		
+		it "exposes the supported protocol names" do
+			expect(subject.names).to be == ["h2", "http/1.1", "http/1.0"]
+		end
+	end
+	
+	with "configured protocols" do
+		let(:protocol) {subject.new(http1: Async::HTTP::Protocol::HTTP11, http2: Async::HTTP::Protocol::HTTP2)}
+		
+		it "exposes their supported protocol names" do
+			expect(protocol.names).to be == ["h2", "http/1.1"]
+		end
 	end
 	
 	with "#protocol_for" do

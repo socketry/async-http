@@ -1,5 +1,9 @@
 # Releases
 
+## Unreleased
+
+  - Exposed all supported protocol names from the plaintext HTTP protocol negotiator.
+
 ## v0.96.0
 
   - Made `metrics` and `traces` optional runtime dependencies. Applications that use the providers should depend on the corresponding gem and require the provider explicitly.

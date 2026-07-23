@@ -26,6 +26,12 @@ module Async
 					@http2 = http2
 				end
 				
+				# The names of all supported protocols.
+				# @returns [Array(String)] The supported protocol names.
+				def names
+					(@http2.names + @http1.names).uniq
+				end
+				
 				# Determine if the inbound connection is HTTP/1 or HTTP/2.
 				#
 				# @parameter stream [IO::Stream] The stream to detect the protocol for.

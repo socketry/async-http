@@ -1,6 +1,6 @@
 # Releases
 
-## Unreleased
+## v0.97.0
 
   - Exposed all supported protocol names from the plaintext HTTP protocol negotiator.
 

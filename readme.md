@@ -16,6 +16,10 @@ Please see the [project documentation](https://socketry.github.io/async-http/) f
 
 Please see the [project releases](https://socketry.github.io/async-http/releases/index) for all releases.
 
+### v0.98.0
+
+  - Rewind request bodies before retrying requests.
+
 ### v0.97.0
 
   - Exposed all supported protocol names from the plaintext HTTP protocol negotiator.
@@ -54,10 +58,6 @@ Please see the [project releases](https://socketry.github.io/async-http/releases
 ### v0.92.0
 
   - **Breaking**: Remove `Async::HTTP::Reference`. Use `Protocol::URL::Reference` directly instead.
-
-### v0.91.0
-
-  - Move all default trace providers into `traces/provider/async/http`.
 
 ## See Also
 

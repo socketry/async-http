@@ -1,6 +1,6 @@
 # Releases
 
-## Unreleased
+## v0.98.0
 
   - Rewind request bodies before retrying requests.
 

@@ -121,7 +121,7 @@ module Async
 						connection = nil
 					end
 					
-					if attempt < @retries
+					if attempt < @retries and request.rewind!
 						retry
 					else
 						raise
@@ -132,7 +132,7 @@ module Async
 						connection = nil
 					end
 					
-					if request.idempotent? and attempt < @retries
+					if attempt < @retries and request.retry!
 						retry
 					else
 						raise

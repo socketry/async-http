@@ -42,6 +42,7 @@ group :test do
 	
 	gem "sus-fixtures-async"
 	gem "sus-fixtures-async-http", "~> 0.8"
+	gem "sus-fixtures-console"
 	gem "sus-fixtures-openssl"
 	gem "sus-fixtures-benchmark"
 	

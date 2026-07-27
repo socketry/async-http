@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2018-2025, by Samuel Williams.
+# Copyright, 2018-2026, by Samuel Williams.
 
 require_relative "request"
 require_relative "response"
@@ -67,7 +67,24 @@ module Async
 					
 					# Can we use this connection to make requests?
 					def viable?
-						self.idle? && @stream&.readable?
+						unless self.idle?
+							return false
+						end
+						
+						unless @stream
+							return false
+						end
+						
+						# `nil` indicates that the connection has no data, but is still alive. An empty string means the connection is closed, while a non-empty string indicates application data on a idle HTTP/1 connection, both are failure cases.
+						if @stream.peek_partial(1)
+							return false
+						end
+						
+						return @stream.readable?
+					rescue => error
+						Console.debug(self, "Connection viability probe failed!", exception: error)
+						
+						return false
 					end
 					
 					# @returns [Boolean] Whether the connection can be reused for another request.

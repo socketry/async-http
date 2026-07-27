@@ -8,8 +8,9 @@ require "async/http/client"
 require "async/http/endpoint"
 
 require "sus/fixtures/async"
-require "sus/fixtures/openssl"
 require "sus/fixtures/async/http"
+require "sus/fixtures/console"
+require "sus/fixtures/openssl"
 
 describe Async::HTTP::Server do
 	include Sus::Fixtures::Async::HTTP::ServerContext
@@ -54,16 +55,9 @@ describe Async::HTTP::Server do
 		end
 		
 		with "an idle connection closed by the server" do
-			let(:connections) {[]}
+			include Sus::Fixtures::Console::CapturedLogger
 			
-			def around
-				level = Console.logger.level
-				Console.logger.fatal!
-				
-				super
-			ensure
-				Console.logger.level = level
-			end
+			let(:connections) {[]}
 			
 			let(:app) do
 				connections = self.connections

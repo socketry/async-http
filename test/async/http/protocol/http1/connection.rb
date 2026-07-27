@@ -8,11 +8,13 @@ require "async/http/protocol/http1/connection"
 require "io/stream"
 
 require "sus/fixtures/async/reactor_context"
+require "sus/fixtures/console"
 require "sus/fixtures/openssl/verified_certificate_context"
 require "sus/fixtures/openssl/valid_certificate_context"
 
 describe Async::HTTP::Protocol::HTTP1::Connection do
 	include Sus::Fixtures::Async::ReactorContext
+	include Sus::Fixtures::Console::CapturedLogger
 	include Sus::Fixtures::OpenSSL::VerifiedCertificateContext
 	include Sus::Fixtures::OpenSSL::ValidCertificateContext
 	
@@ -96,6 +98,12 @@ describe Async::HTTP::Protocol::HTTP1::Connection do
 		@sockets.first.wait_readable(1)
 		
 		expect(connection).not.to be(:viable?)
+		expect_console.to have_logged(
+			severity: be == :debug,
+			subject: be_equal(connection),
+			message: be == "Connection viability probe failed!",
+			event: have_keys(type: be == :failure)
+		)
 	end
 	
 	it "is not viable when application data is pending while idle" do

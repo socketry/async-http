@@ -8,7 +8,6 @@ require_relative "response"
 
 require "protocol/http1"
 require "protocol/http/peer"
-require "openssl"
 
 module Async
 	module HTTP

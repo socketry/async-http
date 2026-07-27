@@ -75,8 +75,7 @@ module Async
 							return false
 						end
 						
-						# Application data on an idle HTTP/1 connection is unexpected. A
-						# non-blocking peek also processes an EOF or TLS close notification.
+						# `nil` indicates that the connection has no data, but is still alive. An empty string means the connection is closed, while a non-empty string indicates application data on a idle HTTP/1 connection, both are failure cases.
 						if @stream.peek_partial(1)
 							return false
 						end

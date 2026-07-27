@@ -83,7 +83,9 @@ module Async
 						end
 						
 						return @stream.readable?
-					rescue IOError, SystemCallError, OpenSSL::SSL::SSLError
+					rescue => error
+						Console.debug(self, "Connection viability probe failed!", exception: error)
+						
 						return false
 					end
 					

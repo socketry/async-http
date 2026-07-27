@@ -1,13 +1,14 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2018-2025, by Samuel Williams.
+# Copyright, 2018-2026, by Samuel Williams.
 
 require_relative "request"
 require_relative "response"
 
 require "protocol/http1"
 require "protocol/http/peer"
+require "openssl"
 
 module Async
 	module HTTP
@@ -67,7 +68,23 @@ module Async
 					
 					# Can we use this connection to make requests?
 					def viable?
-						self.idle? && @stream&.readable?
+						unless self.idle?
+							return false
+						end
+						
+						unless @stream
+							return false
+						end
+						
+						# Application data on an idle HTTP/1 connection is unexpected. A
+						# non-blocking peek also processes an EOF or TLS close notification.
+						if @stream.peek_partial(1)
+							return false
+						end
+						
+						return @stream.readable?
+					rescue IOError, SystemCallError, OpenSSL::SSL::SSLError
+						return false
 					end
 					
 					# @returns [Boolean] Whether the connection can be reused for another request.

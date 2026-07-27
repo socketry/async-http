@@ -1,5 +1,9 @@
 # Releases
 
+## Unreleased
+
+  - Probe idle HTTP/1 connections before reuse, avoiding requests on connections already closed by the peer.
+
 ## v0.98.0
 
   - Rewind request bodies before retrying requests.

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2018-2025, by Samuel Williams.
+# Copyright, 2018-2026, by Samuel Williams.
 
 require "async/http/server"
 require "async/http/client"
@@ -51,6 +51,51 @@ describe Async::HTTP::Server do
 			
 			expect(response).to be(:success?)
 			expect(response.read).to be == "Hello World!"
+		end
+		
+		with "an idle connection closed by the server" do
+			let(:connections) {[]}
+			
+			def around
+				level = Console.logger.level
+				Console.logger.fatal!
+				
+				super
+			ensure
+				Console.logger.level = level
+			end
+			
+			let(:app) do
+				connections = self.connections
+				
+				Protocol::HTTP::Middleware.for do |request|
+					connections << request.connection
+					
+					Protocol::HTTP::Response[200, {}, ["Hello World!"]]
+				end
+			end
+			
+			it "uses a fresh connection for a non-idempotent request" do
+				first_response = client.get("/")
+				first_response.read
+				first_connection = first_response.connection
+				
+				closing = reactor.async do
+					connections.first.close
+				end
+				
+				first_connection.stream.io.to_io.wait_readable(1)
+				
+				second_response = client.post("/")
+				
+				expect(second_response).to be(:success?)
+				expect(second_response.connection).not.to be == first_connection
+				expect(connections.size).to be == 2
+				closing.wait
+			ensure
+				first_response&.close
+				second_response&.close
+			end
 		end
 	end
 end

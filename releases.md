@@ -1,6 +1,6 @@
 # Releases
 
-## Unreleased
+## v0.98.1
 
   - Probe idle HTTP/1 connections before reuse, avoiding requests on connections already closed by the peer.
 

@@ -16,6 +16,10 @@ Please see the [project documentation](https://socketry.github.io/async-http/) f
 
 Please see the [project releases](https://socketry.github.io/async-http/releases/index) for all releases.
 
+### v0.98.1
+
+  - Probe idle HTTP/1 connections before reuse, avoiding requests on connections already closed by the peer.
+
 ### v0.98.0
 
   - Rewind request bodies before retrying requests.
@@ -54,10 +58,6 @@ Please see the [project releases](https://socketry.github.io/async-http/releases
 ### v0.92.2
 
   - Better handling of trailers. If invalid trailers are received, the connection (HTTP/1) or stream (HTTP/2) is reset.
-
-### v0.92.0
-
-  - **Breaking**: Remove `Async::HTTP::Reference`. Use `Protocol::URL::Reference` directly instead.
 
 ## See Also
 

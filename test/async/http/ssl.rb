@@ -55,7 +55,7 @@ describe Async::HTTP::Server do
 		end
 		
 		with "an idle connection closed by the server" do
-			include Sus::Fixtures::Console::CapturedLogger
+			include Sus::Fixtures::Console::NullLogger
 			
 			let(:connections) {[]}
 			

@@ -6,6 +6,8 @@
 require_relative "../response"
 require_relative "stream"
 
+require "async/promise"
+
 module Async
 	module HTTP
 		module Protocol
@@ -20,8 +22,7 @@ module Async
 							
 							@response = Response.new(self)
 							
-							@notification = Async::Notification.new
-							@exception = nil
+							@ready = Async::Promise.new
 						end
 						
 						attr :response
@@ -88,7 +89,7 @@ module Async
 								send_reset_stream(::Protocol::HTTP2::Error::PROTOCOL_ERROR)
 							end
 							
-							self.notify!
+							@ready.resolve(nil)
 							
 							return headers
 						end
@@ -106,22 +107,9 @@ module Async
 							@response.request.send_interim_response(status, headers)
 						end
 						
-						# Notify anyone waiting on the response headers to be received (or failure).
-						def notify!
-							if notification = @notification
-								@notification = nil
-								notification.signal
-							end
-						end
-						
 						# Wait for the headers to be received or for stream reset.
 						def wait
-							# If you call wait after the headers were already received, it should return immediately:
-							@notification&.wait
-							
-							if @exception
-								raise @exception
-							end
+							@ready.wait
 						rescue ::Protocol::HTTP2::StreamError => error
 							if error.code == ::Protocol::HTTP2::Error::INTERNAL_ERROR
 								raise ::Protocol::HTTP::RemoteError, error.message
@@ -139,9 +127,11 @@ module Async
 								@response = nil
 							end
 							
-							@exception = error
-							
-							self.notify!
+							if error
+								@ready.reject(error)
+							else
+								@ready.resolve(nil)
+							end
 						end
 					end
 					

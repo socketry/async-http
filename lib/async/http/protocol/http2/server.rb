@@ -6,6 +6,7 @@
 require_relative "connection"
 require_relative "request"
 
+require "async/barrier"
 require "protocol/http2/server"
 
 module Async
@@ -51,9 +52,10 @@ module Async
 					# 	@parameter request [Request] The incoming HTTP/2 request.
 					def each(task: Task.current)
 						task.annotate("Reading #{version} requests for #{self.class}.")
+						barrier = Async::Barrier.new(parent: task)
 						
 						# It's possible the connection has died before we get here...
-						@requests.async do |task, request|
+						@requests.async(parent: barrier) do |task, request|
 							task.annotate("Incoming request: #{request.method} #{request.path.inspect}.")
 							
 							response = nil
@@ -75,7 +77,9 @@ module Async
 							end
 						end
 						
-						# Maybe we should add some synchronisation here - i.e. only exit once all requests are finished.
+						barrier.wait
+					ensure
+						barrier&.stop
 					end
 				end
 			end

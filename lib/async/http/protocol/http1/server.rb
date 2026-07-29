@@ -10,6 +10,7 @@
 require_relative "connection"
 require_relative "finishable"
 
+require "async/promise"
 require "console/event/failure"
 
 module Async
@@ -22,14 +23,14 @@ module Async
 					def initialize(...)
 						super
 						
-						@ready = Async::Notification.new
+						@ready = Async::Promise.new
 					end
 					
 					# Called when the connection is closed, signalling any waiting tasks.
 					def closed(error = nil)
 						super
 						
-						@ready.signal
+						@ready.resolve(nil)
 					end
 					
 					# Write a failure response with the given status code.

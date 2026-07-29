@@ -16,6 +16,10 @@ Please see the [project documentation](https://socketry.github.io/async-http/) f
 
 Please see the [project releases](https://socketry.github.io/async-http/releases/index) for all releases.
 
+### v0.99.0
+
+  - Retry safe requests when a remote HTTP/2 endpoint resets the stream with `INTERNAL_ERROR` before returning a response.
+
 ### v0.98.1
 
   - Probe idle HTTP/1 connections before reuse, avoiding requests on connections already closed by the peer.
@@ -54,10 +58,6 @@ Please see the [project releases](https://socketry.github.io/async-http/releases
 ### v0.94.0
 
   - Propagate all errors from background reader to active streams so that they are closed correctly (e.g. errors are not missed).
-
-### v0.92.2
-
-  - Better handling of trailers. If invalid trailers are received, the connection (HTTP/1) or stream (HTTP/2) is reset.
 
 ## See Also
 

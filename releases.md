@@ -1,6 +1,6 @@
 # Releases
 
-## Unreleased
+## v0.99.0
 
   - Retry safe requests when a remote HTTP/2 endpoint resets the stream with `INTERNAL_ERROR` before returning a response.
 

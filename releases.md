@@ -1,5 +1,9 @@
 # Releases
 
+## Unreleased
+
+  - Retry safe requests when a remote HTTP/2 endpoint resets the stream with `INTERNAL_ERROR` before returning a response.
+
 ## v0.98.1
 
   - Probe idle HTTP/1 connections before reuse, avoiding requests on connections already closed by the peer.

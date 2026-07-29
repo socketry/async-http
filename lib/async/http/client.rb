@@ -9,6 +9,7 @@ require "io/endpoint"
 require "async/pool/controller"
 
 require "protocol/http/body/completable"
+require "protocol/http/error"
 require "protocol/http/methods"
 
 require_relative "protocol"
@@ -126,7 +127,7 @@ module Async
 					else
 						raise
 					end
-				rescue SocketError, IOError, EOFError, Errno::ECONNRESET, Errno::EPIPE
+				rescue ::Protocol::HTTP::RemoteError, SocketError, IOError, EOFError, Errno::ECONNRESET, Errno::EPIPE
 					if connection
 						@pool.release(connection)
 						connection = nil

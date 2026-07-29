@@ -50,6 +50,27 @@ describe Async::HTTP::Client do
 			expect(client.chunks).to be == ["Hello", "Hello"]
 		end
 		
+		it "rewinds idempotent request bodies after remote failures" do
+			client = RetryClient.new([Protocol::HTTP::RemoteError.new("Remote endpoint failed.")])
+			request = Protocol::HTTP::Request["PUT", "/", {}, ["Hello"]]
+			
+			response = client.call(request)
+			
+			expect(response).to be(:success?)
+			expect(client.chunks).to be == ["Hello", "Hello"]
+		end
+		
+		it "does not retry non-idempotent requests after remote failures" do
+			client = RetryClient.new([Protocol::HTTP::RemoteError.new("Remote endpoint failed.")])
+			request = Protocol::HTTP::Request["POST", "/", {}, ["Hello"]]
+			
+			expect do
+				client.call(request)
+			end.to raise_exception(Protocol::HTTP::RemoteError)
+			
+			expect(client.chunks).to be == ["Hello"]
+		end
+		
 		it "rewinds non-idempotent request bodies after refused requests" do
 			client = RetryClient.new([Protocol::HTTP::RefusedError.new("Request not processed.")])
 			request = Protocol::HTTP::Request["POST", "/", {}, ["Hello"]]

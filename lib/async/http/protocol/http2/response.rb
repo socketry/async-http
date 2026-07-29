@@ -122,6 +122,12 @@ module Async
 							if @exception
 								raise @exception
 							end
+						rescue ::Protocol::HTTP2::StreamError => error
+							if error.code == ::Protocol::HTTP2::Error::INTERNAL_ERROR
+								raise ::Protocol::HTTP::RemoteError, error.message
+							end
+							
+							raise
 						end
 						
 						# Called when the stream is closed.

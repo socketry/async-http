@@ -41,11 +41,7 @@ module Async
 					
 					# Close the server connection and stop accepting requests.
 					def close(error = nil)
-						if @requests
-							# Stop the request loop:
-							@requests.enqueue(nil)
-							@requests = nil
-						end
+						@requests.close
 						
 						super
 					end
@@ -57,7 +53,7 @@ module Async
 						task.annotate("Reading #{version} requests for #{self.class}.")
 						
 						# It's possible the connection has died before we get here...
-						@requests&.async do |task, request|
+						@requests.async do |task, request|
 							task.annotate("Incoming request: #{request.method} #{request.path.inspect}.")
 							
 							response = nil

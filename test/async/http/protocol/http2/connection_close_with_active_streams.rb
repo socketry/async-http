@@ -69,6 +69,31 @@ describe Async::HTTP::Protocol::HTTP2 do
 			end.wait
 		end
 		
+		it "maps a remote internal error while reading the response body" do
+			Async do |task|
+				client_connection = Async::HTTP::Protocol::HTTP2::Client.new(client_stream)
+				client_connection.open!
+				
+				response = client_connection.create_response
+				request = Protocol::HTTP::Request.new("https", "example.com", "GET", "/")
+				client_connection.write_request(response, request)
+				response.stream.receive_initial_headers([[":status", "200"]], false)
+				
+				client_connection.read_response(response)
+				response.stream.close!(Protocol::HTTP2::INTERNAL_ERROR)
+				
+				expect do
+					response.body.read
+				end.to raise_exception(Protocol::HTTP::RemoteError).and(
+					have_attributes(
+						cause: be_a(Protocol::HTTP2::StreamError).and(
+							have_attributes(code: be == Protocol::HTTP2::INTERNAL_ERROR)
+						)
+					)
+				)
+			end.wait
+		end
+		
 		it "does not raise error when connection closes without active streams" do
 			Async do |task|
 				# Create client connection

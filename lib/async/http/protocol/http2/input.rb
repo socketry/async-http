@@ -4,6 +4,8 @@
 # Copyright, 2020-2026, by Samuel Williams.
 
 require "protocol/http/body/writable"
+require "protocol/http/error"
+require "protocol/http2/error"
 
 module Async
 	module HTTP
@@ -41,6 +43,12 @@ module Async
 						end
 						
 						return chunk
+					rescue ::Protocol::HTTP2::StreamError => error
+						if error.code == ::Protocol::HTTP2::Error::INTERNAL_ERROR
+							raise ::Protocol::HTTP::RemoteError, error.message
+						end
+						
+						raise
 					end
 					
 					# Close the application-facing input body and notify the stream that incoming data is no longer being consumed. While local output is active, the HTTP/2 stream remains open. Once output also closes, the remaining wire stream is terminated without an error.

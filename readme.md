@@ -16,6 +16,10 @@ Please see the [project documentation](https://socketry.github.io/async-http/) f
 
 Please see the [project releases](https://socketry.github.io/async-http/releases/index) for all releases.
 
+### v0.100.0
+
+  - Added transport-neutral TLS configuration support to `Async::HTTP::Endpoint`.
+
 ### v0.99.0
 
   - Retry safe requests when a remote HTTP/2 endpoint resets the stream with `INTERNAL_ERROR` before returning a response.
@@ -54,10 +58,6 @@ Please see the [project releases](https://socketry.github.io/async-http/releases
 ### v0.94.1
 
   - Fix `defer_stop` usage in `HTTP1::Server`, improving server graceful shutdown behavior.
-
-### v0.94.0
-
-  - Propagate all errors from background reader to active streams so that they are closed correctly (e.g. errors are not missed).
 
 ## See Also
 

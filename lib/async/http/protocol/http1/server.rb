@@ -161,6 +161,9 @@ module Async
 									# Do not remove this line or you will unleash the gods of concurrency hell.
 									task.yield
 								end
+							rescue ::Protocol::HTTP::RemoteError => error
+								Console.debug(self, "Remote endpoint disconnected!", exception: error)
+								return
 							rescue => error
 								# We store error (as a local variable) for later use in the ensure block.
 								raise

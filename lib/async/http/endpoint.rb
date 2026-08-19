@@ -70,6 +70,7 @@ module Async
 			# @option hostname [String] the hostname to connect to (or bind to), overrides the URL hostname (used for SNI).
 			# @option port [Integer] the port to bind to, overrides the URL port.
 			# @option ssl_context [OpenSSL::SSL::SSLContext] the context to use for TLS.
+			# @option tls_configuration [IO::Endpoint::TLS::Configuration] the transport-neutral TLS configuration.
 			# @option alpn_protocols [Array(String)] the alpn protocols to negotiate.
 			def initialize(url, endpoint = nil, **options)
 				super(**options)
@@ -206,6 +207,11 @@ module Async
 				end
 			end
 			
+			# @returns [IO::Endpoint::TLS::Configuration | Nil] The transport-neutral TLS configuration.
+			def tls_configuration
+				@options[:tls_configuration]
+			end
+			
 			# Build a suitable endpoint, optionally wrapping in TLS for secure connections.
 			# @parameter endpoint [IO::Endpoint::Generic | Nil] An optional underlying endpoint to wrap.
 			# @returns [IO::Endpoint::Generic] The constructed endpoint.
@@ -216,6 +222,7 @@ module Async
 					# Wrap it in SSL:
 					return ::IO::Endpoint::SSLEndpoint.new(endpoint,
 						ssl_context: self.ssl_context,
+						tls_configuration: self.tls_configuration,
 						hostname: @url.hostname,
 						timeout: self.timeout,
 					)
@@ -280,6 +287,7 @@ module Async
 				options.delete(:port)
 				options.delete(:hostname)
 				options.delete(:ssl_context)
+				options.delete(:tls_configuration)
 				options.delete(:alpn_protocols)
 				options.delete(:protocol)
 				

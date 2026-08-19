@@ -57,6 +57,23 @@ describe Async::HTTP::Endpoint do
 		end
 	end
 	
+	with "#tls_configuration" do
+		let(:tls_configuration) do
+			IO::Endpoint::TLS::Configuration.new(verification: :none)
+		end
+		
+		it "forwards the TLS configuration to the SSL endpoint" do
+			endpoint = subject.parse("https://example.com", tls_configuration: tls_configuration)
+			ssl_endpoint = endpoint.endpoint
+			
+			expect(endpoint.tls_configuration).to be_equal(tls_configuration)
+			expect(ssl_endpoint).to be_a(IO::Endpoint::SSLEndpoint)
+			expect(ssl_endpoint.tls_configuration).to be_equal(tls_configuration)
+			expect(ssl_endpoint.context.verify_mode).to be == OpenSSL::SSL::VERIFY_NONE
+			expect(ssl_endpoint.endpoint.options).not.to be(:key?, :tls_configuration)
+		end
+	end
+	
 	with ".for" do
 		describe Async::HTTP::Endpoint.for("http", "localhost") do
 			it "should have correct attributes" do

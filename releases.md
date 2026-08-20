@@ -1,5 +1,9 @@
 # Releases
 
+## Unreleased
+
+  - Handle remote disconnects in `Async::HTTP::Protocol::HTTP1::Server#each` without reporting them as server failures.
+
 ## v0.100.0
 
   - Added transport-neutral TLS configuration support to `Async::HTTP::Endpoint`.

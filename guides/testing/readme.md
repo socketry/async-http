@@ -169,9 +169,3 @@ end
 ~~~
 
 Always accept and forward `**options` when wrapping the constructor so the test does not silently change client configuration.
-
-## Choosing a Fake Client
-
-Use a fake client when application logic only needs a predetermined response and does not depend on HTTP framing, connection reuse, streaming, retries, or protocol errors. A fake is faster and simpler, but it cannot verify that requests are valid on the wire.
-
-Use a fixture or mock endpoint when the interaction with `Async::HTTP` is part of the behavior being tested.

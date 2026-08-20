@@ -4,11 +4,45 @@ This guide explains how to test `Async::HTTP` clients and servers without depend
 
 Real network services make tests slower and less deterministic. Prefer one of these approaches:
 
+- Use [`sus-fixtures-protocol-http`](https://socketry.github.io/sus-fixtures-protocol-http/guides/getting-started/) to exercise HTTP middleware directly without a client or server.
 - Use `sus-fixtures-async-http` to run an application with a managed local server and client.
 - Use ruby:`Async::HTTP::Mock::Endpoint` when testing a client that expects to connect to a particular remote endpoint.
-- Use a small fake client when the HTTP protocol behavior itself is not under test.
 
-## Testing an HTTP Application
+## Testing Middleware Directly
+
+When a test only needs to construct requests and inspect responses, `sus-fixtures-protocol-http` can call `Protocol::HTTP` middleware in-process without starting a client or server. Add the fixture to your test dependencies:
+
+~~~ bash
+$ bundle add sus --group test
+$ bundle add sus-fixtures-protocol-http --group test
+~~~
+
+Include `MiddlewareContext` and provide the middleware under test:
+
+~~~ ruby
+require "sus/fixtures/protocol/http/middleware_context"
+
+describe "My HTTP application" do
+	include Sus::Fixtures::Protocol::HTTP::MiddlewareContext
+	
+	let(:middleware) do
+		Protocol::HTTP::Middleware.for do |request|
+			Protocol::HTTP::Response[200, {}, ["Hello #{request.path}"]]
+		end
+	end
+	
+	it "handles a request directly" do
+		response = client.get("/world")
+		
+		expect(response.status).to be == 200
+		expect(response.read).to be == "Hello /world"
+	end
+end
+~~~
+
+The fixture closes the final request, response, and middleware after each test. Use `sus-fixtures-async-http` when the test needs a real client/server exchange.
+
+## Testing with a Client and Server
 
 The `ServerContext` fixture manages an ephemeral listening endpoint, server task, and connected client. Add the fixture to your test dependencies:
 

@@ -1,6 +1,6 @@
 # Releases
 
-## Unreleased
+## v0.101.0
 
   - Handle remote disconnects in `Async::HTTP::Protocol::HTTP1::Server#each` without reporting them as server failures.
 

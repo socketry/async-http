@@ -16,6 +16,10 @@ Please see the [project documentation](https://socketry.github.io/async-http/) f
 
 Please see the [project releases](https://socketry.github.io/async-http/releases/index) for all releases.
 
+### v0.101.0
+
+  - Handle remote disconnects in `Async::HTTP::Protocol::HTTP1::Server#each` without reporting them as server failures.
+
 ### v0.100.0
 
   - Added transport-neutral TLS configuration support to `Async::HTTP::Endpoint`.
@@ -54,10 +58,6 @@ Please see the [project releases](https://socketry.github.io/async-http/releases
 ### v0.94.3
 
   - Fix response body leak in HTTP/2 server when stream is reset before `send_response` completes (e.g. client-side gRPC cancellation). The response body's `close` was never called, leaking any resources tied to body lifecycle (such as `rack.response_finished` callbacks and utilization metrics).
-
-### v0.94.1
-
-  - Fix `defer_stop` usage in `HTTP1::Server`, improving server graceful shutdown behavior.
 
 ## See Also
 

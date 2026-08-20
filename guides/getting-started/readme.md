@@ -91,7 +91,7 @@ Sync do
 end
 ~~~
 
-For larger responses, process the body incrementally rather than reading it into one string. See the `protocol-http` message body documentation for the complete body interface.
+For larger responses, process the body incrementally rather than reading it into one string. See the [`protocol-http` message body documentation](https://socketry.github.io/protocol-http/guides/message-body/) for the complete body interface.
 
 ### Downloading a File
 

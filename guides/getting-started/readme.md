@@ -14,17 +14,17 @@ $ bundle add async-http
 
 `Async::HTTP` provides several interfaces for different kinds of HTTP applications:
 
-- {ruby Async::HTTP::Internet} makes requests to arbitrary hosts and manages a client for each remote endpoint.
-- {ruby Async::HTTP::Client} manages persistent connections to a specific endpoint.
-- {ruby Async::HTTP::Server} accepts connections and dispatches requests to an HTTP application.
-- {ruby Async::HTTP::Endpoint} describes how a client connects or a server listens, including the URL, protocol, and TLS configuration.
+- ruby:`Async::HTTP::Internet` makes requests to arbitrary hosts and manages a client for each remote endpoint.
+- ruby:`Async::HTTP::Client` manages persistent connections to a specific endpoint.
+- ruby:`Async::HTTP::Server` accepts connections and dispatches requests to an HTTP application.
+- ruby:`Async::HTTP::Endpoint` describes how a client connects or a server listens, including the URL, protocol, and TLS configuration.
 - [`protocol-http`](https://github.com/socketry/protocol-http) provides the shared request, response, header, and body interfaces.
 
 Use `Internet` for general-purpose requests to different hosts. Use `Client` when your application repeatedly communicates with one endpoint or needs endpoint-specific configuration.
 
 ## Making a Request
 
-The shared {ruby Async::HTTP::Internet} instance provides a convenient starting point. Run asynchronous HTTP operations inside `Sync`, which creates or reuses the event loop while returning the block result directly:
+The shared ruby:`Async::HTTP::Internet` instance provides a convenient starting point. Run asynchronous HTTP operations inside `Sync`, which creates or reuses the event loop while returning the block result directly:
 
 ~~~ ruby
 require "async/http/internet/instance"
@@ -54,7 +54,7 @@ Convenience methods are provided for `GET`, `HEAD`, `POST`, `PUT`, `DELETE`, `CO
 
 ### Connection Persistence
 
-`Internet` creates a {ruby Async::HTTP::Client} for each remote endpoint and reuses its persistent connections. The underlying async pools are bound to the event loop and are closed when that event loop exits.
+`Internet` creates a ruby:`Async::HTTP::Client` for each remote endpoint and reuses its persistent connections. The underlying async pools are bound to the event loop and are closed when that event loop exits.
 
 An explicitly created `Internet` can also be closed early when an application wants to release all cached clients before the event loop exits:
 
@@ -156,7 +156,7 @@ The response block still closes the response if the timeout interrupts the reque
 
 ## Making a Server
 
-{ruby Async::HTTP::Server} accepts an application that maps each request to a {ruby Protocol::HTTP::Response}. The following example starts a local server, makes one request, and then releases both client and server resources:
+ruby:`Async::HTTP::Server` accepts an application that maps each request to a ruby:`Protocol::HTTP::Response`. The following example starts a local server, makes one request, and then releases both client and server resources:
 
 ~~~ ruby
 require "async/http"

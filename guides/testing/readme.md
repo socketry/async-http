@@ -5,7 +5,7 @@ This guide explains how to test `Async::HTTP` clients and servers without depend
 Real network services make tests slower and less deterministic. Prefer one of these approaches:
 
 - Use `sus-fixtures-async-http` to run an application with a managed local server and client.
-- Use {ruby Async::HTTP::Mock::Endpoint} when testing a client that expects to connect to a particular remote endpoint.
+- Use ruby:`Async::HTTP::Mock::Endpoint` when testing a client that expects to connect to a particular remote endpoint.
 - Use a small fake client when the HTTP protocol behavior itself is not under test.
 
 ## Testing an HTTP Application
@@ -84,9 +84,9 @@ Test normal behavior without forcing a protocol unless the distinction is releva
 
 ## Testing a Client with a Mock Endpoint
 
-{ruby Async::HTTP::Mock::Endpoint} connects the real client and server protocol implementations through a local socket pair. It does not open a network port, but requests still exercise serialization, connection handling, and response bodies.
+ruby:`Async::HTTP::Mock::Endpoint` connects the real client and server protocol implementations through a local socket pair. It does not open a network port, but requests still exercise serialization, connection handling, and response bodies.
 
-Use {ruby Async::HTTP::Mock::Endpoint#wrap} to preserve the scheme and authority expected by the client:
+Use ruby:`Async::HTTP::Mock::Endpoint#wrap` to preserve the scheme and authority expected by the client:
 
 ~~~ ruby
 require "async/http"
@@ -121,7 +121,7 @@ Return different statuses, headers, bodies, delays, or malformed behavior from t
 
 ## Transparently Replacing Client Endpoints
 
-Some applications construct {ruby Async::HTTP::Client} internally. A test can wrap the constructor so those clients connect to a mock endpoint while retaining the original endpoint metadata and client options:
+Some applications construct ruby:`Async::HTTP::Client` internally. A test can wrap the constructor so those clients connect to a mock endpoint while retaining the original endpoint metadata and client options:
 
 ~~~ ruby
 require "async/http"

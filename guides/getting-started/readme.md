@@ -1,6 +1,6 @@
 # Getting Started
 
-This guide explains how to get started with `Async::HTTP`.
+This guide explains how to make HTTP requests and serve HTTP responses with `Async::HTTP`.
 
 ## Installation
 
@@ -12,39 +12,35 @@ $ bundle add async-http
 
 ## Core Concepts
 
-- {ruby Async::HTTP::Client} is the main class for making HTTP requests.
-- {ruby Async::HTTP::Internet} provides a simple interface for making requests to any server "on the internet".
-- {ruby Async::HTTP::Server} is the main class for handling HTTP requests.
-- {ruby Async::HTTP::Endpoint} can parse HTTP URLs in order to create a client or server.
-- [`protocol-http`](https://github.com/socketry/protocol-http) provides the abstract HTTP protocol interfaces.
+`Async::HTTP` provides several interfaces for different kinds of HTTP applications:
 
-## Usage
+- ruby:`Async::HTTP::Internet` makes requests to arbitrary hosts and manages a client for each remote endpoint.
+- ruby:`Async::HTTP::Client` manages persistent connections to a specific endpoint.
+- ruby:`Async::HTTP::Server` accepts connections and dispatches requests to an HTTP application.
+- ruby:`Async::HTTP::Endpoint` describes how a client connects or a server listens, including the URL, protocol, and TLS configuration.
+- [`protocol-http`](https://github.com/socketry/protocol-http) provides the shared request, response, header, and body interfaces.
 
-### Making a Request
+Use `Internet` for general-purpose requests to different hosts. Use `Client` when your application repeatedly communicates with one endpoint or needs endpoint-specific configuration.
 
-To make a request, use {ruby Async::HTTP::Internet} and call the appropriate method:
+## Making a Request
+
+The shared ruby:`Async::HTTP::Internet` instance provides a convenient starting point. Run asynchronous HTTP operations inside `Sync`, which creates or reuses the event loop while returning the block result directly:
 
 ~~~ ruby
-require 'async/http/internet/instance'
+require "async/http/internet/instance"
 
 Sync do
 	Async::HTTP::Internet.get("https://httpbin.org/get") do |response|
+		puts "Status: #{response.status}"
 		puts response.read
 	end
 end
 ~~~
 
-The following methods are supported:
+Passing a block automatically closes the response when the block exits, including when an exception is raised. Responses are streamed, so callers that do not use the block form must close the response explicitly.
 
 ~~~ ruby
-Async::HTTP::Internet.methods(false)
-# => [:patch, :options, :connect, :post, :get, :delete, :head, :trace, :put]
-~~~
-
-Using a block will automatically close the response when the block completes. If you want to keep the response open, you can manage it manually:
-
-~~~ ruby
-require 'async/http/internet/instance'
+require "async/http/internet/instance"
 
 Sync do
 	response = Async::HTTP::Internet.get("https://httpbin.org/get")
@@ -54,95 +50,134 @@ ensure
 end
 ~~~
 
-As responses are streamed, you must ensure it is closed when you are finished with it.
+Convenience methods are provided for `GET`, `HEAD`, `POST`, `PUT`, `DELETE`, `CONNECT`, `OPTIONS`, `TRACE`, `PATCH`, and `QUERY` requests.
 
-#### Persistence
+### Connection Persistence
 
-By default, {ruby Async::HTTP::Internet} will create a {ruby Async::HTTP::Client} for each remote host you communicate with, and will keep those connections open for as long as possible. This is useful for reducing the latency of subsequent requests to the same host. When you exit the event loop, the connections will be closed automatically.
+`Internet` creates a ruby:`Async::HTTP::Client` for each remote endpoint and reuses its persistent connections. The underlying async pools are bound to the event loop and are closed when that event loop exits.
+
+An explicitly created `Internet` can also be closed early when an application wants to release all cached clients before the event loop exits:
+
+~~~ ruby
+require "async/http/internet"
+
+Sync do
+	internet = Async::HTTP::Internet.new
+
+	internet.get("https://example.com") do |response|
+		puts response.status
+	end
+ensure
+	internet&.close
+end
+~~~
+
+## Working with Responses
+
+A response contains a status, headers, and a streaming body. Check the status before processing content, and use header names in lower case:
+
+~~~ ruby
+require "async/http/internet/instance"
+
+Sync do
+	Async::HTTP::Internet.get("https://httpbin.org/json") do |response|
+		if response.success?
+			puts response.headers["content-type"]
+			puts response.read
+		else
+			warn "Request failed with status #{response.status}."
+		end
+	end
+end
+~~~
+
+For larger responses, process the body incrementally rather than reading it into one string. See the [`protocol-http` message body documentation](https://socketry.github.io/protocol-http/guides/message-body/) for the complete body interface.
 
 ### Downloading a File
 
+Use `response.save` to stream a response directly to a file:
+
 ~~~ ruby
-require 'async/http/internet/instance'
+require "async/http/internet/instance"
 
 Sync do
-	# Issue a GET request to Google:
-	response = Async::HTTP::Internet.get("https://www.google.com/search?q=kittens")
-	
-	# Save the response body to a local file:
-	response.save("/tmp/search.html")
-ensure
-	response&.close
+	Async::HTTP::Internet.get("https://example.com/archive.zip") do |response|
+		raise "Download failed with status #{response.status}." unless response.success?
+		
+		response.save("archive.zip")
+	end
 end
 ~~~
 
-### Posting Data
+## Posting JSON
 
-To post data, use the `post` method:
+Pass headers and a body after the request target. The body may be a string or a compatible `protocol-http` body object.
 
 ~~~ ruby
-require 'async/http/internet/instance'
+require "async/http/internet/instance"
+require "json"
 
-data = {'life' => 42}
+data = {life: 42}
+headers = [
+	["accept", "application/json"],
+	["content-type", "application/json"],
+]
 
 Sync do
-	# Prepare the request:
-	headers = [['accept', 'application/json']]
-	body = JSON.dump(data)
-	
-	# Issues a POST request:
-	response = Async::HTTP::Internet.post("https://httpbin.org/anything", headers, body)
-	
-	# Save the response body to a local file:
-	pp JSON.parse(response.read)
-ensure
-	response&.close
+	Async::HTTP::Internet.post("https://httpbin.org/anything", headers, JSON.dump(data)) do |response|
+		raise "Request failed with status #{response.status}." unless response.success?
+		
+		puts JSON.pretty_generate(JSON.parse(response.read))
+	end
 end
 ~~~
 
-For more complex scenarios, including HTTP APIs, consider using [async-rest](https://github.com/socketry/async-rest) instead.
+For resource-oriented HTTP APIs, consider using [`async-rest`](https://github.com/socketry/async-rest), which builds on `Async::HTTP`.
 
-### Timeouts
+## Applying a Timeout
 
-To set a timeout for a request, use the `Task#with_timeout` method:
+Networks can stall indefinitely, so impose a timeout around operations that must complete within a fixed duration:
 
 ~~~ ruby
-require 'async/http/internet/instance'
+require "async/http/internet/instance"
 
 Sync do |task|
-	# Request will timeout after 2 seconds
 	task.with_timeout(2) do
-		response = Async::HTTP::Internet.get "https://httpbin.org/delay/10"
+		Async::HTTP::Internet.get("https://httpbin.org/delay/10") do |response|
+			puts response.read
+		end
+	end
+rescue Async::TimeoutError
+	warn "The request timed out."
+end
+~~~
+
+The response block still closes the response if the timeout interrupts the request while its body is being processed.
+
+## Making a Server
+
+ruby:`Async::HTTP::Server` accepts an application that maps each request to a ruby:`Protocol::HTTP::Response`. The following example starts a local server, makes one request, and then releases both client and server resources:
+
+~~~ ruby
+require "async/http"
+
+endpoint = Async::HTTP::Endpoint.parse("http://localhost:9292")
+server = Async::HTTP::Server.for(endpoint) do |request|
+	Protocol::HTTP::Response[200, {"content-type" => "text/plain"}, ["Hello World"]]
+end
+
+Sync do
+	server_task = server.run
+	
+	Async::HTTP::Client.open(endpoint) do |client|
+		response = client.get("/")
+		puts response.read
 	ensure
 		response&.close
 	end
-rescue Async::TimeoutError
-	puts "The request timed out"
-end
-~~~
-
-### Making a Server
-
-To create a server, use an instance of {ruby Async::HTTP::Server}:
-
-~~~ ruby
-require 'async/http'
-
-endpoint = Async::HTTP::Endpoint.parse('http://localhost:9292')
-
-Sync do |task|
-	Async(transient: true) do
-		server = Async::HTTP::Server.for(endpoint) do |request|
-			::Protocol::HTTP::Response[200, {}, ["Hello World"]]
-		end
-		
-		server.run
-	end
-	
-	client = Async::HTTP::Client.new(endpoint)
-	response = client.get("/")
-	puts response.read
 ensure
-	response&.close
+	server_task&.stop
 end
 ~~~
+
+Use Falcon when you need to host a Rack application or deploy an HTTP server in production. Use `Async::HTTP::Server` directly when building a protocol-level server or embedding HTTP handling into another asynchronous application.

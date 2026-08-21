@@ -14,7 +14,7 @@ ruby:`Async::HTTP::Internet`, ruby:`Async::HTTP::Client`, and `Protocol::HTTP` m
 | A request is constructed separately or passed through middleware. | ruby:`Protocol::HTTP::Request` with `call` | Preserves the complete HTTP message across integration boundaries. |
 | A library wraps one HTTP service directly. | Injected ruby:`Async::HTTP::Client` or `Protocol::HTTP` middleware | Leaves transport configuration, ownership, and testing under application control. |
 | A library models an HTTP API as resources and representations. | [`async-rest`](https://socketry.github.io/async-rest/guides/getting-started/) | Provides higher-level API modeling over an injectable `Protocol::HTTP` delegate. |
-| A library uses Faraday as its HTTP abstraction. | [`async-http-faraday`](https://socketry.github.io/async-http-faraday/guides/getting-started/) | Lets the application retain the Faraday interface while using Async::HTTP as the transport. |
+| A library uses Faraday as its HTTP abstraction. | [`async-http-faraday`](https://socketry.github.io/async-http-faraday/guides/getting-started/) | Lets the application retain the Faraday interface while using `Async::HTTP` as the transport. |
 
 Application code can start with the shared `Internet` interface unless it has a specific ownership or configuration requirement. Library code should accept an explicit HTTP dependency.
 
@@ -142,7 +142,7 @@ ruby:`Async::REST::Resource` accepts a `Protocol::HTTP` middleware delegate, so 
 
 Use [`async-http-faraday`](https://socketry.github.io/async-http-faraday/guides/getting-started/) when a library uses Faraday as its public HTTP abstraction or needs compatibility with the Faraday ecosystem. A new Async-native library can usually accept a ruby:`Async::HTTP::Client` or `Protocol::HTTP` middleware delegate directly.
 
-If a library uses Faraday, accept a configured `Faraday::Connection` rather than changing `Faraday.default_adapter` globally. The application can then select the Async::HTTP adapter for that connection:
+If a library uses Faraday, accept a configured `Faraday::Connection` rather than changing `Faraday.default_adapter` globally. The application can then select the `Async::HTTP` adapter for that connection:
 
 ~~~ ruby
 require "async/http/faraday"

@@ -1,4 +1,6 @@
 getting-started:
   order: 0
-testing:
+choosing-a-client:
   order: 1
+testing:
+  order: 2

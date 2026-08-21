@@ -20,7 +20,7 @@ $ bundle add async-http
 - ruby:`Async::HTTP::Endpoint` describes how a client connects or a server listens, including the URL, protocol, and TLS configuration.
 - [`protocol-http`](https://github.com/socketry/protocol-http) provides the shared request, response, header, and body interfaces.
 
-Use `Internet` for general-purpose requests to different hosts. Use `Client` when your application repeatedly communicates with one endpoint or needs endpoint-specific configuration.
+Use `Internet` for general-purpose requests to different hosts. Use `Client` when your application repeatedly communicates with one endpoint or needs endpoint-specific configuration. See [Choosing a Client](../choosing-a-client/) for the ownership and configuration trade-offs.
 
 ## Making a Request
 

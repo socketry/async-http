@@ -187,13 +187,3 @@ end
 Construct requests directly when another component produces the message, when using middleware, or when sending a custom HTTP method without a convenience method. The client still determines the endpoint and manages the connections.
 
 For direct, in-process middleware tests, see the [Testing guide](../testing/). For the complete message interface, see the [`protocol-http` Getting Started guide](https://socketry.github.io/protocol-http/guides/getting-started/).
-
-## Recommendation
-
-Use the narrowest interface that matches the destination scope:
-
-1. Start with the shared `Internet` interface for general URL-based requests.
-2. Use an explicit `Internet` when several origins need common configuration or explicit ownership.
-3. Use a `Client` when one endpoint is a named application dependency.
-4. Construct requests directly when integrating with middleware or another component that already works with HTTP messages.
-5. When building a library, accept and document the narrowest HTTP interface it needs; leave transport configuration and injected-client ownership to the application.

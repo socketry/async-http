@@ -1,8 +1,8 @@
 # Choosing a Client
 
-This guide explains how to choose between ruby:`Async::HTTP::Internet`, ruby:`Async::HTTP::Client`, direct ruby:`Protocol::HTTP::Request` handling, and higher-level interfaces for libraries.
+This guide explains how to choose between ruby:`Async::HTTP::Internet`, ruby:`Async::HTTP::Client`, and higher-level interfaces for libraries.
 
-ruby:`Async::HTTP::Internet`, ruby:`Async::HTTP::Client`, and `Protocol::HTTP` middleware use the same request and response model. The important differences are how destinations are selected, where connection settings are applied, and who owns the client life cycle.
+ruby:`Async::HTTP::Internet` and ruby:`Async::HTTP::Client` use the same request and response model. The important differences are how destinations are selected, where connection settings are applied, and who owns the client life cycle.
 
 ## Quick Decision
 
@@ -11,7 +11,6 @@ ruby:`Async::HTTP::Internet`, ruby:`Async::HTTP::Client`, and `Protocol::HTTP` m
 | Requests may target different origins and the defaults are suitable. | Shared ruby:`Async::HTTP::Internet` | Selects and reuses a client for each origin automatically. |
 | Requests may target different origins, but need common client options or explicit ownership. | Explicit ruby:`Async::HTTP::Internet` | Applies the same options to each managed client and can be injected or closed early. |
 | Requests repeatedly target one configured origin. | ruby:`Async::HTTP::Client` | Exposes the endpoint, protocol, retry, and connection-pool configuration directly. |
-| A request is constructed separately or passed through middleware. | ruby:`Protocol::HTTP::Request` with `call` | Preserves the complete HTTP message across integration boundaries. |
 | A library wraps one HTTP service directly. | Injected ruby:`Async::HTTP::Client` or `Protocol::HTTP` middleware | Leaves transport configuration, ownership, and testing under application control. |
 | A library models an HTTP API as resources and representations. | [`async-rest`](https://socketry.github.io/async-rest/guides/getting-started/) | Provides higher-level API modeling over an injectable `Protocol::HTTP` delegate. |
 | A library uses Faraday as its HTTP abstraction. | [`async-http-faraday`](https://socketry.github.io/async-http-faraday/guides/getting-started/) | Lets the application retain the Faraday interface while using `Async::HTTP` as the transport. |
@@ -163,35 +162,3 @@ end
 
 puts StatusService.new(connection).healthy?
 ~~~
-
-## Prepared Requests and Middleware
-
-A ruby:`Protocol::HTTP::Request` is not another connection-management strategy. It is the complete HTTP message accepted by ruby:`Async::HTTP::Client#call` and by `Protocol::HTTP` middleware:
-
-~~~ ruby
-require "async/http"
-
-endpoint = Async::HTTP::Endpoint.parse("https://httpbin.org")
-
-Sync do
-	Async::HTTP::Client.open(endpoint) do |client|
-		request = Protocol::HTTP::Request[
-			"POST",
-			"/anything",
-			{"content-type" => "application/json"},
-			'{"task":"refresh"}',
-		]
-		response = client.call(request)
-		
-		begin
-			puts response.status
-		ensure
-			response.close
-		end
-	end
-end
-~~~
-
-Construct requests directly when another component produces the message, when using middleware, or when sending a custom HTTP method without a convenience method. The client still determines the endpoint and manages the connections.
-
-For direct, in-process middleware tests, see the [Testing guide](../testing/). For the complete message interface, see the [`protocol-http` Getting Started guide](https://socketry.github.io/protocol-http/guides/getting-started/).

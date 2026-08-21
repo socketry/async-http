@@ -1,8 +1,8 @@
 # Choosing a Client
 
-This guide explains how to choose between ruby:`Async::HTTP::Internet`, ruby:`Async::HTTP::Client`, and direct ruby:`Protocol::HTTP::Request` handling. It also explains how libraries should expose their HTTP dependency.
+This guide explains how to choose between ruby:`Async::HTTP::Internet`, ruby:`Async::HTTP::Client`, direct ruby:`Protocol::HTTP::Request` handling, and higher-level interfaces for libraries.
 
-All three approaches use the same request and response model. The important differences are how destinations are selected, where connection settings are applied, and who owns the client life cycle.
+ruby:`Async::HTTP::Internet`, ruby:`Async::HTTP::Client`, and `Protocol::HTTP` middleware use the same request and response model. The important differences are how destinations are selected, where connection settings are applied, and who owns the client life cycle.
 
 ## Quick Decision
 
@@ -12,6 +12,9 @@ All three approaches use the same request and response model. The important diff
 | Requests may target different origins, but need common client options or explicit ownership. | Explicit ruby:`Async::HTTP::Internet` | Applies the same options to each managed client and can be injected or closed early. |
 | Requests repeatedly target one configured origin. | ruby:`Async::HTTP::Client` | Exposes the endpoint, protocol, retry, and connection-pool configuration directly. |
 | A request is constructed separately or passed through middleware. | ruby:`Protocol::HTTP::Request` with `call` | Preserves the complete HTTP message across integration boundaries. |
+| A library wraps one HTTP service directly. | Injected ruby:`Async::HTTP::Client` or `Protocol::HTTP` middleware | Leaves transport configuration, ownership, and testing under application control. |
+| A library models an HTTP API as resources and representations. | [`async-rest`](https://socketry.github.io/async-rest/guides/getting-started/) | Provides higher-level API modeling over an injectable `Protocol::HTTP` delegate. |
+| A library uses Faraday as its HTTP abstraction. | [`async-http-faraday`](https://socketry.github.io/async-http-faraday/guides/getting-started/) | Lets the application retain the Faraday interface while using Async::HTTP as the transport. |
 
 Application code can start with the shared `Internet` interface unless it has a specific ownership or configuration requirement. Library code should accept an explicit HTTP dependency.
 
@@ -129,10 +132,15 @@ The library does not close an injected client because the caller owns it and may
 
 Define the accepted interface precisely. A ruby:`Async::HTTP::Client` is bound to one endpoint and its convenience methods accept relative paths, while ruby:`Async::HTTP::Internet` selects an endpoint from a complete URL. They should not be treated as interchangeable merely because both provide methods such as `get`. If the library constructs ruby:`Protocol::HTTP::Request` objects and only calls `call`, it can accept a `Protocol::HTTP` middleware delegate instead of requiring a concrete client.
 
-For higher-level library APIs, consider these established abstractions:
+## Modeling Resources with async-rest
 
-- [`async-rest`](https://socketry.github.io/async-rest/guides/getting-started/) provides resource and representation abstractions for modeling a remote HTTP API. ruby:`Async::REST::Resource` accepts a `Protocol::HTTP` middleware delegate, while its `open` method is an ownership convenience that creates and closes a ruby:`Async::HTTP::Client`.
-- [`async-http-faraday`](https://socketry.github.io/async-http-faraday/guides/getting-started/) lets a library use Faraday as its public HTTP abstraction while applications select Async::HTTP as the adapter. This is useful when compatibility with the Faraday ecosystem matters; a new Async-native interface can usually accept a ruby:`Async::HTTP::Client` directly.
+Use [`async-rest`](https://socketry.github.io/async-rest/guides/getting-started/) when a library benefits from modeling a remote HTTP API as resources and representations rather than exposing request operations directly.
+
+ruby:`Async::REST::Resource` accepts a `Protocol::HTTP` middleware delegate, so the application can supply and configure the transport. Its `open` method provides the complementary convenience interface: it creates a ruby:`Async::HTTP::Client`, yields the resource, and closes the client when the block exits.
+
+## Supporting Faraday with async-http-faraday
+
+Use [`async-http-faraday`](https://socketry.github.io/async-http-faraday/guides/getting-started/) when a library uses Faraday as its public HTTP abstraction or needs compatibility with the Faraday ecosystem. A new Async-native library can usually accept a ruby:`Async::HTTP::Client` or `Protocol::HTTP` middleware delegate directly.
 
 If a library uses Faraday, accept a configured `Faraday::Connection` rather than changing `Faraday.default_adapter` globally. The application can then select the Async::HTTP adapter for that connection:
 

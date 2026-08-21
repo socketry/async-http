@@ -61,6 +61,10 @@ module Async
 						end
 						
 						return request
+					rescue ::Protocol::HTTP1::LineLengthError
+						# We don't know whether the request line or a header line was too long, so we respond with the more common case (URI Too Long):
+						fail_request(414)
+						raise
 					rescue ::Protocol::HTTP1::BadRequest
 						fail_request(400)
 						# Conceivably we could retry here, but we don't really know how bad the error is, so it's better to just fail:

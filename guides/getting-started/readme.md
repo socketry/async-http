@@ -72,6 +72,8 @@ ensure
 end
 ~~~
 
+See [Concurrent Requests and Connection Pooling](../concurrent-requests/) to run independent requests together and configure separate limits for request tasks and connections.
+
 ## Working with Responses
 
 A response contains a status, headers, and a streaming body. Check the status before processing content, and use header names in lower case:

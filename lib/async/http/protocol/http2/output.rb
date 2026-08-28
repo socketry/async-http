@@ -29,13 +29,16 @@ module Async
 					attr :trailer
 					
 					# Start an asynchronous task to write the body to the stream.
-					def start(parent: Task.current)
+					#
+					# @parameter parent [Async::Task] The parent task to run the output task under.
+					# @parameter transient [Boolean] Whether the output task should be transient — a tunnel body (e.g. CONNECT) lives as long as the tunnel, and should not keep the parent task from finishing.
+					def start(parent: Task.current, transient: false)
 						raise "Task already started!" if @task
 						
 						if @body.stream?
-							@task = parent.async(&self.method(:stream))
+							@task = parent.async(transient: transient, &self.method(:stream))
 						else
-							@task = parent.async(&self.method(:passthrough))
+							@task = parent.async(transient: transient, &self.method(:passthrough))
 						end
 					end
 					

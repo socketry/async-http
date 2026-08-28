@@ -61,7 +61,8 @@ module Async
 									self.close(error)
 								end
 							elsif request.connect?
-								task.async(annotation: "Tunnneling request...") do
+								# Transient, like the pipe tasks this tunnel feeds: an open tunnel should not keep the parent task (or the reactor) from finishing.
+								task.async(transient: true, annotation: "Tunneling request...") do
 									write_tunnel_body(@version, body)
 								rescue => error
 									self.close(error)

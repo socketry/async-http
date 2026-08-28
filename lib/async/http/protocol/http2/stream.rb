@@ -132,10 +132,10 @@ module Async
 					end
 					
 					# Set the body and begin sending it.
-					def send_body(body, trailer = nil)
+					def send_body(body, trailer = nil, transient: false)
 						@output = Output.new(self, body, trailer)
 						
-						@output.start
+						@output.start(transient: transient)
 					end
 					
 					# Called when the output terminates normally.

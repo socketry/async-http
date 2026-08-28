@@ -114,6 +114,26 @@ AProxy = Sus::Shared("a proxy") do
 			
 			expect(proxy.client.pool).to be(:empty?)
 		end
+		
+		it "does not prevent the connecting task from finishing" do
+			proxy = Async::HTTP::Proxy.tcp(client, "localhost", 1)
+			
+			task = Async do
+				proxy.connect
+			end
+			
+			peer = task.wait
+			
+			# The task has no non-transient children (such as the tunnel's upload task), so it is finished:
+			expect(task).to be(:finished?)
+			
+			# The tunnel remains open in both directions after its connecting task has finished:
+			peer.write(data)
+			expect(peer.read(data.bytesize)).to be == data
+		ensure
+			peer&.close
+			proxy&.close
+		end
 	end
 	
 	with "proxied client" do

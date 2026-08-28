@@ -260,7 +260,8 @@ module Async
 								raise ::Protocol::HTTP::RefusedError
 							end
 							
-							@stream.send_body(request.body, trailer)
+							# A CONNECT request's body streams the tunnel for as long as the tunnel lives — it must not keep the parent task from finishing:
+							@stream.send_body(request.body, trailer, transient: request.connect?)
 						end
 					end
 				end

@@ -34,6 +34,9 @@ module Async
 					
 					# Used by the client to send requests to the remote server.
 					def call(request)
+						# The remote peer has sent a GOAWAY frame, so it will not process any new streams on this connection. The request has not been sent yet, so it is safe to retry it on a new connection, even if it is not idempotent. This is checked first, because a connection with no streams left to drain is closed by the GOAWAY itself.
+						raise ::Protocol::HTTP::RefusedError, "Connection is going away!" if self.goaway_received?
+						
 						raise ::Protocol::HTTP2::Error, "Connection closed!" if self.closed?
 						
 						response = create_response

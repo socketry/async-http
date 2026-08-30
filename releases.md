@@ -1,5 +1,9 @@
 # Releases
 
+## Unreleased
+
+  - HTTP/2 connections which received a graceful `GOAWAY` are no longer closed while the server is still answering the streams it accepted. Such a connection is retired from the pool, but stays open until the last accepted stream completes, so those requests no longer fail with `EOFError: Connection closed with N active stream(s)!`.
+
 ## v0.101.0
 
   - Handle remote disconnects in `Async::HTTP::Protocol::HTTP1::Server#each` without reporting them as server failures.

@@ -71,26 +71,26 @@ Please see the [project releases](https://socketry.github.io/async-http/releases
 
 We welcome contributions to this project.
 
-1.  Fork it.
+1.  Fork the repository.
 2.  Create your feature branch (`git checkout -b my-new-feature`).
-3.  Commit your changes (`git commit -am 'Add some feature'`).
+3.  Commit your changes (`git commit -am 'Add some feature.'`).
 4.  Push to the branch (`git push origin my-new-feature`).
-5.  Create new Pull Request.
+5.  Create a new pull request.
 
 ### Running Tests
 
 To run the test suite:
 
-``` shell
-bundle exec sus
+``` bash
+$ bundle exec sus
 ```
 
 ### Making Releases
 
 To make a new release:
 
-``` shell
-bundle exec bake gem:release:patch # or minor or major
+``` bash
+$ bundle exec bake gem:release:patch # or minor or major
 ```
 
 ### Developer Certificate of Origin

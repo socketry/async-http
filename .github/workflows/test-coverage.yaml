@@ -23,7 +23,7 @@ jobs:
           - ruby
     
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{matrix.ruby}}
@@ -33,7 +33,7 @@ jobs:
       timeout-minutes: 5
       run: bundle exec bake test
     
-    - uses: actions/upload-artifact@v5
+    - uses: actions/upload-artifact@v7
       with:
         include-hidden-files: true
         if-no-files-found: error
@@ -45,13 +45,13 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: ruby
         bundler-cache: true
     
-    - uses: actions/download-artifact@v6
+    - uses: actions/download-artifact@v8
     
     - name: Validate coverage
       timeout-minutes: 5

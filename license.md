@@ -3,7 +3,7 @@
 Copyright, 2017-2026, by Samuel Williams.  
 Copyright, 2018, by Viacheslav Koval.  
 Copyright, 2018, by Janko Marohnić.  
-Copyright, 2019, by Denis Talakevich.  
+Copyright, 2019-2026, by Denis Talakevich.  
 Copyright, 2019-2020, by Brian Morearty.  
 Copyright, 2019, by Cyril Roelandt.  
 Copyright, 2020, by Stefan Wrobel.  
@@ -25,6 +25,7 @@ Copyright, 2024, by Hal Brodigan.
 Copyright, 2025, by Jean Boussier.  
 Copyright, 2025, by Yuuji Yaginuma.  
 Copyright, 2025, by William T. Nelson.  
+Copyright, 2026, by Jun Jiang.  
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

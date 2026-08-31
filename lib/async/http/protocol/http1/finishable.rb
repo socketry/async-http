@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2024, by Samuel Williams.
+# Copyright, 2024-2026, by Samuel Williams.
+# Copyright, 2026, by Jun Jiang.
 
 require "protocol/http/body/wrapper"
 require "async/promise"

@@ -4,6 +4,7 @@
 # Copyright, 2018-2026, by Samuel Williams.
 # Copyright, 2020, by Bruno Sutic.
 # Copyright, 2025, by Jean Boussier.
+# Copyright, 2026, by Denis Talakevich.
 
 require_relative "stream"
 

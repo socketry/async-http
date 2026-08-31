@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2018-2025, by Samuel Williams.
+# Copyright, 2018-2026, by Samuel Williams.
+# Copyright, 2026, by Denis Talakevich.
 
 require_relative "connection"
 require_relative "response"

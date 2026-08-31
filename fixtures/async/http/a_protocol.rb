@@ -3,6 +3,7 @@
 # Released under the MIT License.
 # Copyright, 2018-2025, by Samuel Williams.
 # Copyright, 2020, by Igor Sidorov.
+# Copyright, 2026, by Jun Jiang.
 
 require "async"
 require "async/promise"

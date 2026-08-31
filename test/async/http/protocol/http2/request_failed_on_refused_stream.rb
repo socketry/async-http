@@ -2,6 +2,7 @@
 
 # Released under the MIT License.
 # Copyright, 2026, by Samuel Williams.
+# Copyright, 2026, by Jun Jiang.
 
 require "async/http/protocol/http2"
 require "async/promise"

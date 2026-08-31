@@ -29,15 +29,13 @@ module Async
 					task.async(transient: true, &self.method(:writer))
 				end
 				
+				# Transfer ownership of the tail socket to the caller. This method can only be called once; subsequent calls will raise an `IOError`.
 				# @returns [IO] The underlying IO object for the tail of the pipe.
 				def to_io
-					@tail
-				end
-				
-				# Transfer ownership of the tail socket to the caller so that it can be used and closed independently of the pipe's execution context.
-				# @returns [IO | Nil] The underlying IO object for the tail of the pipe, or `nil` if it has already been released.
-				def release
-					tail = @tail
+					unless tail = @tail
+						raise IOError, "The tail socket has already been transferred!"
+					end
+					
 					@tail = nil
 					return tail
 				end

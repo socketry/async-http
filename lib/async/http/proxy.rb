@@ -98,7 +98,7 @@ module Async
 				
 				if response.success?
 					pipe = Body::Pipe.new(response.body, input)
-					io = pipe.release
+					io = pipe.to_io
 					
 					return io unless block_given?
 					

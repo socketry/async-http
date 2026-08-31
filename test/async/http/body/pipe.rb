@@ -21,22 +21,19 @@ describe Async::HTTP::Body::Pipe do
 	with "#to_io" do
 		include Sus::Fixtures::Async::ReactorContext
 		
-		let(:write_input) {true}
 		let(:input_write_duration) {0}
 		let(:io) {pipe.to_io}
 		
 		def before
 			super
 			
-			if write_input
-				# input writer task
-				Async do |task|
-					first, second = data.split(" ")
-					input.write("#{first} ")
-					sleep(input_write_duration) if input_write_duration > 0
-					input.write(second)
-					input.close_write
-				end
+			# input writer task
+			Async do |task|
+				first, second = data.split(" ")
+				input.write("#{first} ")
+				sleep(input_write_duration) if input_write_duration > 0
+				input.write(second)
+				input.close_write
 			end
 		end
 		
@@ -50,29 +47,20 @@ describe Async::HTTP::Body::Pipe do
 			expect(io.read).to be == data
 		end
 		
+		it "can only transfer the socket once" do
+			io
+			
+			expect do
+				pipe.to_io
+			end.to raise_exception(IOError, message: be == "The tail socket has already been transferred!")
+		end
+		
 		with "blocking reads" do
 			let(:input_write_duration) {0.01}
 			
 			it "returns an io socket" do
 				expect(io.read).to be == data
 			end
-		end
-	end
-	
-	with "#release" do
-		include Sus::Fixtures::Async::ReactorContext
-		
-		let(:io) {pipe.release}
-		
-		after do
-			io.close unless io.closed?
-			pipe.close
-		end
-		
-		it "transfers ownership of the socket" do
-			expect(io).to be_a(::Socket)
-			expect(pipe.to_io).to be_nil
-			expect(pipe.release).to be_nil
 		end
 		
 		it "observes the socket being closed from another thread" do

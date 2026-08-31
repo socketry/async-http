@@ -26,9 +26,7 @@ module Async
 					def read
 						if chunk = super
 							# If we read a chunk from the stream, we want to extend the window if required so more data will be provided.
-							if stream = @stream
-								stream.request_window_update
-							end
+							@stream&.request_window_update
 						end
 						
 						# We track the expected length and check we got what we were expecting.

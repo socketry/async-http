@@ -9,6 +9,37 @@ require "async/promise"
 require "sus/fixtures/async/http"
 
 describe Async::HTTP::Protocol::HTTP2 do
+	with "orderly bidirectional shutdown" do
+		include Sus::Fixtures::Async::HTTP::ServerContext
+		let(:protocol) {subject}
+		
+		let(:data) {"Hello World!"}
+		
+		let(:app) do
+			Protocol::HTTP::Middleware.for do |request|
+				Async::HTTP::Body::Hijack.response(request, 200, {}) do |stream|
+					stream.read(data.bytesize)
+					stream.write(data)
+				ensure
+					stream.close
+				end
+			end
+		end
+		
+		it "allows the peer to finish normally" do
+			input = Async::HTTP::Body::Writable.new
+			response = client.connect(authority: "localhost:1", body: input)
+			
+			input.write(data)
+			
+			expect(response.body.read).to be == data
+			expect(response.body.read).to be_nil
+		ensure
+			input&.close
+			response&.close
+		end
+	end
+	
 	with "closed input and active output" do
 		include Sus::Fixtures::Async::HTTP::ServerContext
 		let(:protocol) {subject}

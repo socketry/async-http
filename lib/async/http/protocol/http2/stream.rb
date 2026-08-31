@@ -30,10 +30,16 @@ module Async
 						
 						# Application input closure is independent of the HTTP/2 wire state:
 						#
-						# - Closing the input means the application will no longer consume incoming data, but it cannot immediately reset the stream because `RST_STREAM` would also close active local output.
-						# - Incoming data is discarded and flow-control credit is restored to preserve progress for bidirectional applications while local output remains active.
-						# - Once local output sends `END_STREAM`, the remaining remote half is cancelled with `RST_STREAM(CANCEL)` because neither application-facing direction remains in use.
-						@input_closed = false
+						# - Closing the input while local output remains active allows an
+						#   orderly bidirectional shutdown. A reset would also discard that
+						#   active output.
+						# - Incoming data is discarded and flow-control credit is restored to
+						#   preserve progress for bidirectional applications while local output
+						#   remains active.
+						# - If input is closed due to an error, or after local output has already
+						#   finished, the remaining remote half is abandoned and cancelled with
+						#   `RST_STREAM(CANCEL)`.
+						@input_abandoned = false
 						
 						# Output buffer, writing request body or response body (window_updated):
 						@output = nil
@@ -130,7 +136,8 @@ module Async
 								input.close_write
 							end
 						else
-							# The application has closed the input, so discard incoming data while maintaining flow control for the stream.
+							# The application has closed the input, so discard incoming data while
+							# maintaining flow control for the stream.
 							request_window_update
 						end
 						
@@ -141,12 +148,18 @@ module Async
 						send_reset_stream(::Protocol::HTTP2::Error::INTERNAL_ERROR)
 					end
 					
-					# Record that the application is no longer consuming incoming data and cancel the stream if local output has already finished.
+					# Record that the application is no longer consuming incoming data.
+					# Preserve active local output during an orderly close, but arrange to
+					# cancel the remote half if the input was closed due to an error.
 					# @parameter input [Input] The input body being closed.
-					def finish_input(input)
+					# @parameter error [Exception | Nil] The error which closed the input.
+					def finish_input(input, error = nil)
 						if @input.equal?(input)
 							@input = nil
-							@input_closed = true
+							
+							if error || @state == :half_closed_local
+								@input_abandoned = true
+							end
 							
 							close_if_finished
 						end
@@ -230,9 +243,10 @@ module Async
 					
 					private
 					
-					# Once both application-facing directions are closed, cancel the remaining remote half of the stream.
+					# Once local output has finished, cancel an abandoned remote half of
+					# the stream.
 					def close_if_finished
-						if @input_closed && @state == :half_closed_local
+						if @input_abandoned && @state == :half_closed_local
 							send_reset_stream(::Protocol::HTTP2::Error::CANCEL)
 						end
 					end

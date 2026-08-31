@@ -20,8 +20,8 @@ describe Async::HTTP::Protocol::HTTP2::Input do
 				@window_updates += 1
 			end
 			
-			def finish_input(input)
-				@finished_inputs << input
+			def finish_input(input, error = nil)
+				@finished_inputs << [input, error]
 			end
 		end.new
 	end
@@ -41,6 +41,6 @@ describe Async::HTTP::Protocol::HTTP2::Input do
 		input.close(error)
 		input.close
 		
-		expect(stream.finished_inputs).to be == [input]
+		expect(stream.finished_inputs).to be == [[input, error]]
 	end
 end

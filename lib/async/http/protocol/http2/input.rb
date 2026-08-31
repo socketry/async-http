@@ -43,14 +43,16 @@ module Async
 						return chunk
 					end
 					
-					# Close the application-facing input body and notify the stream that incoming data is no longer being consumed. The HTTP/2 stream may remain open until local output has finished.
+					# Close the application-facing input body and notify the stream that
+					# incoming data is no longer being consumed. The HTTP/2 stream may
+					# remain open until local output has finished.
 					# @parameter error [Exception | Nil] The error that caused the input to be closed, if any.
 					def close(error = nil)
 						super
 						
 						if stream = @stream
 							@stream = nil
-							stream.finish_input(self)
+							stream.finish_input(self, error)
 						end
 					end
 				end

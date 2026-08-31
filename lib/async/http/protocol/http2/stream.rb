@@ -28,13 +28,11 @@ module Async
 						@length = nil
 						@input = nil
 						
-						# `@input.nil?` does not tell us why input is absent:
+						# Application input closure is independent of the HTTP/2 wire state:
 						#
-						# - The input has not been prepared yet.
-						# - The peer ended its sending side without a body.
-						# - The stream has already closed.
-						#
-						# `@input_closed` specifically records that the application explicitly closed the input while the peer may still be sending. This prevents a bodyless request from being cancelled before its response arrives.
+						# - Closing the input means the application will no longer consume incoming data, but it cannot immediately reset the stream because `RST_STREAM` would also close active local output.
+						# - Incoming data is discarded and flow-control credit is restored to preserve progress for bidirectional applications while local output remains active.
+						# - Once local output sends `END_STREAM`, the remaining remote half is cancelled with `RST_STREAM(CANCEL)` because neither application-facing direction remains in use.
 						@input_closed = false
 						
 						# Output buffer, writing request body or response body (window_updated):
@@ -143,7 +141,7 @@ module Async
 						send_reset_stream(::Protocol::HTTP2::Error::INTERNAL_ERROR)
 					end
 					
-					# Called when the application is no longer consuming incoming data.
+					# Record that the application is no longer consuming incoming data and cancel the stream if local output has already finished.
 					# @parameter input [Input] The input body being closed.
 					def finish_input(input)
 						if @input.equal?(input)
@@ -232,7 +230,7 @@ module Async
 					
 					private
 					
-					# Once both application-facing directions are closed, cancel a stream whose remote side remains open.
+					# Once both application-facing directions are closed, cancel the remaining remote half of the stream.
 					def close_if_finished
 						if @input_closed && @state == :half_closed_local
 							send_reset_stream(::Protocol::HTTP2::Error::CANCEL)

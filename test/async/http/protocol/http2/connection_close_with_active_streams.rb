@@ -85,5 +85,17 @@ describe Async::HTTP::Protocol::HTTP2 do
 				expect(client_connection).to be(:closed?)
 			end.wait
 		end
+		
+		it "refuses a request when the connection is already closed" do
+			Async do
+				client_connection = Async::HTTP::Protocol::HTTP2::Client.new(client_stream)
+				client_connection.open!
+				client_connection.close
+				
+				expect do
+					client_connection.call(Protocol::HTTP::Request["POST", "/", {}, ["Hello"]])
+				end.to raise_exception(Protocol::HTTP::RefusedError)
+			end.wait
+		end
 	end
 end

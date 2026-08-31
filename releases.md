@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-  - HTTP/2 connections which received a graceful `GOAWAY` are no longer closed while the server is still answering the streams it accepted. Such a connection is retired from the pool, but stays open until the last accepted stream completes, so those requests no longer fail with `EOFError: Connection closed with N active stream(s)!`.
+  - HTTP/2 connections which received a graceful `GOAWAY` are removed from availability immediately, but remain in the pool until the server has finished answering the streams it accepted. The connection is closed after its final user releases it, so those requests no longer fail with `EOFError: Connection closed with N active stream(s)!`.
 
 ## v0.101.0
 

@@ -137,7 +137,6 @@ describe Async::HTTP::Protocol::HTTP2 do
 			
 			it "is closed" do
 				expect(connection).to be(:goaway_received?)
-				expect(connection).not.to be(:draining?)
 				expect(connection).to be(:closed?)
 			end
 			
@@ -163,7 +162,6 @@ describe Async::HTTP::Protocol::HTTP2 do
 			
 			it "is not offered to new requests" do
 				expect(connection).to be(:goaway_received?)
-				expect(connection).to be(:draining?)
 				expect(connection).not.to be(:closed?)
 				
 				expect(connection).not.to be(:reusable?)
@@ -176,25 +174,40 @@ describe Async::HTTP::Protocol::HTTP2 do
 				end.to raise_exception(::Protocol::HTTP::RefusedError)
 			end
 			
-			it "is not closed while the accepted stream is still in flight" do
-				Async do
-					connection.read_in_background
-					
-					# The pool retires a connection which is no longer reusable, but the stream the server accepted is still being processed, so the connection must stay open:
-					connection.close
-					
-					expect(connection).not.to be(:closed?)
-					expect(connection.streams).not.to be(:empty?)
-				ensure
-					connection.close(EOFError.new("Test finished!"))
-				end.wait
-			end
-			
-			it "is closed if there is no reader to drain it" do
+			it "closes synchronously" do
 				connection.close
 				
 				expect(connection).to be(:closed?)
 			end
+		end
+		
+		it "is retained by the pool until all users release it" do
+			connection.open!
+			pool = Async::Pool::Controller.wrap(limit: 1){connection}
+			
+			resource1 = pool.acquire
+			resource2 = pool.acquire
+			
+			response1 = connection.create_response
+			response2 = connection.create_response
+			connection.receive_goaway(goaway_frame(response2.stream.id))
+			
+			response1.stream.close!
+			pool.release(resource1)
+			
+			expect(pool.resources[connection]).to be == 1
+			expect(pool).not.to be(:available?)
+			expect(connection).not.to be(:closed?)
+			expect(connection.streams.keys).to be == [response2.stream.id]
+			
+			response2.stream.close!
+			expect(connection.framer).not.to be_nil
+			
+			pool.release(resource2)
+			
+			expect(pool.resources).not.to be(:key?, connection)
+			expect(connection.framer).to be_nil
+			expect(sockets.first).to be(:closed?)
 		end
 		
 		it "closes itself when the last drained stream completes on the sending side" do
@@ -214,7 +227,9 @@ describe Async::HTTP::Protocol::HTTP2 do
 			server.streams[stream.id].send_headers(response_headers, Protocol::HTTP2::END_STREAM)
 			
 			Async::Task.current.sleep(0.1)
-			expect(connection).to be(:draining?)
+			expect(connection).to be(:goaway_received?)
+			expect(connection).not.to be(:closed?)
+			expect(connection.streams.keys).to be == [stream.id]
 			
 			stream.send_data("body", Protocol::HTTP2::END_STREAM)
 			Async::Task.current.sleep(0.1)

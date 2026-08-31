@@ -25,7 +25,7 @@ Gem::Specification.new do |spec|
 	spec.required_ruby_version = ">= 3.3"
 	
 	spec.add_dependency "async", ">= 2.35.1"
-	spec.add_dependency "async-pool", "~> 0.11"
+	spec.add_dependency "async-pool", "~> 0.12"
 	spec.add_dependency "io-endpoint", "~> 0.18"
 	spec.add_dependency "io-stream", "~> 0.14"
 	spec.add_dependency "protocol-http", "~> 0.66"

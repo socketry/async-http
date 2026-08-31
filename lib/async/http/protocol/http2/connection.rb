@@ -87,13 +87,8 @@ module Async
 					end
 					
 					# Close the connection and stop the background reader.
-					#
-					# If the remote peer sent a graceful GOAWAY frame, the streams it accepted are still being processed and their responses are still on the way. Closing the connection now would fail those requests, even though the remote peer has already processed them. Instead we defer: the background reader closes the connection once the last stream completes. An explicit error still closes the connection immediately.
 					def close(error = nil)
 						if reader = @reader
-							# Only the background reader can drain the connection, so if it is not running, there is nothing to wait for:
-							return self if error.nil? and self.draining?
-							
 							@reader = nil
 							
 							# The reader task can close the connection itself, e.g. when the last stream completes and the connection is released back to the pool. Stopping it here would cancel the current task in the middle of this method, leaving the underlying stream open, so we let it unwind by itself: `closed?` is now true, so the read loop exits.

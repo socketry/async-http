@@ -89,9 +89,8 @@ AProxy = Sus::Shared("a proxy") do
 			
 			proxy.connect do |peer|
 				peer.write(data)
-				peer.close_write
 				
-				expect(peer.read).to be == data
+				expect(peer.read(data.bytesize)).to be == data
 			end
 			
 			proxy.close

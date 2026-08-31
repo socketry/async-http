@@ -10,7 +10,6 @@ require "async/http/body/writable"
 
 require "sus/fixtures/async"
 require "io/stream"
-require "openssl"
 
 describe Async::HTTP::Body::Pipe do
 	let(:input) {Async::HTTP::Body::Writable.new}
@@ -42,7 +41,8 @@ describe Async::HTTP::Body::Pipe do
 		end
 		
 		after do
-			io.close
+			io.close unless io.closed?
+			pipe.close
 		end
 		
 		it "returns an io socket" do
@@ -57,28 +57,30 @@ describe Async::HTTP::Body::Pipe do
 				expect(io.read).to be == data
 			end
 		end
+	end
+	
+	with "#release" do
+		include Sus::Fixtures::Async::ReactorContext
 		
-		with "an open pipe" do
-			let(:write_input) {false}
+		let(:io) {pipe.release}
+		
+		after do
+			io.close unless io.closed?
+			pipe.close
+		end
+		
+		it "transfers ownership of the socket" do
+			expect(io).to be_a(::Socket)
+			expect(pipe.to_io).to be_nil
+			expect(pipe.release).to be_nil
+		end
+		
+		it "observes the socket being closed from another thread" do
+			socket = io
+			Thread.new{socket.close}.value
 			
-			it "closes the pipe when closed" do
-				expect(input).not.to be(:closed?)
-				expect(output).not.to be(:closed?)
-				
-				io.close
-				
-				expect(input).to be(:closed?)
-				expect(output).to be(:closed?)
-			end
-			
-			it "closes the pipe through a TLS socket" do
-				tls = OpenSSL::SSL::SSLSocket.new(io, OpenSSL::SSL::SSLContext.new)
-				tls.sync_close = true
-				tls.close
-				
-				expect(input).to be(:closed?)
-				expect(output).to be(:closed?)
-			end
+			expect(output.read).to be_nil
+			expect(output).to be(:closed?)
 		end
 	end
 	

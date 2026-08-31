@@ -98,13 +98,18 @@ module Async
 				
 				if response.success?
 					pipe = Body::Pipe.new(response.body, input)
+					io = pipe.release
 					
-					return pipe.to_io unless block_given?
+					return io unless block_given?
 					
 					begin
-						yield pipe.to_io
+						yield io
 					ensure
-						pipe.close
+						begin
+							io.close
+						ensure
+							pipe.close
+						end
 					end
 				else
 					# This ensures we don't leave a response dangling:

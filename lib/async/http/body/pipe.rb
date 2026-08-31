@@ -75,7 +75,7 @@ module Async
 				rescue => error
 				ensure
 					@output.close_write(error)
-
+					
 					if @tail.closed?
 						@reader&.stop
 					end

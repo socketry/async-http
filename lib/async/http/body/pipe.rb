@@ -63,7 +63,7 @@ module Async
 				end
 				
 				# Read from the head of the pipe and write to the @output stream.
-				# If the @tail is closed, this will cause chunk to be nil, which in turn will call `@output.close` and `@head.close`
+				# A write-side close on @tail produces EOF here. A full close also stops the reader so both sides of the pipe can finish.
 				def writer(task)
 					@writer = task
 					
@@ -75,6 +75,10 @@ module Async
 				rescue => error
 				ensure
 					@output.close_write(error)
+
+					if @tail.closed?
+						@reader&.stop
+					end
 					
 					close_head if @reader&.finished?
 				end

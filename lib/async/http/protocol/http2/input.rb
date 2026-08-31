@@ -25,8 +25,10 @@ module Async
 					# @returns [String | Nil] The next chunk, or `nil` if the body is complete.
 					def read
 						if chunk = super
-							# If we read a chunk fron the stream, we want to extend the window if required so more data will be provided.
-							@stream.request_window_update
+							# If we read a chunk from the stream, we want to extend the window if required so more data will be provided.
+							if stream = @stream
+								stream.request_window_update
+							end
 						end
 						
 						# We track the expected length and check we got what we were expecting.
@@ -41,6 +43,17 @@ module Async
 						end
 						
 						return chunk
+					end
+					
+					# Close the input body and notify the stream that incoming data is no longer being consumed.
+					# @parameter error [Exception | Nil] The error that caused the input to be closed, if any.
+					def close(error = nil)
+						super
+						
+						if stream = @stream
+							@stream = nil
+							stream.finish_input(self)
+						end
 					end
 				end
 			end

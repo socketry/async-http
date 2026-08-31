@@ -27,6 +27,7 @@ module Async
 						# Input buffer, reading request body, or response body (receive_data):
 						@length = nil
 						@input = nil
+						@input_closed = false
 						
 						# Output buffer, writing request body or response body (window_updated):
 						@output = nil
@@ -114,14 +115,17 @@ module Async
 					def process_data(frame)
 						data = frame.unpack
 						
-						if @input
+						if input = @input
 							unless data.empty?
-								@input.write(data)
+								input.write(data)
 							end
 							
 							if frame.end_stream?
-								@input.close_write
+								input.close_write
 							end
+						else
+							# The application has closed the input, so discard incoming data while maintaining flow control for the stream.
+							request_window_update
 						end
 						
 						return data
@@ -129,6 +133,17 @@ module Async
 						raise
 					rescue # Anything else...
 						send_reset_stream(::Protocol::HTTP2::Error::INTERNAL_ERROR)
+					end
+					
+					# Called when the application is no longer consuming incoming data.
+					# @parameter input [Input] The input body being closed.
+					def finish_input(input)
+						if @input.equal?(input)
+							@input = nil
+							@input_closed = true
+							
+							close_if_finished
+						end
 					end
 					
 					# Set the body and begin sending it.
@@ -169,6 +184,20 @@ module Async
 						return true
 					end
 					
+					# Send headers and check whether they completed the local side of the stream.
+					def send_headers(...)
+						result = super
+						close_if_finished
+						return result
+					end
+					
+					# Send data and check whether it completed the local side of the stream.
+					def send_data(...)
+						result = super
+						close_if_finished
+						return result
+					end
+					
 					# When the stream transitions to the closed state, this method is called. There are roughly two ways this can happen:
 					# - A frame is received which causes this stream to enter the closed state. This method will be invoked from the background reader task.
 					# - A frame is sent which causes this stream to enter the closed state. This method will be invoked from that task.
@@ -191,6 +220,15 @@ module Async
 						end
 						
 						return self
+					end
+					
+					private
+					
+					# Once both application-facing directions are closed, cancel a stream whose remote side remains open.
+					def close_if_finished
+						if @input_closed && @state == :half_closed_local
+							send_reset_stream(::Protocol::HTTP2::Error::CANCEL)
+						end
 					end
 				end
 			end

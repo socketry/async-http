@@ -116,6 +116,44 @@ AProxy = Sus::Shared("a proxy") do
 		end
 	end
 	
+	with "idle tunnel" do
+		let(:finish_response) {Async::Notification.new}
+		
+		let(:app) do
+			Protocol::HTTP::Middleware.for do |request|
+				Async::HTTP::Body::Hijack.response(request, 200, {}) do |stream|
+					while stream.read_partial(1024)
+					end
+					
+					finish_response.wait
+				ensure
+					stream.close
+				end
+			end
+		end
+		
+		it "releases the proxy connection when the peer is closed" do
+			proxy = Async::HTTP::Proxy.tcp(client, "localhost", 1)
+			peer = proxy.connect
+			
+			expect(proxy.client.pool).to be(:busy?)
+			
+			peer.close
+			peer = nil
+			
+			current_task = Async::Task.current
+			current_task.with_timeout(1) do
+				current_task.yield while proxy.client.pool.busy?
+			end
+			
+			expect(proxy.client.pool).not.to be(:busy?)
+		ensure
+			finish_response.signal
+			peer&.close
+			proxy&.close
+		end
+	end
+	
 	with "proxied client" do
 		let(:app) do
 			Protocol::HTTP::Middleware.for do |request|

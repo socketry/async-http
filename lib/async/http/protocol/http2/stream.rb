@@ -27,6 +27,7 @@ module Async
 						# Input buffer, reading request body, or response body (receive_data):
 						@length = nil
 						@input = nil
+						# `@input.nil?` can mean the input has not been prepared, the peer ended the stream without a body, or the stream has closed. Track explicit application closure separately.
 						@input_closed = false
 						
 						# Output buffer, writing request body or response body (window_updated):

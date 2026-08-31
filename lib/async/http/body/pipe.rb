@@ -50,8 +50,10 @@ module Async
 					@reader&.stop
 					@writer&.stop
 					
-					@tail&.close
-					@tail = nil
+					if tail = @tail
+						@tail = nil
+						tail.close
+					end
 				end
 				
 				private

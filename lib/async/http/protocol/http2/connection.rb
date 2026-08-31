@@ -88,14 +88,25 @@ module Async
 					
 					# Close the connection and stop the background reader.
 					def close(error = nil)
-						# Ensure the reader task is stopped.
-						if @reader
-							reader = @reader
+						if reader = @reader
 							@reader = nil
-							reader.stop
+							
+							# The reader task can close the connection itself, e.g. when the last stream completes and the connection is released back to the pool. Stopping it here would cancel the current task in the middle of this method, leaving the underlying stream open, so we let it unwind by itself: `closed?` is now true, so the read loop exits.
+							reader.stop unless reader.current?
 						end
 						
 						super
+					end
+					
+					# The connection has finished draining the streams which the remote peer accepted before its graceful GOAWAY.
+					#
+					# The last of those streams can complete on the sending side, in a task other than the background reader - the response arrived first and the request body was still being written. The reader is then parked in a blocking read and will never notice that the connection is closed, so we stop it and let its `ensure` close the connection.
+					def close_if_drained!
+						super
+						
+						if self.closed? and (reader = @reader) and !reader.current?
+							reader.stop
+						end
 					end
 					
 					# Start a transient background task that reads frames from the connection.
@@ -142,12 +153,14 @@ module Async
 					
 					# Can we use this connection to make requests?
 					def viable?
-						@stream&.readable?
+						!self.goaway_received? && @stream&.readable?
 					end
 					
 					# @returns [Boolean] Whether the connection can be reused.
+					#
+					# Once the remote peer has sent a GOAWAY frame, it will not process any new streams on this connection, so it must not be handed out for another request, even while the streams it accepted are still being drained.
 					def reusable?
-						!self.closed?
+						!self.closed? && !self.goaway_received?
 					end
 					
 					# @returns [String] The HTTP version string.

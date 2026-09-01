@@ -54,22 +54,24 @@ module Async
 					# @parameter chunk [String] The data to write.
 					def write(chunk)
 						until chunk.empty?
-							maximum_size = @stream.available_frame_size
+							stream = @stream or raise IOError, "HTTP/2 stream is closed!"
+							maximum_size = stream.available_frame_size
 							
 							# We try to avoid synchronization if possible:
 							if maximum_size <= 0
 								@guard.synchronize do
-									maximum_size = @stream.available_frame_size
+									maximum_size = stream.available_frame_size
 									
 									while maximum_size <= 0
 										@window_updated.wait(@guard)
 										
-										maximum_size = @stream.available_frame_size
+										stream = @stream or raise IOError, "HTTP/2 stream is closed!"
+										maximum_size = stream.available_frame_size
 									end
 								end
 							end
 							
-							break unless chunk = send_data(chunk, maximum_size)
+							break unless chunk = send_data(stream, chunk, maximum_size)
 						end
 					end
 					
@@ -93,6 +95,22 @@ module Async
 						if task = @task
 							@task = nil
 							task.stop(error)
+						end
+					end
+					
+					# Close the wire output without cancelling a streamable body. This
+					# allows bidirectional bodies to observe an orderly input closure and
+					# finish normally. A non-streaming producer has no input side through
+					# which closure can propagate, so it is stopped directly.
+					def close_stream
+						if @body.stream?
+							@stream = nil
+							
+							@guard.synchronize do
+								@window_updated.broadcast
+							end
+						else
+							stop(nil)
 						end
 					end
 					
@@ -137,11 +155,11 @@ module Async
 					# @param maximum_size [Integer] send up to this many bytes of data.
 					# @param stream [Stream] the stream to use for sending data frames.
 					# @return [String, nil] any data that could not be written.
-					def send_data(chunk, maximum_size)
+					def send_data(stream, chunk, maximum_size)
 						if chunk.bytesize <= maximum_size
-							@stream.send_data(chunk, maximum_size: maximum_size)
+							stream.send_data(chunk, maximum_size: maximum_size)
 						else
-							@stream.send_data(chunk.byteslice(0, maximum_size), maximum_size: maximum_size)
+							stream.send_data(chunk.byteslice(0, maximum_size), maximum_size: maximum_size)
 							
 							# The window was not big enough to send all the data, so we save it for next time:
 							return chunk.byteslice(maximum_size, chunk.bytesize - maximum_size)

@@ -123,10 +123,13 @@ AProxy = Sus::Shared("a proxy") do
 		let(:app) do
 			Protocol::HTTP::Middleware.for do |request|
 				Async::HTTP::Body::Hijack.response(request, 200, {}) do |stream|
-					while stream.read_partial(1024)
+					begin
+						while stream.read_partial(1024)
+						end
+					ensure
+						request_closed.signal
 					end
 					
-					request_closed.signal
 					finish_response.wait
 				ensure
 					stream.close
@@ -148,13 +151,12 @@ AProxy = Sus::Shared("a proxy") do
 				request_closed.wait
 			end
 			
-			finish_response.signal
-			
 			current_task.with_timeout(1) do
 				current_task.yield while proxy.client.pool.busy?
 			end
 			
 			expect(proxy.client.pool).not.to be(:busy?)
+			finish_response.signal
 		ensure
 			finish_response.signal
 			peer&.close

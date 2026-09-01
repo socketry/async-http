@@ -28,6 +28,12 @@ module Async
 						@length = nil
 						@input = nil
 						
+						# The application can close its input before the peer finishes sending.
+						# HTTP/2 cannot close only the receiving side of a stream, so incoming
+						# data is discarded until local output also finishes. At that point, a
+						# no-error reset terminates the remaining wire stream.
+						@input_closed = false
+						
 						# Output buffer, writing request body or response body (window_updated):
 						@output = nil
 					end
@@ -135,18 +141,21 @@ module Async
 						send_reset_stream(::Protocol::HTTP2::Error::INTERNAL_ERROR)
 					end
 					
-					# Detach the application-facing input body from the wire stream.
-					# Incoming data will be discarded while maintaining flow control until
-					# the peer sends `END_STREAM`. Cancellation is an explicit operation
-					# performed by the request or response which owns the exchange.
+					# Close the application-facing receiving side of the stream. While local
+					# output remains active, incoming data is discarded with flow-control
+					# updates. Once local output is also closed, the remaining wire stream is
+					# terminated without an error.
 					# @parameter input [Input] The input body being closed.
 					# @parameter error [Exception | Nil] The error which closed the input.
 					def finish_input(input, error = nil)
 						if @input.equal?(input)
 							@input = nil
+							@input_closed = true
 							
 							if error
 								send_reset_stream(::Protocol::HTTP2::Error::INTERNAL_ERROR)
+							else
+								close_if_finished
 							end
 						end
 					end
@@ -189,11 +198,32 @@ module Async
 						return true
 					end
 					
+					# Send headers and apply any pending application-side closure.
+					def send_headers(...)
+						result = super
+						close_if_finished
+						return result
+					end
+					
+					# Send data and apply any pending application-side closure.
+					def send_data(...)
+						result = super
+						close_if_finished
+						return result
+					end
+					
 					# When the stream transitions to the closed state, this method is called. There are roughly two ways this can happen:
 					# - A frame is received which causes this stream to enter the closed state. This method will be invoked from the background reader task.
 					# - A frame is sent which causes this stream to enter the closed state. This method will be invoked from that task.
 					# While the input stream is relatively straight forward, the output stream can trigger the second case above
 					def closed(error)
+						orderly_reset = error.is_a?(::Protocol::HTTP2::StreamError) &&
+							error.code == ::Protocol::HTTP2::Error::NO_ERROR
+						
+						if orderly_reset
+							error = nil
+						end
+						
 						super
 						
 						if input = @input
@@ -203,7 +233,12 @@ module Async
 						
 						if output = @output
 							@output = nil
-							output.stop(error)
+							
+							if orderly_reset
+								output.close_stream
+							else
+								output.stop(error)
+							end
 						end
 						
 						if pool = @pool and @connection
@@ -211,6 +246,16 @@ module Async
 						end
 						
 						return self
+					end
+					
+					private
+					
+					# If both application-facing directions are closed but the peer has not
+					# finished, terminate the remaining wire stream without an error.
+					def close_if_finished
+						if @input_closed && @state == :half_closed_local
+							send_reset_stream(::Protocol::HTTP2::Error::NO_ERROR)
+						end
 					end
 				end
 			end

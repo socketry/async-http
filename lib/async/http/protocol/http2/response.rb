@@ -30,11 +30,13 @@ module Async
 						# Wait for the response headers and return the response body.
 						# @returns [Protocol::HTTP::Body::Readable | Nil] The response body.
 						def wait_for_input
+							response = @response
+							
 							# The input isn't ready until the response headers have been received:
-							@response.wait
+							response.wait
 							
 							# There is a possible race condition if you try to access @input - it might already be closed and nil.
-							return @response.body
+							return response.body
 						end
 						
 						# Handle a push promise stream from the server.
@@ -173,13 +175,12 @@ module Async
 					# still active, cancel the HTTP/2 exchange rather than draining it.
 					# @parameter error [Exception | Nil] The error which closed the response.
 					def close(error = nil)
-						body = @body
-						super
-						
-						if body && !@stream.closed?
+						if @body && !@stream.closed?
 							code = error ? ::Protocol::HTTP2::Error::INTERNAL_ERROR : ::Protocol::HTTP2::Error::CANCEL
 							@stream.send_reset_stream(code)
 						end
+						
+						super
 					end
 					
 					# @returns [Boolean] Whether the original request was a HEAD request.

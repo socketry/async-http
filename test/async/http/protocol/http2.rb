@@ -5,6 +5,7 @@
 
 require "async/http/protocol/http2"
 require "async/http/a_protocol"
+require "async/promise"
 
 describe Async::HTTP::Protocol::HTTP2 do
 	it_behaves_like Async::HTTP::AProtocol
@@ -80,7 +81,7 @@ describe Async::HTTP::Protocol::HTTP2 do
 		end
 		
 		with "stopping requests" do
-			let(:notification) {Async::Notification.new}
+			let(:finished) {Async::Promise.new}
 			
 			let(:app) do
 				Protocol::HTTP::Middleware.for do |request|
@@ -88,7 +89,7 @@ describe Async::HTTP::Protocol::HTTP2 do
 					
 					reactor.async do |task|
 						begin
-							100.times do |i|
+							1000.times do |i|
 								body.write("Chunk #{i}")
 								sleep (0.01)
 							end
@@ -96,7 +97,7 @@ describe Async::HTTP::Protocol::HTTP2 do
 							# puts "Response generation failed: #{$!}"
 						ensure
 							body.close
-							notification.signal
+							finished.resolve(true)
 						end
 					end
 					
@@ -115,7 +116,7 @@ describe Async::HTTP::Protocol::HTTP2 do
 				
 				response.close
 				
-				notification.wait
+				finished.wait(timeout: 1)
 				
 				expect(response.stream.connection).to be(:reusable?)
 			end

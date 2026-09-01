@@ -116,6 +116,59 @@ AProxy = Sus::Shared("a proxy") do
 		end
 	end
 	
+	with "independent tunnel directions" do
+		let(:request_closed) {Async::Promise.new}
+		let(:write_response) {Async::Promise.new}
+		
+		let(:app) do
+			Protocol::HTTP::Middleware.for do |request|
+				Async::HTTP::Body::Hijack.response(request, 200, {}) do |stream|
+					begin
+						while stream.read_partial(1024)
+						end
+					ensure
+						request_closed.resolve(true)
+					end
+					
+					write_response.wait
+					stream.write("Hello World!")
+					stream.flush
+				ensure
+					stream.close
+				end
+			end
+		end
+		
+		it "closes the response when forwarding to the closed peer fails" do
+			proxy = Async::HTTP::Proxy.tcp(client, "localhost", 1)
+			peer = proxy.connect
+			
+			expect(proxy.client.pool).to be(:busy?)
+			
+			peer.close
+			peer = nil
+			
+			current_task = Async::Task.current
+			current_task.with_timeout(1) do
+				request_closed.wait
+			end
+			
+			expect(proxy.client.pool).to be(:busy?)
+			
+			write_response.resolve(true)
+			
+			current_task.with_timeout(1) do
+				current_task.yield while proxy.client.pool.busy?
+			end
+			
+			expect(proxy.client.pool).not.to be(:busy?)
+		ensure
+			write_response.resolve(true) unless write_response.resolved?
+			peer&.close
+			proxy&.close
+		end
+	end
+	
 	with "proxied client" do
 		let(:app) do
 			Protocol::HTTP::Middleware.for do |request|

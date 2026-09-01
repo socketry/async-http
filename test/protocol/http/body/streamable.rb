@@ -5,6 +5,7 @@
 
 require "async/http/protocol/http"
 require "protocol/http/body/streamable"
+require "async/promise"
 require "sus/fixtures/async/http"
 
 AnEchoServer = Sus::Shared("an echo server") do
@@ -122,6 +123,50 @@ AnEchoClient = Sus::Shared("an echo client") do
 	end
 end
 
+AClosingServer = Sus::Shared("a closing server") do
+	let(:data) {"Hello World!"}
+	let(:finished) {Async::Promise.new}
+	
+	let(:app) do
+		::Protocol::HTTP::Middleware.for do |request|
+			streamable = ::Protocol::HTTP::Body::Streamable.response(request) do |stream|
+				stream.write(stream.read(data.bytesize))
+				stream.flush
+				
+				while stream.read_partial(1024)
+				end
+				
+				finished.resolve(true)
+			ensure
+				stream.close
+			end
+			
+			::Protocol::HTTP::Response[200, {}, streamable]
+		end
+	end
+	
+	it "should finish normally when the peer closes" do
+		output = ::Protocol::HTTP::Body::Writable.new
+		response = client.post("/", body: output)
+		stream = ::Protocol::HTTP::Body::Stream.new(response.body, output)
+		
+		stream.write(data)
+		expect(stream.read(data.bytesize)).to be == data
+		
+		stream.close
+		stream = nil
+		
+		result = Async::Task.current.with_timeout(1) do
+			finished.wait
+		end
+		
+		expect(result).to be == true
+	ensure
+		stream&.close
+		response&.close
+	end
+end
+
 [Async::HTTP::Protocol::HTTP1, Async::HTTP::Protocol::HTTP2].each do |protocol|
 	describe protocol, unique: protocol.name do
 		include Sus::Fixtures::Async::HTTP::ServerContext
@@ -130,5 +175,6 @@ end
 		
 		it_behaves_like AnEchoServer
 		it_behaves_like AnEchoClient
+		it_behaves_like AClosingServer
 	end
 end

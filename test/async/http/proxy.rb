@@ -117,6 +117,7 @@ AProxy = Sus::Shared("a proxy") do
 	end
 	
 	with "idle tunnel" do
+		let(:request_closed) {Async::Notification.new}
 		let(:finish_response) {Async::Notification.new}
 		
 		let(:app) do
@@ -125,6 +126,7 @@ AProxy = Sus::Shared("a proxy") do
 					while stream.read_partial(1024)
 					end
 					
+					request_closed.signal
 					finish_response.wait
 				ensure
 					stream.close
@@ -142,6 +144,12 @@ AProxy = Sus::Shared("a proxy") do
 			peer = nil
 			
 			current_task = Async::Task.current
+			current_task.with_timeout(1) do
+				request_closed.wait
+			end
+			
+			finish_response.signal
+			
 			current_task.with_timeout(1) do
 				current_task.yield while proxy.client.pool.busy?
 			end

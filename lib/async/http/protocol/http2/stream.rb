@@ -28,19 +28,6 @@ module Async
 						@length = nil
 						@input = nil
 						
-						# Application input closure is independent of the HTTP/2 wire state:
-						#
-						# - Closing the input while local output remains active allows an
-						#   orderly bidirectional shutdown. A reset would also discard that
-						#   active output.
-						# - Incoming data is discarded and flow-control credit is restored to
-						#   preserve progress for bidirectional applications while local output
-						#   remains active.
-						# - If input is closed due to an error, or after local output has already
-						#   finished, the remaining remote half is abandoned and cancelled with
-						#   `RST_STREAM(CANCEL)`.
-						@input_abandoned = false
-						
 						# Output buffer, writing request body or response body (window_updated):
 						@output = nil
 					end
@@ -148,20 +135,19 @@ module Async
 						send_reset_stream(::Protocol::HTTP2::Error::INTERNAL_ERROR)
 					end
 					
-					# Record that the application is no longer consuming incoming data.
-					# Preserve active local output during an orderly close, but arrange to
-					# cancel the remote half if the input was closed due to an error.
+					# Detach the application-facing input body from the wire stream.
+					# Incoming data will be discarded while maintaining flow control until
+					# the peer sends `END_STREAM`. Cancellation is an explicit operation
+					# performed by the request or response which owns the exchange.
 					# @parameter input [Input] The input body being closed.
 					# @parameter error [Exception | Nil] The error which closed the input.
 					def finish_input(input, error = nil)
 						if @input.equal?(input)
 							@input = nil
 							
-							if error || @state == :half_closed_local
-								@input_abandoned = true
+							if error
+								send_reset_stream(::Protocol::HTTP2::Error::INTERNAL_ERROR)
 							end
-							
-							close_if_finished
 						end
 					end
 					
@@ -203,20 +189,6 @@ module Async
 						return true
 					end
 					
-					# Send headers and check whether they completed the local side of the stream.
-					def send_headers(...)
-						result = super
-						close_if_finished
-						return result
-					end
-					
-					# Send data and check whether it completed the local side of the stream.
-					def send_data(...)
-						result = super
-						close_if_finished
-						return result
-					end
-					
 					# When the stream transitions to the closed state, this method is called. There are roughly two ways this can happen:
 					# - A frame is received which causes this stream to enter the closed state. This method will be invoked from the background reader task.
 					# - A frame is sent which causes this stream to enter the closed state. This method will be invoked from that task.
@@ -239,16 +211,6 @@ module Async
 						end
 						
 						return self
-					end
-					
-					private
-					
-					# Once local output has finished, cancel an abandoned remote half of
-					# the stream.
-					def close_if_finished
-						if @input_abandoned && @state == :half_closed_local
-							send_reset_stream(::Protocol::HTTP2::Error::CANCEL)
-						end
 					end
 				end
 			end

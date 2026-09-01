@@ -13,29 +13,46 @@ describe Async::HTTP::Protocol::HTTP2 do
 		include Sus::Fixtures::Async::HTTP::ServerContext
 		let(:protocol) {subject}
 		
-		let(:data) {"Hello World!"}
+		let(:request_closed) {Async::Notification.new}
+		let(:finish_response) {Async::Notification.new}
 		
 		let(:app) do
 			Protocol::HTTP::Middleware.for do |request|
 				Async::HTTP::Body::Hijack.response(request, 200, {}) do |stream|
-					stream.read(data.bytesize)
-					stream.write(data)
+					while stream.read_partial(1024)
+					end
+					
+					request_closed.signal
+					finish_response.wait
 				ensure
 					stream.close
 				end
 			end
 		end
 		
-		it "allows the peer to finish normally" do
+		it "retains the stream until the peer finishes" do
 			input = Async::HTTP::Body::Writable.new
 			response = client.connect(authority: "localhost:1", body: input)
+			stream = Protocol::HTTP::Body::Stream.new(response.body, input)
 			
-			input.write(data)
+			stream.close
 			
-			expect(response.body.read).to be == data
-			expect(response.body.read).to be_nil
+			current_task = Async::Task.current
+			current_task.with_timeout(1) do
+				request_closed.wait
+			end
+			
+			expect(client.pool).to be(:busy?)
+			finish_response.signal
+			
+			current_task.with_timeout(1) do
+				current_task.yield while client.pool.busy?
+			end
+			
+			expect(client.pool).not.to be(:busy?)
 		ensure
-			input&.close
+			finish_response.signal
+			stream&.close
 			response&.close
 		end
 	end

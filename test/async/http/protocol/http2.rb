@@ -88,7 +88,7 @@ describe Async::HTTP::Protocol::HTTP2 do
 					
 					reactor.async do |task|
 						begin
-							100.times do |i|
+							1000.times do |i|
 								body.write("Chunk #{i}")
 								sleep (0.01)
 							end
@@ -115,7 +115,9 @@ describe Async::HTTP::Protocol::HTTP2 do
 				
 				response.close
 				
-				notification.wait
+				Async::Task.current.with_timeout(1) do
+					notification.wait
+				end
 				
 				expect(response.stream.connection).to be(:reusable?)
 			end

@@ -44,8 +44,8 @@ module Async
 					end
 					
 					# Close the application-facing input body and notify the stream that
-					# incoming data is no longer being consumed. The HTTP/2 stream may
-					# remain open until local output has finished.
+					# incoming data is no longer being consumed. The HTTP/2 stream remains
+					# open until the peer finishes unless its owner explicitly cancels it.
 					# @parameter error [Exception | Nil] The error that caused the input to be closed, if any.
 					def close(error = nil)
 						super

@@ -55,8 +55,6 @@ module Async
 					end
 					
 					@head.close_write
-				rescue Async::Stop => error
-					raise
 				rescue => error
 				ensure
 					@input.close(error)

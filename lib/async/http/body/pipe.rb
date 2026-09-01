@@ -63,8 +63,7 @@ module Async
 				end
 				
 				# Read from the head of the pipe and write to the @output stream.
-				# A write-side close on @tail produces EOF and closes @output
-				# independently of the input direction.
+				# A write-side close on @tail produces EOF and closes @output independently of the input direction.
 				def writer(task)
 					@writer = task
 					

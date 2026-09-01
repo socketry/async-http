@@ -28,10 +28,7 @@ module Async
 						@length = nil
 						@input = nil
 						
-						# The application can close its input before the peer finishes sending.
-						# HTTP/2 cannot close only the receiving side of a stream, so incoming
-						# data is discarded until local output also finishes. At that point, a
-						# no-error reset terminates the remaining wire stream.
+						# The application can close its input before the peer finishes sending. HTTP/2 cannot close only the receiving side of a stream, so incoming data is discarded until local output also finishes. At that point, a no-error reset terminates the remaining wire stream.
 						@input_closed = false
 						
 						# Output buffer, writing request body or response body (window_updated):
@@ -129,8 +126,7 @@ module Async
 								input.close_write
 							end
 						else
-							# The application has closed the input, so discard incoming data while
-							# maintaining flow control for the stream.
+							# The application has closed the input, so discard incoming data while maintaining flow control for the stream.
 							request_window_update
 						end
 						
@@ -141,10 +137,7 @@ module Async
 						send_reset_stream(::Protocol::HTTP2::Error::INTERNAL_ERROR)
 					end
 					
-					# Close the application-facing receiving side of the stream. While local
-					# output remains active, incoming data is discarded with flow-control
-					# updates. Once local output is also closed, the remaining wire stream is
-					# terminated without an error.
+					# Close the application-facing receiving side of the stream. While local output remains active, incoming data is discarded with flow-control updates. Once local output is also closed, the remaining wire stream is terminated without an error.
 					# @parameter input [Input] The input body being closed.
 					# @parameter error [Exception | Nil] The error which closed the input.
 					def finish_input(input, error = nil)
@@ -250,8 +243,7 @@ module Async
 					
 					private
 					
-					# If both application-facing directions are closed but the peer has not
-					# finished, terminate the remaining wire stream without an error.
+					# If both application-facing directions are closed but the peer has not finished, terminate the remaining wire stream without an error.
 					def close_if_finished
 						if @input_closed && @state == :half_closed_local
 							send_reset_stream(::Protocol::HTTP2::Error::NO_ERROR)

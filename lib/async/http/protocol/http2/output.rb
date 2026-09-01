@@ -98,10 +98,7 @@ module Async
 						end
 					end
 					
-					# Close the wire output without cancelling a streamable body. This
-					# allows bidirectional bodies to observe an orderly input closure and
-					# finish normally. A non-streaming producer has no input side through
-					# which closure can propagate, so it is stopped directly.
+					# Close the wire output without cancelling a streamable body. This allows bidirectional bodies to observe an orderly input closure and finish normally. A non-streaming producer has no input side through which closure can propagate, so it is stopped directly.
 					def close_stream
 						if @body.stream?
 							@stream = nil

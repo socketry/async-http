@@ -3,13 +3,24 @@
 ---
 description: A HTTP client and server library.
 metadata:
+  bug_tracker_uri: https://github.com/socketry/async-http/issues
+  changelog_uri: https://github.com/socketry/async-http/blob/main/releases.md
   documentation_uri: https://socketry.github.io/async-http/
   source_code_uri: https://github.com/socketry/async-http.git
 files:
 - path: getting-started.md
   title: Getting Started
-  description: This guide explains how to get started with `Async::HTTP`.
+  description: This guide explains how to make HTTP requests and serve HTTP responses
+    with `Async::HTTP`.
+- path: choosing-a-client.md
+  title: Choosing a Client
+  description: This guide explains how to choose between ruby:`Async::HTTP::Internet`,
+    ruby:`Async::HTTP::Client`, and higher-level interfaces for libraries.
+- path: concurrent-requests.md
+  title: Concurrent Requests and Connection Pooling
+  description: This guide explains how to run HTTP requests concurrently while keeping
+    request fan-out, connection usage, and resource life cycles bounded.
 - path: testing.md
   title: Testing
-  description: This guide explains how to use `Async::HTTP` clients and servers in
-    your tests.
+  description: This guide explains how to test `Async::HTTP` clients and servers without
+    depending on external HTTP services.

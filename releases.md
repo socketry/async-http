@@ -1,6 +1,6 @@
 # Releases
 
-## Unreleased
+## v0.102.0
 
   - Requests assigned to an HTTP/2 connection which has already closed are refused before being written, allowing them to be retried safely.
   - HTTP/2 connections which received a graceful `GOAWAY` are removed from availability immediately, but remain in the pool until the server has finished answering the streams it accepted. The connection is closed after its final user releases it, so those requests no longer fail with `EOFError: Connection closed with N active stream(s)!`.

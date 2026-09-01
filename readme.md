@@ -8,13 +8,22 @@ An asynchronous client and server implementation of HTTP/1.0, HTTP/1.1 and HTTP/
 
 Please see the [project documentation](https://socketry.github.io/async-http/) for more details.
 
-  - [Getting Started](https://socketry.github.io/async-http/guides/getting-started/index) - This guide explains how to get started with `Async::HTTP`.
+  - [Getting Started](https://socketry.github.io/async-http/guides/getting-started/index) - This guide explains how to make HTTP requests and serve HTTP responses with `Async::HTTP`.
 
-  - [Testing](https://socketry.github.io/async-http/guides/testing/index) - This guide explains how to use `Async::HTTP` clients and servers in your tests.
+  - [Choosing a Client](https://socketry.github.io/async-http/guides/choosing-a-client/index) - This guide explains how to choose between ruby:`Async::HTTP::Internet`, ruby:`Async::HTTP::Client`, and higher-level interfaces for libraries.
+
+  - [Concurrent Requests and Connection Pooling](https://socketry.github.io/async-http/guides/concurrent-requests/index) - This guide explains how to run HTTP requests concurrently while keeping request fan-out, connection usage, and resource life cycles bounded.
+
+  - [Testing](https://socketry.github.io/async-http/guides/testing/index) - This guide explains how to test `Async::HTTP` clients and servers without depending on external HTTP services.
 
 ## Releases
 
 Please see the [project releases](https://socketry.github.io/async-http/releases/index) for all releases.
+
+### v0.102.0
+
+  - Requests assigned to an HTTP/2 connection which has already closed are refused before being written, allowing them to be retried safely.
+  - HTTP/2 connections which received a graceful `GOAWAY` are removed from availability immediately, but remain in the pool until the server has finished answering the streams it accepted. The connection is closed after its final user releases it, so those requests no longer fail with `EOFError: Connection closed with N active stream(s)!`.
 
 ### v0.101.0
 
@@ -54,10 +63,6 @@ Please see the [project releases](https://socketry.github.io/async-http/releases
       - Remove `Async::HTTP::Protocol::RequestFailed` in favour of `Protocol::HTTP::RefusedError`.
       - HTTP/1: Delegate request write failure handling to `protocol-http1`.
       - HTTP/2: Handle GOAWAY and REFUSED\_STREAM via `protocol-http2`, enabling automatic retry of unprocessed requests.
-
-### v0.94.3
-
-  - Fix response body leak in HTTP/2 server when stream is reset before `send_response` completes (e.g. client-side gRPC cancellation). The response body's `close` was never called, leaking any resources tied to body lifecycle (such as `rack.response_finished` callbacks and utilization metrics).
 
 ## See Also
 

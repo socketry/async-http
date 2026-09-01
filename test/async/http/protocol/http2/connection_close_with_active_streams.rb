@@ -69,6 +69,20 @@ describe Async::HTTP::Protocol::HTTP2 do
 			end.wait
 		end
 		
+		it "raises EOFError when the stream closes before receiving headers" do
+			Async do
+				client_connection = Async::HTTP::Protocol::HTTP2::Client.new(client_stream)
+				client_connection.open!
+				
+				response = client_connection.create_response
+				response.stream.close!
+				
+				expect do
+					client_connection.read_response(response)
+				end.to raise_exception(EOFError, message: be =~ /Stream closed before response headers/)
+			end.wait
+		end
+		
 		it "does not raise error when connection closes without active streams" do
 			Async do |task|
 				# Create client connection

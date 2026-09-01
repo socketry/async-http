@@ -1,5 +1,9 @@
 # Releases
 
+## Unreleased
+
+  - Handle `RST_STREAM(NO_ERROR)` as an orderly HTTP/2 stream closure while still failing requests whose streams close before any response headers are received.
+
 ## v0.102.0
 
   - Requests assigned to an HTTP/2 connection which has already closed are refused before being written, allowing them to be retried safely.

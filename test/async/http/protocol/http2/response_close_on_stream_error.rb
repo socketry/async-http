@@ -10,7 +10,7 @@ require "sus/fixtures/async/http"
 require "protocol/http/body/wrapper"
 
 describe Async::HTTP::Protocol::HTTP2 do
-	with "response body close on stream error" do
+	with "response body close on stream reset" do
 		include Sus::Fixtures::Async::HTTP::ServerContext
 		let(:protocol) {subject}
 		

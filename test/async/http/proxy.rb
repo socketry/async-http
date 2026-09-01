@@ -117,8 +117,8 @@ AProxy = Sus::Shared("a proxy") do
 	end
 	
 	with "idle tunnel" do
-		let(:request_closed) {Async::Notification.new}
-		let(:finish_response) {Async::Notification.new}
+		let(:request_closed) {Async::Promise.new}
+		let(:write_response) {Async::Promise.new}
 		
 		let(:app) do
 			Protocol::HTTP::Middleware.for do |request|
@@ -127,17 +127,19 @@ AProxy = Sus::Shared("a proxy") do
 						while stream.read_partial(1024)
 						end
 					ensure
-						request_closed.signal
+						request_closed.resolve(true)
 					end
 					
-					finish_response.wait
+					write_response.wait
+					stream.write("Hello World!")
+					stream.flush
 				ensure
 					stream.close
 				end
 			end
 		end
 		
-		it "releases the proxy connection when the peer is closed" do
+		it "releases the proxy connection when response data arrives after the peer is closed" do
 			proxy = Async::HTTP::Proxy.tcp(client, "localhost", 1)
 			peer = proxy.connect
 			
@@ -151,14 +153,17 @@ AProxy = Sus::Shared("a proxy") do
 				request_closed.wait
 			end
 			
+			expect(proxy.client.pool).to be(:busy?)
+			
+			write_response.resolve(true)
+			
 			current_task.with_timeout(1) do
 				current_task.yield while proxy.client.pool.busy?
 			end
 			
 			expect(proxy.client.pool).not.to be(:busy?)
-			finish_response.signal
 		ensure
-			finish_response.signal
+			write_response.resolve(true) unless write_response.resolved?
 			peer&.close
 			proxy&.close
 		end

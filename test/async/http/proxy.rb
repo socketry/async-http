@@ -116,7 +116,7 @@ AProxy = Sus::Shared("a proxy") do
 		end
 	end
 	
-	with "idle tunnel" do
+	with "independent tunnel directions" do
 		let(:request_closed) {Async::Promise.new}
 		let(:write_response) {Async::Promise.new}
 		
@@ -139,7 +139,7 @@ AProxy = Sus::Shared("a proxy") do
 			end
 		end
 		
-		it "releases the proxy connection when response data arrives after the peer is closed" do
+		it "closes the response when forwarding to the closed peer fails" do
 			proxy = Async::HTTP::Proxy.tcp(client, "localhost", 1)
 			peer = proxy.connect
 			

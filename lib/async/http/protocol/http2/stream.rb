@@ -210,10 +210,7 @@ module Async
 					# - A frame is sent which causes this stream to enter the closed state. This method will be invoked from that task.
 					# While the input stream is relatively straight forward, the output stream can trigger the second case above
 					def closed(error)
-						orderly_reset = error.is_a?(::Protocol::HTTP2::StreamError) &&
-							error.code == ::Protocol::HTTP2::Error::NO_ERROR
-						
-						if orderly_reset
+						if error.is_a?(::Protocol::HTTP2::StreamError) && error.code == ::Protocol::HTTP2::Error::NO_ERROR
 							error = nil
 						end
 						
@@ -227,10 +224,10 @@ module Async
 						if output = @output
 							@output = nil
 							
-							if orderly_reset
-								output.close_stream
-							else
+							if error
 								output.stop(error)
+							else
+								output.close_stream
 							end
 						end
 						

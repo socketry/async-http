@@ -129,10 +129,9 @@ module Async
 								@response = nil
 							end
 							
-							if error
+							unless @ready.resolved?
+								error ||= EOFError.new("Stream closed before response headers were received!")
 								@ready.reject(error)
-							else
-								@ready.resolve(nil)
 							end
 						end
 					end

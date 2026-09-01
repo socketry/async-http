@@ -32,6 +32,6 @@ Gem::Specification.new do |spec|
 	spec.add_dependency "io-stream", "~> 0.14"
 	spec.add_dependency "protocol-http", "~> 0.66"
 	spec.add_dependency "protocol-http1", "~> 0.41"
-	spec.add_dependency "protocol-http2", "~> 0.27"
+	spec.add_dependency "protocol-http2", "~> 0.28"
 	spec.add_dependency "protocol-url", "~> 0.2"
 end

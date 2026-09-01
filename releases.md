@@ -1,6 +1,6 @@
 # Releases
 
-## Unreleased
+## v0.103.0
 
   - Handle `RST_STREAM(NO_ERROR)` as an orderly HTTP/2 stream closure while still failing requests whose streams close before any response headers are received.
 

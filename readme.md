@@ -20,6 +20,10 @@ Please see the [project documentation](https://socketry.github.io/async-http/) f
 
 Please see the [project releases](https://socketry.github.io/async-http/releases/index) for all releases.
 
+### v0.103.0
+
+  - Handle `RST_STREAM(NO_ERROR)` as an orderly HTTP/2 stream closure while still failing requests whose streams close before any response headers are received.
+
 ### v0.102.0
 
   - Requests assigned to an HTTP/2 connection which has already closed are refused before being written, allowing them to be retried safely.
@@ -56,13 +60,6 @@ Please see the [project releases](https://socketry.github.io/async-http/releases
 ### v0.95.1
 
   - Fix handling of reset stream causing complete connection failure.
-
-### v0.95.0
-
-  - Use `Protocol::HTTP::RefusedError` for safe retry of requests not processed by the server, including non-idempotent methods like PUT.
-      - Remove `Async::HTTP::Protocol::RequestFailed` in favour of `Protocol::HTTP::RefusedError`.
-      - HTTP/1: Delegate request write failure handling to `protocol-http1`.
-      - HTTP/2: Handle GOAWAY and REFUSED\_STREAM via `protocol-http2`, enabling automatic retry of unprocessed requests.
 
 ## See Also
 

@@ -11,9 +11,6 @@ module Async
 			module HTTP2
 				# Writes body data to an HTTP/2 stream, respecting flow control windows.
 				class Output
-					CLOSE_WRITE_TIMEOUT = 1
-					private_constant :CLOSE_WRITE_TIMEOUT
-					
 					# Initialize the output handler.
 					# @parameter stream [Stream] The HTTP/2 stream to write to.
 					# @parameter body [Protocol::HTTP::Body::Readable] The body to read from.
@@ -138,7 +135,7 @@ module Async
 							# chunk.clear unless chunk.frozen?
 							# GC.start
 						end
-					rescue Exception => error
+					rescue Async::Cancel, StandardError => error
 						raise
 					ensure
 						# Ensure the body we are reading from is fully closed:
@@ -148,20 +145,7 @@ module Async
 						end
 						
 						# Ensure the output of this body is closed:
-						if error
-							connection = @stream&.connection
-							
-							# Don't block forever if we're shutting down
-							task.with_timeout(CLOSE_WRITE_TIMEOUT) do
-								self.close_write(error)
-							rescue Async::TimeoutError
-								# Close the socket to avoid Connection#close attempting to flush anything else, and to avoid leaving the connection in an invalid state if our write was interrupted mid-frame:
-								connection&.stream&.io&.close
-								connection&.close(error)
-							end
-						else
-							self.close_write(nil)
-						end
+						self.close_write(error)
 					end
 					
 					# Send `maximum_size` bytes of data using the specified `stream`. If the buffer has no more chunks, `END_STREAM` will be sent on the final chunk.

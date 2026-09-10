@@ -135,7 +135,7 @@ module Async
 							# chunk.clear unless chunk.frozen?
 							# GC.start
 						end
-					rescue => error
+					rescue Async::Cancel, StandardError => error
 						raise
 					ensure
 						# Ensure the body we are reading from is fully closed:

@@ -103,6 +103,23 @@ describe Async::HTTP::Protocol::HTTP11 do
 				
 				expect(response.status).to be == 400
 			end
+			
+			with "maximum line length" do
+				let(:maximum_line_length) {1024}
+				let(:protocol) {subject.new(maximum_line_length: maximum_line_length)}
+				
+				it "should fail with 414 when the request line is too long" do
+					response = client.get("/?q=#{"a" * maximum_line_length}")
+					
+					expect(response.status).to be == 414
+				end
+				
+				it "should fail with 414 when a header line is too long" do
+					response = client.get("/", {"x-padding" => "a" * maximum_line_length})
+					
+					expect(response.status).to be == 414
+				end
+			end
 		end
 		
 		with "head request" do

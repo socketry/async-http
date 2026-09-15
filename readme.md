@@ -20,6 +20,10 @@ Please see the [project documentation](https://socketry.github.io/async-http/) f
 
 Please see the [project releases](https://socketry.github.io/async-http/releases/index) for all releases.
 
+### v0.105.0
+
+  - Respond with `400 Bad Request` for any `Protocol::HTTP::BadRequest` raised while parsing HTTP/1 or HTTP/2 requests, include the exception class name without reflecting request data, and avoid reporting them as unhandled server errors.
+
 ### v0.103.0
 
   - Handle `RST_STREAM(NO_ERROR)` as an orderly HTTP/2 stream closure while still failing requests whose streams close before any response headers are received.
@@ -56,10 +60,6 @@ Please see the [project releases](https://socketry.github.io/async-http/releases
 ### v0.96.0
 
   - Made `metrics` and `traces` optional runtime dependencies. Applications that use the providers should depend on the corresponding gem and require the provider explicitly.
-
-### v0.95.1
-
-  - Fix handling of reset stream causing complete connection failure.
 
 ## See Also
 

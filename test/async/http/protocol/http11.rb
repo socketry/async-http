@@ -102,7 +102,9 @@ describe Async::HTTP::Protocol::HTTP11 do
 				response = client.get("")
 				
 				expect(response.status).to be == 400
+				expect(response.read).to be == "Protocol::HTTP1::InvalidRequest"
 			end
+			
 		end
 		
 		with "head request" do

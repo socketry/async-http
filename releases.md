@@ -1,5 +1,9 @@
 # Releases
 
+## Unreleased
+
+  - Respond with `400 Bad Request` for any `Protocol::HTTP::BadRequest` raised while parsing HTTP/1 or HTTP/2 requests, include the exception class name without reflecting request data, and avoid reporting them as unhandled server errors.
+
 ## v0.103.0
 
   - Handle `RST_STREAM(NO_ERROR)` as an orderly HTTP/2 stream closure while still failing requests whose streams close before any response headers are received.

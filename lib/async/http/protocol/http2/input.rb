@@ -45,7 +45,7 @@ module Async
 						return chunk
 					rescue ::Protocol::HTTP2::StreamError => error
 						if error.code == ::Protocol::HTTP2::Error::INTERNAL_ERROR
-							raise ::Protocol::HTTP::RemoteError, error.message
+							raise ::Protocol::HTTP::RemoteError, "Remote endpoint failure while reading the HTTP/2 message body!"
 						end
 						
 						raise

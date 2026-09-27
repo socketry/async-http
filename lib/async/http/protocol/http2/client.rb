@@ -42,10 +42,18 @@ module Async
 						raise ::Protocol::HTTP::RefusedError, "Connection closed!" if self.closed?
 						
 						response = create_response
+						completed = false
+						
 						write_request(response, request)
 						read_response(response)
+						completed = true
 						
 						return response
+					ensure
+						# Cancel abandoned requests, including when the task is stopped while waiting for headers.
+						if response && !completed && !self.closed? && response.stream.active?
+							response.stream.send_reset_stream(::Protocol::HTTP2::Error::CANCEL)
+						end
 					end
 					
 					# Write a request to the remote server via the given response stream.

@@ -54,6 +54,49 @@ describe Async::HTTP::Body::Pipe do
 		end
 	end
 	
+	with "#finish" do
+		include Sus::Fixtures::Async::ReactorContext
+		
+		let(:output) {Async::HTTP::Body::Writable.new}
+		let(:pipe) {subject.new(input, output)}
+		
+		it "forwards data written to the socket before closing the output" do
+			pipe.to_io.write(data)
+			pipe.finish
+			
+			expect(pipe.to_io).to be(:closed?)
+			expect(input).to be(:closed?)
+			
+			expect(output.read).to be == data
+			expect(output.read).to be_nil
+		end
+	end
+	
+	with "#close" do
+		include Sus::Fixtures::Async::ReactorContext
+		
+		let(:output) {Async::HTTP::Body::Writable.new}
+		let(:pipe) {subject.new(input, output)}
+		
+		it "closes the input when forwarding to the closed socket fails" do
+			pipe.to_io.close
+			
+			# Closing the socket only ends the output:
+			expect(output.read).to be_nil
+			expect(input).not.to be(:closed?)
+			
+			input.write(data)
+			
+			Async::Task.current.with_timeout(1) do
+				Async::Task.current.yield until input.closed?
+			end
+			
+			expect(input).to be(:closed?)
+		ensure
+			pipe.close
+		end
+	end
+	
 	with "reactor going out of scope" do
 		it "finishes" do
 			# ensures pipe background tasks are transient

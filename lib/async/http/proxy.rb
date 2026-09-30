@@ -38,20 +38,10 @@ module Async
 			
 			# Extends the socket returned by {Proxy#connect} so that closing it closes the entire tunnel.
 			#
-			# Closing the socket of a {Body::Pipe} only ends the CONNECT request body, so the CONNECT response would remain open (and the proxy connection busy) until the proxy closes its end of the tunnel. Instead, closing this socket closes the pipe, and the CONNECT request and response with an error, so that HTTP/2 resets the stream and HTTP/1 closes the connection, neither of which can be reused after a tunnel anyway.
+			# Closing the socket of a {Body::Pipe} only ends the CONNECT request body, so the CONNECT response would remain open (and the proxy connection busy) until the proxy closes its end of the tunnel. Instead, closing this socket finishes the pipe: the CONNECT response is closed immediately, and the CONNECT request is closed once any data already written to the socket has been forwarded. HTTP/2 then resets the stream and HTTP/1 closes the connection, neither of which can be reused after a tunnel anyway.
 			module Tunnel
-				# Used to close the CONNECT request and response when the socket is closed.
-				class Closed < IOError
-				end
-				
-				# Close the pipe, and the CONNECT request and response with an error.
 				# @parameter pipe [Body::Pipe] The pipe connected to the CONNECT request and response.
-				def self.close(pipe)
-					pipe.close(Closed.new("Tunnel closed!"))
-				end
-				
-				# @parameter pipe [Body::Pipe] The pipe connected to the CONNECT request and response.
-				# @returns [Socket] The socket for the pipe, which closes the pipe when closed.
+				# @returns [Socket] The socket for the pipe, which finishes the pipe when closed.
 				def self.wrap(pipe)
 					socket = pipe.to_io
 					socket.extend(self)
@@ -60,11 +50,11 @@ module Async
 					return socket
 				end
 				
-				# Close the pipe, which also closes the socket.
+				# Finish the pipe, which also closes the socket.
 				def close
 					if pipe = @pipe
 						@pipe = nil
-						Tunnel.close(pipe)
+						pipe.finish
 					else
 						super
 					end
@@ -150,7 +140,7 @@ module Async
 					begin
 						yield pipe.to_io
 					ensure
-						Tunnel.close(pipe)
+						pipe.finish
 					end
 				else
 					# This ensures we don't leave a response dangling:

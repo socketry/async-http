@@ -188,7 +188,6 @@ AProxy = Sus::Shared("a proxy") do
 			expect(write_response).not.to be(:resolved?)
 			expect(proxy.client.pool).not.to be(:busy?)
 		ensure
-			write_response.resolve(true) unless write_response.resolved?
 			peer&.close
 			proxy&.close
 		end
@@ -281,6 +280,64 @@ AProxy = Sus::Shared("a proxy") do
 		end
 	end
 	
+	with "data written immediately before closing" do
+		let(:received) {Async::Promise.new}
+		
+		let(:app) do
+			Protocol::HTTP::Middleware.for do |request|
+				Async::HTTP::Body::Hijack.response(request, 200, {}) do |stream|
+					buffer = String.new
+					
+					begin
+						while chunk = stream.read_partial
+							buffer << chunk
+						end
+					ensure
+						received.resolve(buffer)
+					end
+				ensure
+					stream.close
+				end
+			end
+		end
+		
+		def wait_until_released(proxy)
+			current_task = Async::Task.current
+			current_task.with_timeout(1) do
+				received.wait
+				current_task.yield while proxy.client.pool.busy?
+			end
+		end
+		
+		it "forwards the data before closing the tunnel" do
+			proxy = Async::HTTP::Proxy.tcp(client, "localhost", 1)
+			
+			peer = proxy.connect
+			peer.write("QUIT\r\n")
+			peer.close
+			
+			wait_until_released(proxy)
+			
+			expect(received.value).to be == "QUIT\r\n"
+		ensure
+			proxy&.close
+		end
+		
+		it "forwards the data before closing the tunnel using a block" do
+			proxy = Async::HTTP::Proxy.tcp(client, "localhost", 1)
+			
+			proxy.connect do |peer|
+				peer.write("QUIT\r\n")
+			end
+			
+			wait_until_released(proxy)
+			
+			expect(received.value).to be == "QUIT\r\n"
+		ensure
+			proxy&.close
+		end
+	end
+	
 	with "remote end which closes the tunnel slowly" do
 		let(:delay) {1}
 		
@@ -313,6 +370,13 @@ AProxy = Sus::Shared("a proxy") do
 			proxied_client.close
 			
 			start_time = Async::Clock.now
+			
+			# The tunnel is released once the request has been forwarded to the proxy:
+			current_task = Async::Task.current
+			current_task.with_timeout(delay) do
+				current_task.yield while client.pool.busy?
+			end
+			
 			client.close
 			
 			expect(Async::Clock.now - start_time).to be < (delay / 4.0)
@@ -331,7 +395,7 @@ AProxy = Sus::Shared("a proxy") do
 			
 			start_time = Async::Clock.now
 			
-			# HTTP/1 releases the connection once the tunnel's writer task observes the closed request body:
+			# The tunnel is released once the request has been forwarded to the proxy:
 			current_task = Async::Task.current
 			current_task.with_timeout(delay) do
 				current_task.yield while client.pool.busy?
@@ -381,9 +445,6 @@ AProxy = Sus::Shared("a proxy") do
 							upstream.write(chunk)
 							upstream.flush
 						end
-					rescue ::Protocol::HTTP2::StreamError => error
-						# The client resets the tunnel when it closes it:
-						Console.debug(self, "Tunnel reset by client.", error)
 					ensure
 						Console.debug(self){"Finished writing to upstream..."}
 						upstream.close_write unless upstream.closed?

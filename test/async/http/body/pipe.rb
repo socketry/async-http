@@ -54,25 +54,29 @@ describe Async::HTTP::Body::Pipe do
 		end
 	end
 	
-	with "#close" do
+	with "#finish" do
 		include Sus::Fixtures::Async::ReactorContext
 		
 		let(:output) {Async::HTTP::Body::Writable.new}
 		let(:pipe) {subject.new(input, output)}
 		
-		it "closes the input and output normally" do
-			pipe.close
+		it "forwards data written to the socket before closing the output" do
+			pipe.to_io.write(data)
+			pipe.finish
 			
-			expect(input.read).to be_nil
+			expect(pipe.to_io).to be(:closed?)
+			expect(input).to be(:closed?)
+			
+			expect(output.read).to be == data
 			expect(output.read).to be_nil
 		end
+	end
+	
+	with "#close" do
+		include Sus::Fixtures::Async::ReactorContext
 		
-		it "closes the input and output with the given error" do
-			pipe.close(IOError.new("Pipe closed!"))
-			
-			expect{input.read}.to raise_exception(IOError, message: be == "Pipe closed!")
-			expect{output.read}.to raise_exception(IOError, message: be == "Pipe closed!")
-		end
+		let(:output) {Async::HTTP::Body::Writable.new}
+		let(:pipe) {subject.new(input, output)}
 		
 		it "closes the input when forwarding to the closed socket fails" do
 			pipe.to_io.close

@@ -15,14 +15,60 @@ module Async
 		class Proxy
 			# Raised when a CONNECT tunnel through a proxy cannot be established.
 			class ConnectFailure < StandardError
+				# The maximum number of bytes of the response body to read, see {body}.
+				MAXIMUM_BODY_SIZE = 1024 * 8
+				
 				# Initialize the failure with the unsuccessful response.
 				# @parameter response [Protocol::HTTP::Response] The failed response from the proxy.
-				def initialize(response)
+				# @parameter body [String | Nil] The beginning of the response body, if any.
+				def initialize(response, body = nil)
 					super "Failed to connect: #{response.status}"
 					@response = response
+					@body = body
 				end
 				
+				# @attribute [Protocol::HTTP::Response] The failed response from the proxy. It has already been closed.
 				attr :response
+				
+				# @attribute [String | Nil] Up to {MAXIMUM_BODY_SIZE} bytes of the response body, which may explain why the proxy rejected the connection.
+				#
+				# The body is read before this error is raised, so a proxy which neither finishes the body nor closes the connection (e.g. an HTTP/1 response without `content-length` on a persistent connection) will delay the failure until the caller's own timeout, if any.
+				attr :body
+			end
+			
+			# Extends the socket returned by {Proxy#connect} so that closing it closes the entire tunnel.
+			#
+			# Closing the socket of a {Body::Pipe} only ends the CONNECT request body, so the CONNECT response would remain open (and the proxy connection busy) until the proxy closes its end of the tunnel. Instead, closing this socket closes the pipe, and the CONNECT request and response with an error, so that HTTP/2 resets the stream and HTTP/1 closes the connection, neither of which can be reused after a tunnel anyway.
+			module Tunnel
+				# Used to close the CONNECT request and response when the socket is closed.
+				class Closed < IOError
+				end
+				
+				# Close the pipe, and the CONNECT request and response with an error.
+				# @parameter pipe [Body::Pipe] The pipe connected to the CONNECT request and response.
+				def self.close(pipe)
+					pipe.close(Closed.new("Tunnel closed!"))
+				end
+				
+				# @parameter pipe [Body::Pipe] The pipe connected to the CONNECT request and response.
+				# @returns [Socket] The socket for the pipe, which closes the pipe when closed.
+				def self.wrap(pipe)
+					socket = pipe.to_io
+					socket.extend(self)
+					socket.instance_variable_set(:@pipe, pipe)
+					
+					return socket
+				end
+				
+				# Close the pipe, which also closes the socket.
+				def close
+					if pipe = @pipe
+						@pipe = nil
+						Tunnel.close(pipe)
+					else
+						super
+					end
+				end
 			end
 			
 			# Extends {Async::HTTP::Client} with proxy capabilities.
@@ -99,25 +145,51 @@ module Async
 				if response.success?
 					pipe = Body::Pipe.new(response.body, input)
 					
-					return pipe.to_io unless block_given?
+					return Tunnel.wrap(pipe) unless block_given?
 					
 					begin
 						yield pipe.to_io
 					ensure
-						pipe.close
+						Tunnel.close(pipe)
 					end
 				else
 					# This ensures we don't leave a response dangling:
 					input.close
-					response.close
 					
-					raise ConnectFailure, response
+					begin
+						body = read_failure_body(response)
+					ensure
+						response.close
+					end
+					
+					raise ConnectFailure.new(response, body)
 				end
 			end
 			
 			# @return [Async::HTTP::Endpoint] an endpoint that connects via the specified proxy.
 			def wrap_endpoint(endpoint)
 				Endpoint.new(endpoint.url, self, **endpoint.options)
+			end
+			
+			private
+			
+			# Proxies often explain why they rejected a connection in the response body, so read the beginning of it. Failing to do so shouldn't hide the original failure.
+			def read_failure_body(response)
+				body = response.body
+				return nil unless body
+				
+				buffer = String.new
+				
+				begin
+					while buffer.bytesize < ConnectFailure::MAXIMUM_BODY_SIZE and chunk = body.read
+						buffer << chunk
+					end
+				rescue IOError, SystemCallError, ::Protocol::HTTP::Error => error
+					# Anything else, e.g. `Async::TimeoutError`, should propagate to the caller:
+					Console.debug(self, "Failed to read proxy response body!", error)
+				end
+				
+				return buffer.byteslice(0, ConnectFailure::MAXIMUM_BODY_SIZE)
 			end
 		end
 		

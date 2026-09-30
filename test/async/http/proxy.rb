@@ -139,14 +139,13 @@ AProxy = Sus::Shared("a proxy") do
 			end
 		end
 		
-		it "closes the response when forwarding to the closed peer fails" do
+		it "keeps the response open when the request is closed" do
 			proxy = Async::HTTP::Proxy.tcp(client, "localhost", 1)
 			peer = proxy.connect
 			
 			expect(proxy.client.pool).to be(:busy?)
 			
-			peer.close
-			peer = nil
+			peer.close_write
 			
 			current_task = Async::Task.current
 			current_task.with_timeout(1) do
@@ -157,6 +156,8 @@ AProxy = Sus::Shared("a proxy") do
 			
 			write_response.resolve(true)
 			
+			expect(peer.read).to be == "Hello World!"
+			
 			current_task.with_timeout(1) do
 				current_task.yield while proxy.client.pool.busy?
 			end
@@ -166,6 +167,180 @@ AProxy = Sus::Shared("a proxy") do
 			write_response.resolve(true) unless write_response.resolved?
 			peer&.close
 			proxy&.close
+		end
+		
+		it "closes the response when the peer is closed" do
+			proxy = Async::HTTP::Proxy.tcp(client, "localhost", 1)
+			peer = proxy.connect
+			
+			expect(proxy.client.pool).to be(:busy?)
+			
+			peer.close
+			expect(peer).to be(:closed?)
+			
+			current_task = Async::Task.current
+			current_task.with_timeout(1) do
+				request_closed.wait
+				current_task.yield while proxy.client.pool.busy?
+			end
+			
+			# The remote end never finished the response, but the tunnel was closed anyway:
+			expect(write_response).not.to be(:resolved?)
+			expect(proxy.client.pool).not.to be(:busy?)
+		ensure
+			write_response.resolve(true) unless write_response.resolved?
+			peer&.close
+			proxy&.close
+		end
+	end
+	
+	with "rejected CONNECT" do
+		let(:reason) {"Egress proxying is denied to host 'localhost'."}
+		
+		let(:app) do
+			Protocol::HTTP::Middleware.for do |request|
+				Protocol::HTTP::Response[403, {"content-type" => "text/plain"}, [reason]]
+			end
+		end
+		
+		it "exposes the response body" do
+			proxy = Async::HTTP::Proxy.tcp(client, "localhost", 1)
+			
+			expect do
+				proxy.connect
+			end.to raise_exception(Async::HTTP::Proxy::ConnectFailure, message: be == "Failed to connect: 403")
+			
+			begin
+				proxy.connect
+			rescue Async::HTTP::Proxy::ConnectFailure => error
+				expect(error.response.status).to be == 403
+				expect(error.body).to be == reason
+			end
+			
+			expect(error).to be_a(Async::HTTP::Proxy::ConnectFailure)
+			
+			current_task = Async::Task.current
+			current_task.with_timeout(1) do
+				current_task.yield while proxy.client.pool.busy?
+			end
+		ensure
+			proxy&.close
+		end
+		
+		with "large response body" do
+			let(:reason) {"x" * (Async::HTTP::Proxy::ConnectFailure::MAXIMUM_BODY_SIZE * 4)}
+			
+			it "reads a bounded amount of the response body" do
+				proxy = Async::HTTP::Proxy.tcp(client, "localhost", 1)
+				
+				begin
+					proxy.connect
+				rescue Async::HTTP::Proxy::ConnectFailure => error
+					expect(error.body).to be == reason.byteslice(0, Async::HTTP::Proxy::ConnectFailure::MAXIMUM_BODY_SIZE)
+				end
+				
+				expect(error).to be_a(Async::HTTP::Proxy::ConnectFailure)
+				
+				current_task = Async::Task.current
+				current_task.with_timeout(1) do
+					current_task.yield while proxy.client.pool.busy?
+				end
+			ensure
+				proxy&.close
+			end
+		end
+		
+		with "response body which never finishes" do
+			let(:body) {Async::HTTP::Body::Writable.new}
+			
+			let(:app) do
+				Protocol::HTTP::Middleware.for do |request|
+					body.write(reason)
+					
+					Protocol::HTTP::Response[403, {"content-type" => "text/plain"}, body]
+				end
+			end
+			
+			it "propagates the caller's timeout" do
+				proxy = Async::HTTP::Proxy.tcp(client, "localhost", 1)
+				
+				expect do
+					Async::Task.current.with_timeout(0.1) do
+						proxy.connect
+					end
+				end.to raise_exception(Async::TimeoutError)
+				
+				current_task = Async::Task.current
+				current_task.with_timeout(1) do
+					current_task.yield while proxy.client.pool.busy?
+				end
+			ensure
+				body.close
+				proxy&.close
+			end
+		end
+	end
+	
+	with "remote end which closes the tunnel slowly" do
+		let(:delay) {1}
+		
+		let(:app) do
+			Protocol::HTTP::Middleware.for do |request|
+				Async::HTTP::Body::Hijack.response(request, 200, {}) do |stream|
+					stream.read_until("\r\n\r\n")
+					
+					stream.write("HTTP/1.1 200 OK\r\ncontent-length: 12\r\n\r\nHello World!")
+					stream.flush
+					
+					# Wait for the client to close its side of the tunnel:
+					while stream.read_partial
+					end
+					
+					sleep(delay)
+				ensure
+					stream.close
+				end
+			end
+		end
+		
+		it "closes the tunnel without waiting for the remote end" do
+			proxied_endpoint = client.proxied_endpoint(Async::HTTP::Endpoint.parse("http://localhost"))
+			proxied_client = Async::HTTP::Client.new(proxied_endpoint)
+			
+			response = proxied_client.get("/")
+			expect(response.read).to be == "Hello World!"
+			
+			proxied_client.close
+			
+			start_time = Async::Clock.now
+			client.close
+			
+			expect(Async::Clock.now - start_time).to be < (delay / 4.0)
+			expect(client.pool).to be(:empty?)
+		end
+		
+		it "closes the tunnel without waiting for the remote end using a block" do
+			proxy = Async::HTTP::Proxy.tcp(client, "localhost", 80)
+			
+			proxy.connect do |peer|
+				peer.write("GET / HTTP/1.1\r\nhost: localhost\r\n\r\n")
+				
+				buffer = String.new
+				buffer << peer.readpartial(1024) until buffer.end_with?("Hello World!")
+			end
+			
+			start_time = Async::Clock.now
+			
+			# HTTP/1 releases the connection once the tunnel's writer task observes the closed request body:
+			current_task = Async::Task.current
+			current_task.with_timeout(delay) do
+				current_task.yield while client.pool.busy?
+			end
+			
+			proxy.close
+			
+			expect(Async::Clock.now - start_time).to be < (delay / 4.0)
+			expect(client.pool).to be(:empty?)
 		end
 	end
 	
@@ -206,6 +381,9 @@ AProxy = Sus::Shared("a proxy") do
 							upstream.write(chunk)
 							upstream.flush
 						end
+					rescue ::Protocol::HTTP2::StreamError => error
+						# The client resets the tunnel when it closes it:
+						Console.debug(self, "Tunnel reset by client.", error)
 					ensure
 						Console.debug(self){"Finished writing to upstream..."}
 						upstream.close_write unless upstream.closed?

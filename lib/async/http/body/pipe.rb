@@ -24,6 +24,8 @@ module Async
 					@reader = nil
 					@writer = nil
 					
+					@error = nil
+					
 					task.async(transient: true, &self.method(:reader))
 					task.async(transient: true, &self.method(:writer))
 				end
@@ -34,7 +36,10 @@ module Async
 				end
 				
 				# Close the pipe and stop the reader and writer tasks.
-				def close
+				# @parameter error [Exception | Nil] If given, the input and output bodies are closed with this error, rather than being closed normally.
+				def close(error = nil)
+					@error ||= error
+					
 					@reader&.stop
 					@writer&.stop
 					
@@ -57,7 +62,7 @@ module Async
 					@head.close_write
 				rescue => error
 				ensure
-					@input.close(error)
+					@input.close(error || @error)
 					
 					close_head if @writer&.finished?
 				end
@@ -74,7 +79,7 @@ module Async
 					end
 				rescue => error
 				ensure
-					@output.close_write(error)
+					@output.close_write(error || @error)
 					
 					close_head if @reader&.finished?
 				end

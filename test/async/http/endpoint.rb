@@ -57,6 +57,22 @@ describe Async::HTTP::Endpoint do
 		end
 	end
 	
+	with "#authority" do
+		it "keeps brackets around an IPv6 address" do
+			expect(Async::HTTP::Endpoint.parse("http://[::1]:8080")).to have_attributes(authority: be == "[::1]:8080")
+			expect(Async::HTTP::Endpoint.parse("http://[::1]")).to have_attributes(authority: be == "[::1]")
+		end
+		
+		it "keeps brackets around an IPv6 address when including the default port" do
+			expect(Async::HTTP::Endpoint.parse("http://[::1]").authority(false)).to be == "[::1]:80"
+		end
+		
+		it "leaves hostnames and IPv4 addresses unchanged" do
+			expect(Async::HTTP::Endpoint.parse("http://localhost:8080")).to have_attributes(authority: be == "localhost:8080")
+			expect(Async::HTTP::Endpoint.parse("http://127.0.0.1")).to have_attributes(authority: be == "127.0.0.1")
+		end
+	end
+	
 	with "#tls_configuration" do
 		let(:tls_configuration) do
 			IO::Endpoint::TLS::Configuration.new(verification: :none)

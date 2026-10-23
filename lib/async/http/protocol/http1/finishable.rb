@@ -11,7 +11,7 @@ module Async
 	module HTTP
 		module Protocol
 			module HTTP1
-				# Keeps track of whether a body is being read, and if so, waits for it to be closed.
+				# Keeps track of whether a body is being read, and releases it once the response has been sent.
 				class Finishable < ::Protocol::HTTP::Body::Wrapper
 					# Initialize the finishable wrapper.
 					# @parameter body [Protocol::HTTP::Body::Readable] The body to wrap.
@@ -47,11 +47,18 @@ module Async
 						end
 					end
 					
-					# Wait for the body to be fully consumed or discard it.
+					# Discard or close the body once the response has been sent.
 					# @parameter persistent [Boolean] Whether the connection will be reused.
 					def wait(persistent = true)
 						if @reading
-							@closed.wait
+							# The response has been sent, so release a body the application stopped reading:
+							unless @closed.resolved?
+								begin
+									self.discard if persistent
+								ensure
+									self.close
+								end
+							end
 						elsif persistent
 							# If the connection can be reused, let's gracefully discard the body:
 							self.discard

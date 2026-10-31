@@ -111,6 +111,11 @@ module Async
 						# request_window_update
 					end
 					
+					# A closed stream receives no more data, so there is no window to extend. This happens when the application reads a body which was fully buffered before the connection closed, e.g. after a graceful GOAWAY.
+					def request_window_update
+						super unless closed?
+					end
+					
 					# Process an incoming DATA frame and write it to the input body.
 					# @parameter frame [Protocol::HTTP2::DataFrame] The data frame to process.
 					# @returns [String] The unpacked data.

@@ -11,6 +11,7 @@ require "protocol/http2/stream"
 require "sus/fixtures/async/scheduler_context"
 
 require "async/queue"
+require "protocol/http/body/writable"
 require "io/stream"
 require "socket"
 
@@ -114,6 +115,46 @@ describe Async::HTTP::Protocol::HTTP2 do
 		ensure
 			client.close
 			acceptor&.stop
+		end
+	end
+	
+	with "a response body which is still buffered when the GOAWAY closes the connection" do
+		let(:sockets) {::Socket.pair(::Socket::AF_UNIX, ::Socket::SOCK_STREAM)}
+		
+		def after(error = nil)
+			sockets.each{|socket| socket.close unless socket.closed?}
+			
+			super
+		end
+		
+		it "can read the whole body" do
+			chunk = "x" * 100_000
+			
+			server_task = Async do
+				server = subject.server(sockets.last)
+				
+				server.each do
+					body = ::Protocol::HTTP::Body::Writable.new
+					
+					Async do
+						60.times{body.write(chunk)}
+						server.write_frame(goaway_frame(1))
+						body.close_write
+					end
+					
+					::Protocol::HTTP::Response[200, {}, body]
+				end
+			end
+			
+			client = subject.client(sockets.first)
+			response = client.call(::Protocol::HTTP::Request["GET", "/", authority: "localhost", scheme: "http"])
+			
+			# The stream completes, so the connection closes, before the body has been read:
+			Async::Task.current.sleep(0.01) until client.closed?
+			
+			expect(response.read.bytesize).to be == 6_000_000
+		ensure
+			server_task&.stop
 		end
 	end
 	

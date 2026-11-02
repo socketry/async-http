@@ -47,12 +47,21 @@ module Async
 					
 					# Write a single frame, deferring stop until the frame is written.
 					def write_frame(frame)
-						Task.current.defer_stop{super}
+						defer_stop {super}
 					end
 					
 					# Write multiple frames, deferring stop until the frames are written.
 					def write_frames
-						Task.current.defer_stop{super}
+						defer_stop {super}
+					end
+					
+					# A fiber may be running under the scheduler without being an Async task, e.g. an `Enumerator` reading a response body, in which case there is no task to defer stopping.
+					private def defer_stop(&block)
+						if task = Task.current?
+							task.defer_stop(&block)
+						else
+							yield
+						end
 					end
 					
 					# @returns [String] A string representation of this connection.

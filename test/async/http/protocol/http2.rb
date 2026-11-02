@@ -149,6 +149,47 @@ describe Async::HTTP::Protocol::HTTP2 do
 			end
 		end
 		
+		with "a fiber which is not an Async task" do
+			let(:app) do
+				Protocol::HTTP::Middleware.for do |request|
+					Protocol::HTTP::Response[200, {}, ["x" * 1_000_000] * 10]
+				end
+			end
+			
+			it "can read a response body larger than the window" do
+				response = client.get("/")
+				
+				# An Enumerator iterates in its own fiber, which has the scheduler but no task, e.g. Falcon reading a Rack body:
+				chunks = Enumerator.new do |yielder|
+					response.body.each{|chunk| yielder << chunk}
+				end
+				
+				size = 0
+				
+				loop do
+					size += chunks.next.bytesize
+				end
+				
+				expect(size).to be == 10_000_000
+			ensure
+				response&.close
+			end
+			
+			it "can cancel a response before its body is read" do
+				response = client.get("/")
+				stream = response.stream
+				
+				# Closing the response sends RST_STREAM, which is also a write from the non-task fiber:
+				cancel = Enumerator.new do |yielder|
+					response.close
+					yielder << stream.closed?
+				end
+				
+				expect(cancel.next).to be == true
+				expect{cancel.next}.to raise_exception(StopIteration)
+			end
+		end
+		
 		with "stopping requests" do
 			let(:finished) {Async::Promise.new}
 			

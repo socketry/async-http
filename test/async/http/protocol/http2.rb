@@ -149,6 +149,88 @@ describe Async::HTTP::Protocol::HTTP2 do
 			end
 		end
 		
+		with "received trailers" do
+			with "request trailer" do
+				let(:request_received) {Async::Promise.new}
+				let(:request_headers) {Async::Promise.new}
+				
+				let(:app) do
+					Protocol::HTTP::Middleware.for do |request|
+						request_received.resolve(true)
+						request.finish
+						
+						request_headers.resolve(request.headers)
+						
+						Protocol::HTTP::Response[200, [], "request trailer"]
+					end
+				end
+				
+				it "keeps the request trailer distinct from the header section" do
+					headers = Protocol::HTTP::Headers.new
+					headers.add("trailer", "etag")
+					body = Async::HTTP::Body::Writable.new
+					
+					Async do
+						body.write("Hello")
+						
+						request_received.wait
+						headers.add("etag", "abcd")
+						
+						body.close_write
+					end
+					
+					response = client.post("/", headers, body)
+					expect(response.read).to be == "request trailer"
+					
+					received = request_headers.wait
+					
+					expect(received).to be(:trailer?)
+					expect(received.header.to_a).not.to have_value(be == ["etag", "abcd"])
+					expect(received.trailer.to_a).to be == [["etag", "abcd"]]
+				end
+			end
+			
+			with "response trailer" do
+				let(:response_received) {Async::Promise.new}
+				
+				let(:app) do
+					Protocol::HTTP::Middleware.for do |request|
+						headers = Protocol::HTTP::Headers.new
+						headers.add("trailer", "etag")
+						
+						body = Async::HTTP::Body::Writable.new
+						
+						Async do
+							body.write("response trailer")
+							
+							response_received.wait
+							headers.add("etag", "abcd")
+							
+							body.close_write
+						end
+						
+						Protocol::HTTP::Response[200, headers, body]
+					end
+				end
+				
+				it "keeps the response trailer distinct from the header section" do
+					response = client.get("/")
+					headers = response.headers
+					
+					expect(headers).to have_keys("trailer")
+					expect(headers).not.to be(:trailer?)
+					
+					response_received.resolve(true)
+					
+					expect(response.read).to be == "response trailer"
+					
+					expect(headers).to be(:trailer?)
+					expect(headers.header.to_a).not.to have_value(be == ["etag", "abcd"])
+					expect(headers.trailer.to_a).to be == [["etag", "abcd"]]
+				end
+			end
+		end
+		
 		with "stopping requests" do
 			let(:finished) {Async::Promise.new}
 			

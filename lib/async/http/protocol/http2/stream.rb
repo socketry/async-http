@@ -60,6 +60,9 @@ module Async
 					# @parameter headers [Array] The trailing header key-value pairs.
 					# @parameter end_stream [Boolean] Whether the stream ends after these headers.
 					def receive_trailing_headers(headers, end_stream)
+						# Mark the start of the trailer section, so that received trailers are not merged into the header section:
+						@headers.trailer!
+						
 						headers.each do |key, value|
 							add_header(key, value, trailer: true)
 						end

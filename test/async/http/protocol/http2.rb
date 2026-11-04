@@ -229,6 +229,47 @@ describe Async::HTTP::Protocol::HTTP2 do
 					expect(headers.trailer.to_a).to be == [["etag", "abcd"]]
 				end
 			end
+			
+			with "empty request trailer" do
+				let(:request_headers) {Async::Promise.new}
+				
+				let(:app) do
+					Protocol::HTTP::Middleware.for do |request|
+						request.finish
+						
+						request_headers.resolve(request.headers)
+						
+						Protocol::HTTP::Response[200, [], "empty request trailer"]
+					end
+				end
+				
+				it "does not create a trailer section" do
+					client.pool.acquire do |connection|
+						response = connection.create_response
+						
+						# The body is never closed, so the client does not end the stream itself:
+						body = Async::HTTP::Body::Writable.new
+						body.write("Hello")
+						
+						request = Protocol::HTTP::Request["POST", "/", [], body]
+						request.scheme = "http"
+						request.authority = "localhost"
+						
+						response.send_request(request)
+						
+						# Instead, end the stream with a trailing HEADERS frame that has no fields:
+						response.stream.send_headers([], ::Protocol::HTTP2::END_STREAM)
+						
+						connection.read_response(response)
+						expect(response.read).to be == "empty request trailer"
+					end
+					
+					received = request_headers.wait
+					
+					expect(received).not.to be(:trailer?)
+					expect(received.trailer.to_a).to be(:empty?)
+				end
+			end
 		end
 		
 		with "stopping requests" do

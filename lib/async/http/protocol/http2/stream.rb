@@ -61,6 +61,7 @@ module Async
 					# @parameter end_stream [Boolean] Whether the stream ends after these headers.
 					def receive_trailing_headers(headers, end_stream)
 						headers.each do |key, value|
+							# SECURITY: Trailers join the headers unmarked. This is not a smuggling vector: `trailer: true` admits only fields whose policy permits trailers, and position does not change what those fields mean.
 							add_header(key, value, trailer: true)
 						end
 					end

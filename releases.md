@@ -1,5 +1,9 @@
 # Releases
 
+## Unreleased
+
+  - `Async::HTTP::Protocol::HTTP1::Client` passes `request = true` to `Protocol::HTTP1::Connection#write_body` so an HTTP/1.0 request body of unknown length raises instead of being written close-delimited, where the server would parse it as the next request (requires `protocol-http1` >= 0.42).
+
 ## v0.105.0
 
   - Respond with `400 Bad Request` for any `Protocol::HTTP::BadRequest` raised while parsing HTTP/1 or HTTP/2 requests, include the exception class name without reflecting request data, and avoid reporting them as unhandled server errors.

@@ -69,7 +69,7 @@ module Async
 							else
 								task.async(annotation: "Streaming request...") do
 									# Once we start writing the body, we can't recover if the request fails. That's because the body might be generated dynamically, streaming, etc.
-									write_body(@version, body, false, trailer)
+									write_body(@version, body, false, trailer, true)
 								rescue => error
 									self.close(error)
 								end
@@ -77,7 +77,7 @@ module Async
 						elsif protocol = request.protocol
 							write_upgrade_body(protocol)
 						else
-							write_body(@version, request.body, false, trailer)
+							write_body(@version, request.body, false, trailer, true)
 						end
 						
 						return Response.read(self, request)

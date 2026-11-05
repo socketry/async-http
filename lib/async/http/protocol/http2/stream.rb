@@ -61,7 +61,7 @@ module Async
 					# @parameter end_stream [Boolean] Whether the stream ends after these headers.
 					def receive_trailing_headers(headers, end_stream)
 						headers.each do |key, value|
-							# SECURITY: Received trailers join the same headers object as the initial headers and are not marked with `trailer!`. This is not a smuggling vector: pseudo-headers are rejected above, `trailer: true` rejects any field whose policy does not permit it as a trailer, so a field such as `content-length` cannot arrive here, and position in the message does not change what a permitted field means. Marking them would make a buffering proxy re-send them as trailers and drop them from non-chunked responses. Whether the `Generic` fallback policy should permit unknown fields as trailers is tracked in socketry/protocol-http#127.
+							# SECURITY: Trailers join the headers unmarked. This is not a smuggling vector: `trailer: true` admits only fields whose policy permits trailers, and position does not change what those fields mean.
 							add_header(key, value, trailer: true)
 						end
 					end

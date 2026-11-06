@@ -158,9 +158,9 @@ module Async
 			# @returns [String] The authority component (hostname and optional port).
 			def authority(ignore_default_port = true)
 				if ignore_default_port and default_port?
-					@url.hostname
+					@url.host
 				else
-					"#{@url.hostname}:#{port}"
+					"#{@url.host}:#{port}"
 				end
 			end
 			
